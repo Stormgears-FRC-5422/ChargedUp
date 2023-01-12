@@ -4,11 +4,10 @@ import com.kauailabs.navx.frc.AHRS;
 import com.swervedrivespecialties.swervelib.ModuleConfiguration;
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -16,7 +15,9 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.subsystems.drive.SwerveModules.SDSModule;
 import frc.utils.stormSwerveLib.StormSwerveMk4ProtoHelper;
 
-import static frc.robot.Constants.*;
+import java.util.List;
+
+import static frc.robot.Constants.SwerveBotDriveConstants.*;
 
 public class SDSDrivetrain extends DrivetrainBase {
     /**
@@ -62,6 +63,8 @@ public class SDSDrivetrain extends DrivetrainBase {
             new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
     );
 
+    private final SwerveDriveOdometry m_odometry;
+
     // TODO - The important thing about how you configure your gyroscope is that rotating the robot counter-clockwise should
     // cause the angle reading to increase until it wraps back over to zero.
     private final AHRS m_navx = new AHRS(SPI.Port.kMXP, (byte) 200); // NavX connected over MXP
@@ -71,6 +74,7 @@ public class SDSDrivetrain extends DrivetrainBase {
     private final SDSModule m_frontRightModule;
     private final SDSModule m_backLeftModule;
     private final SDSModule m_backRightModule;
+    private final SDSModule[] m_swerveModules;
 
     private ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
 
@@ -145,6 +149,19 @@ public class SDSDrivetrain extends DrivetrainBase {
                 BACK_RIGHT_MODULE_STEER_ENCODER,
                 BACK_RIGHT_MODULE_STEER_OFFSET
         );
+
+        m_swerveModules = new SDSModule[]{m_frontLeftModule, m_frontRightModule, m_backLeftModule, m_backRightModule};
+
+        m_odometry = new SwerveDriveOdometry(m_kinematics, getGyroscopeRotation(), getPositions(), new Pose2d(new Translation2d(0d, 0d), new Rotation2d()));
+    }
+
+    private SwerveModulePosition[] getPositions() {
+        return new SwerveModulePosition[] {
+                m_frontLeftModule.getPosition(),
+                m_frontRightModule.getPosition(),
+                m_backLeftModule.getPosition(),
+                m_backRightModule.getPosition()
+        };
     }
 
     /**
@@ -166,7 +183,12 @@ public class SDSDrivetrain extends DrivetrainBase {
     }
 
     @Override
-    public void drive(double vx, double vy, double rot) {
+    public Pose2d getPose() {
+        return null;
+    }
+
+    @Override
+    public void setOdometry(Pose2d pose) {
 
     }
 
@@ -175,14 +197,10 @@ public class SDSDrivetrain extends DrivetrainBase {
     }
 
     @Override
-    public void zeroGyroScope() {
-
-    }
-
-    @Override
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_VELOCITY_METERS_PER_SECOND);
+        m_odometry.update(getGyroscopeRotation(), getPositions());
 
         m_frontLeftModule.setDesiredState(states[0].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[0].angle);
         m_frontRightModule.setDesiredState(states[1].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[1].angle);

@@ -3,7 +3,6 @@ package frc.utils.stormSwerveLib;
 import com.swervedrivespecialties.swervelib.*;
 import com.swervedrivespecialties.swervelib.ctre.*;
 import com.swervedrivespecialties.swervelib.rev.NeoDriveControllerFactoryBuilder;
-import com.swervedrivespecialties.swervelib.rev.NeoSteerConfiguration;
 import com.swervedrivespecialties.swervelib.rev.NeoSteerControllerFactoryBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 
@@ -18,7 +17,7 @@ public final class StormSwerveMk4ProtoHelper {
                 .build();
     }
 
-    private static SteerControllerFactory<?, NeoSteerConfiguration<CanCoderAbsoluteConfiguration>> getNeoSteerFactory(Mk4ModuleConfiguration configuration) {
+    private static SteerControllerFactory<?, SteerConfiguration<CanCoderAbsoluteConfiguration>> getNeoSteerFactory(Mk4ModuleConfiguration configuration) {
         return new NeoSteerControllerFactoryBuilder()
                 .withVoltageCompensation(configuration.getNominalVoltage())
                 .withPidConstants(1.0, 0.0, 0.1)
@@ -58,7 +57,7 @@ public final class StormSwerveMk4ProtoHelper {
         ).create(
                 container,
                 driveMotorPort,
-                new NeoSteerConfiguration<>(
+                new SteerConfiguration<>(
                         steerMotorPort,
                         new CanCoderAbsoluteConfiguration(steerEncoderPort, steerOffset)
                 )
@@ -113,7 +112,7 @@ public final class StormSwerveMk4ProtoHelper {
                 getNeoSteerFactory(configuration)
         ).create(
                 driveMotorPort,
-                new NeoSteerConfiguration<>(
+                new SteerConfiguration<>(
                         steerMotorPort,
                         new CanCoderAbsoluteConfiguration(steerEncoderPort, steerOffset)
                 )
