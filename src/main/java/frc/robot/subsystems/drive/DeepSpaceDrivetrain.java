@@ -9,7 +9,7 @@ import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
-import static frc.robot.Constants.DeepSpaceBotConstants.*;
+import static frc.robot.Constants.*;
 
 public class DeepSpaceDrivetrain extends DrivetrainBase {
 
@@ -41,6 +41,11 @@ public class DeepSpaceDrivetrain extends DrivetrainBase {
     @Override
     public void drive(ChassisSpeeds chassisSpeeds) {
         m_drive.driveCartesian(chassisSpeeds.vxMetersPerSecond/10, chassisSpeeds.vyMetersPerSecond/10, chassisSpeeds.omegaRadiansPerSecond/6.28);
+    }
+
+    @Override
+    public void percentOutDrive(double tx, double ty, double rot) {
+
     }
 
     @Override

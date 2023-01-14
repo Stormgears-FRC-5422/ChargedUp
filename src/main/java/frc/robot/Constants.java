@@ -26,15 +26,13 @@ public final class Constants {
     public static final double kTemperatureRampLimit = StormProp.getNumber("SparkMaxTemperatureRampLimit", 60.0);
     public static final double kSparkMaxCurrentLimit = StormProp.getNumber("SparkMaxCurrentLimit", 35.0);
 
-      public static final double kSparkMaxCurrentLimit550 = StormProp.getNumber("SparkMax550CurrentLimit", 25.0);
+    public static final double kSparkMaxCurrentLimit550 = StormProp.getNumber("SparkMax550CurrentLimit", 25.0);
 
-    public static class SwerveBotDriveConstants  {
-          public static final double kSparkMaxFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
-          public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
-
-          public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
-          public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);
-          public static final int backLeftDriveID = StormProp.getInt("backLeftDriveID", 0);
+    public static final double kSparkMaxFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
+    public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
+    public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
+    public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);
+    public static final int backLeftDriveID = StormProp.getInt("backLeftDriveID", 0);
           public static final int backRightDriveID = StormProp.getInt("backRightDriveID", 0);
 
           public static final int frontLeftSwivelID = StormProp.getInt("frontLeftSwivelID", 0);
@@ -78,15 +76,9 @@ public final class Constants {
           public static final int BACK_RIGHT_MODULE_STEER_MOTOR = backRightSwivelID;
           public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightTalonID;
           public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
-      }
 
-      public static class DeepSpaceBotConstants {
         public static int FRONT_LEFT_TALON_ID = StormProp.getInt("frontLeftTalonId", 0);
         public static int FRONT_RIGHT_TALON_ID = StormProp.getInt("frontRightTalonId", 0);
         public static int BACK_LEFT_TALON_ID = StormProp.getInt("rearLeftTalonId", 0);
         public static int BACK_RIGHT_TALON_ID = StormProp.getInt("rearRightTalonId", 0);
-        public static double DRIVETRAIN_TRACKWIDTH_METERS = Units.inchesToMeters(StormProp.getNumber("robotWidth", 30d));
-        public static double DRIVETRAIN_WHEELBASE_METERS = Units.inchesToMeters(StormProp.getNumber("robotLength", 30d));
-      }
-
 }

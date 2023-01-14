@@ -1,9 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.swervedrivespecialties.swervelib.ModuleConfiguration;
-import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
-import com.swervedrivespecialties.swervelib.SwerveModule;
+import com.swervedrivespecialties.swervelib.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -12,14 +10,15 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.SwerveModules.SDSModule;
 import frc.utils.stormSwerveLib.StormSwerveMk4ProtoHelper;
 
 import java.util.List;
 
-import static frc.robot.Constants.SwerveBotDriveConstants.*;
+import static frc.robot.Constants.*;
 
-public class SDSDrivetrain extends DrivetrainBase {
+public class SDSDrivetrain extends SubsystemBase {
     /**
      * The maximum voltage that will be delivered to the drive motors.
      * <p>
@@ -70,32 +69,32 @@ public class SDSDrivetrain extends DrivetrainBase {
     private final AHRS m_navx = new AHRS(SPI.Port.kMXP, (byte) 200); // NavX connected over MXP
 
     // These are our modules. We initialize them in the constructor.
-    private final SDSModule m_frontLeftModule;
-    private final SDSModule m_frontRightModule;
-    private final SDSModule m_backLeftModule;
-    private final SDSModule m_backRightModule;
-    private final SDSModule[] m_swerveModules;
+    private final SwerveModule m_frontLeftModule;
+    private final SwerveModule m_frontRightModule;
+    private final SwerveModule m_backLeftModule;
+    private final SwerveModule m_backRightModule;
+    private final SwerveModule[] m_swerveModules;
 
     private ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
 
     public SDSDrivetrain() {
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
 
-        StormSwerveMk4ProtoHelper.GearRatio theGearRatio;
+        Mk4iSwerveModuleHelper.GearRatio theGearRatio;
         ModuleConfiguration moduleConfiguration;
 
         switch(kMK4iModuleKind) {
             case "L1":
-                theGearRatio = StormSwerveMk4ProtoHelper.GearRatio.L1;
+                theGearRatio = Mk4iSwerveModuleHelper.GearRatio.L1;
                 moduleConfiguration = SdsModuleConfigurations.MK4I_L1;
                 break;
             case "L2":
-                theGearRatio = StormSwerveMk4ProtoHelper.GearRatio.L2;
+                theGearRatio = Mk4iSwerveModuleHelper.GearRatio.L2;
                 moduleConfiguration = SdsModuleConfigurations.MK4I_L2;
                 break;
             case "L3":
             default:
-                theGearRatio = StormSwerveMk4ProtoHelper.GearRatio.L3;  // Have to pick something
+                theGearRatio = Mk4iSwerveModuleHelper.GearRatio.L3;  // Have to pick something
                 moduleConfiguration = SdsModuleConfigurations.MK4I_L3;
         };
 
@@ -107,24 +106,21 @@ public class SDSDrivetrain extends DrivetrainBase {
                 Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
 
 
-        m_frontLeftModule = new SDSModule(
-                // This parameter is optional, but will allow you to see the current state of the module on the dashboard.
-                tab,
-                // This can either be STANDARD or FAST depending on your gear configuration
+        m_frontLeftModule = Mk4iSwerveModuleHelper.createNeo(
+                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(0, 0),
                 theGearRatio,
-                // This is the ID of the drive motor
                 FRONT_LEFT_MODULE_DRIVE_MOTOR,
-                // This is the ID of the steer motor
                 FRONT_LEFT_MODULE_STEER_MOTOR,
-                // This is the ID of the steer encoder
                 FRONT_LEFT_MODULE_STEER_ENCODER,
-                // This is how much the steer encoder is offset from true zero (In our case, zero is facing straight forward)
                 FRONT_LEFT_MODULE_STEER_OFFSET
         );
 
-        // We will do the same for the other modules
-        m_frontRightModule = new SDSModule(
-                tab,
+        m_frontRightModule = Mk4iSwerveModuleHelper.createNeo(
+                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(0, 0),
                 theGearRatio,
                 FRONT_RIGHT_MODULE_DRIVE_MOTOR,
                 FRONT_RIGHT_MODULE_STEER_MOTOR,
@@ -132,8 +128,10 @@ public class SDSDrivetrain extends DrivetrainBase {
                 FRONT_RIGHT_MODULE_STEER_OFFSET
         );
 
-        m_backLeftModule = new SDSModule(
-                tab,
+        m_backLeftModule = Mk4iSwerveModuleHelper.createNeo(
+                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(0, 0),
                 theGearRatio,
                 BACK_LEFT_MODULE_DRIVE_MOTOR,
                 BACK_LEFT_MODULE_STEER_MOTOR,
@@ -141,8 +139,10 @@ public class SDSDrivetrain extends DrivetrainBase {
                 BACK_LEFT_MODULE_STEER_OFFSET
         );
 
-        m_backRightModule = new SDSModule(
-                tab,
+        m_backRightModule = Mk4iSwerveModuleHelper.createNeo(
+                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                        .withSize(2, 4)
+                        .withPosition(0, 0),
                 theGearRatio,
                 BACK_RIGHT_MODULE_DRIVE_MOTOR,
                 BACK_RIGHT_MODULE_STEER_MOTOR,
@@ -150,7 +150,35 @@ public class SDSDrivetrain extends DrivetrainBase {
                 BACK_RIGHT_MODULE_STEER_OFFSET
         );
 
-        m_swerveModules = new SDSModule[]{m_frontLeftModule, m_frontRightModule, m_backLeftModule, m_backRightModule};
+        // We will do the same for the other modules
+//        m_frontRightModule = new SDSModule(
+//                tab,
+//                theGearRatio,
+//                FRONT_RIGHT_MODULE_DRIVE_MOTOR,
+//                FRONT_RIGHT_MODULE_STEER_MOTOR,
+//                FRONT_RIGHT_MODULE_STEER_ENCODER,
+//                FRONT_RIGHT_MODULE_STEER_OFFSET
+//        );
+//
+//        m_backLeftModule = new SDSModule(
+//                tab,
+//                theGearRatio,
+//                BACK_LEFT_MODULE_DRIVE_MOTOR,
+//                BACK_LEFT_MODULE_STEER_MOTOR,
+//                BACK_LEFT_MODULE_STEER_ENCODER,
+//                BACK_LEFT_MODULE_STEER_OFFSET
+//        );
+//
+//        m_backRightModule = new SDSModule(
+//                tab,
+//                theGearRatio,
+//                BACK_RIGHT_MODULE_DRIVE_MOTOR,
+//                BACK_RIGHT_MODULE_STEER_MOTOR,
+//                BACK_RIGHT_MODULE_STEER_ENCODER,
+//                BACK_RIGHT_MODULE_STEER_OFFSET
+//        );
+
+        m_swerveModules = new SwerveModule[]{m_frontLeftModule, m_frontRightModule, m_backLeftModule, m_backRightModule};
 
         m_odometry = new SwerveDriveOdometry(m_kinematics, getGyroscopeRotation(), getPositions(), new Pose2d(new Translation2d(0d, 0d), new Rotation2d()));
     }
@@ -182,12 +210,10 @@ public class SDSDrivetrain extends DrivetrainBase {
         return Rotation2d.fromDegrees(360.0 - m_navx.getYaw());
     }
 
-    @Override
     public Pose2d getPose() {
         return m_odometry.getPoseMeters();
     }
 
-    @Override
     public void setOdometry(Pose2d pose) {
         m_odometry.resetPosition(getGyroscopeRotation(), getPositions(), pose);
     }
@@ -196,20 +222,14 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_chassisSpeeds = chassisSpeeds;
     }
 
-    @Override
-    public void percentOutDrive(double tx, double ty, double rot) {
-        
-    }
-
-    @Override
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_VELOCITY_METERS_PER_SECOND);
         m_odometry.update(getGyroscopeRotation(), getPositions());
 
-        m_frontLeftModule.setDesiredState(states[0].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[0].angle);
-        m_frontRightModule.setDesiredState(states[1].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[1].angle);
-        m_backLeftModule.setDesiredState(states[2].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[2].angle);
-        m_backRightModule.setDesiredState(states[3].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[3].angle);
+        m_frontLeftModule.set(states[0].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[0].angle.getRadians());
+        m_frontRightModule.set(states[1].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[1].angle.getRadians());
+        m_backLeftModule.set(states[2].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[2].angle.getRadians());
+        m_backRightModule.set(states[3].speedMetersPerSecond / MAX_VELOCITY_METERS_PER_SECOND * MAX_VOLTAGE, states[3].angle.getRadians());
     }
 }
