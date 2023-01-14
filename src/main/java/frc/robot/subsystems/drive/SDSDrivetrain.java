@@ -184,16 +184,21 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     @Override
     public Pose2d getPose() {
-        return null;
+        return m_odometry.getPoseMeters();
     }
 
     @Override
     public void setOdometry(Pose2d pose) {
-
+        m_odometry.resetPosition(getGyroscopeRotation(), getPositions(), pose);
     }
 
     public void drive(ChassisSpeeds chassisSpeeds) {
         m_chassisSpeeds = chassisSpeeds;
+    }
+
+    @Override
+    public void percentOutDrive(double tx, double ty, double rot) {
+        
     }
 
     @Override
