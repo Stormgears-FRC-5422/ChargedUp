@@ -7,11 +7,14 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
+import frc.robot.commands.DriveWithJoystick;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drive.SDSDrivetrain;
+import frc.utils.joysticks.StormLogitechController;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,6 +23,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
+  SDSDrivetrain m_drivetrain = new SDSDrivetrain();
+  StormLogitechController m_controller = new StormLogitechController(0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -37,7 +43,12 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-
+    m_drivetrain.setDefaultCommand(new DriveWithJoystick(
+            m_drivetrain,
+            () -> m_controller.getYAxis() * 0.5 * m_drivetrain.MAX_VELOCITY_METERS_PER_SECOND,
+            () -> m_controller.getXAxis() * 0.5 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
+            () -> m_controller.getZAxis() * 0.8 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND
+    ));
   }
 
   /**

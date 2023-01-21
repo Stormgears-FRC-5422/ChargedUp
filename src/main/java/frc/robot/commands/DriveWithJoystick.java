@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.SDSDrivetrain;
@@ -28,6 +29,8 @@ public class DriveWithJoystick extends CommandBase {
 
     @Override
     public void execute() {
+        SmartDashboard.putNumberArray("controller inputs:", new Double[] {txSupplier.getAsDouble(), tySupplier.getAsDouble(), rotSupplier.getAsDouble()});
+
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 txSupplier.getAsDouble(),
                 tySupplier.getAsDouble(),
