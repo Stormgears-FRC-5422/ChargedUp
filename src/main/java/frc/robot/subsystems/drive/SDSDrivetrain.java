@@ -11,10 +11,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.drive.SwerveModules.SDSModule;
-import frc.utils.stormSwerveLib.StormSwerveMk4ProtoHelper;
-
-import java.util.List;
+import frc.robot.subsystems.NavX;
 
 import static frc.robot.Constants.*;
 
@@ -66,7 +63,7 @@ public class SDSDrivetrain extends SubsystemBase {
 
     // TODO - The important thing about how you configure your gyroscope is that rotating the robot counter-clockwise should
     // cause the angle reading to increase until it wraps back over to zero.
-    private final AHRS m_navx = new AHRS(SPI.Port.kMXP, (byte) 200); // NavX connected over MXP
+    private final NavX m_navx = new NavX(); // NavX connected over MXP
 
     // These are our modules. We initialize them in the constructor.
     private final SwerveModule m_frontLeftModule;
@@ -118,7 +115,7 @@ public class SDSDrivetrain extends SubsystemBase {
         );
 
         m_frontRightModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                tab.getLayout("Front Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(0, 0),
                 theGearRatio,
@@ -129,7 +126,7 @@ public class SDSDrivetrain extends SubsystemBase {
         );
 
         m_backLeftModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                tab.getLayout("Back Left Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(0, 0),
                 theGearRatio,
@@ -140,7 +137,7 @@ public class SDSDrivetrain extends SubsystemBase {
         );
 
         m_backRightModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                tab.getLayout("Back Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
                         .withPosition(0, 0),
                 theGearRatio,

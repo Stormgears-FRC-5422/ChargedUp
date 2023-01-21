@@ -5,7 +5,7 @@ import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix.motorcontrol.StatusFrame;
 import frc.utils.motorcontrol.StormTalon;
 
-import static frc.robot.Constants.SwerveBotDriveConstants.kSwivelEncoderTicksPerRotation;
+import static frc.robot.Constants.kSwivelEncoderTicksPerRotation;
 
 public class StormMagCoder {
     private final StormTalon talon;

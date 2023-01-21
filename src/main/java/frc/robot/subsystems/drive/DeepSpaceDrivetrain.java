@@ -21,10 +21,10 @@ public class DeepSpaceDrivetrain extends DrivetrainBase {
     private final MecanumDrive m_drive;
 
     public DeepSpaceDrivetrain() {
-        m_frontLeftTalon = new WPI_TalonSRX(FRONT_LEFT_TALON_ID);
-        m_frontRightTalon = new WPI_TalonSRX(FRONT_RIGHT_TALON_ID);
-        m_backLeftTalon = new WPI_TalonSRX(BACK_LEFT_TALON_ID);
-        m_backRightTalon = new WPI_TalonSRX(BACK_RIGHT_TALON_ID);
+        m_frontLeftTalon = new WPI_TalonSRX(frontLeftEncoderID);
+        m_frontRightTalon = new WPI_TalonSRX(frontRightEncoderID);
+        m_backLeftTalon = new WPI_TalonSRX(backLeftEncoderID);
+        m_backRightTalon = new WPI_TalonSRX(backRightEncoderID);
         //Fix
         m_frontRightTalon.setInverted(true);
         m_backRightTalon.setInverted(true);
