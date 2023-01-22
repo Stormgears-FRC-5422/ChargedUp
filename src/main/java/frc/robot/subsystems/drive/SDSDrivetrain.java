@@ -189,24 +189,6 @@ public class SDSDrivetrain extends DrivetrainBase {
         };
     }
 
-    /**
-     * Sets the gyroscope angle to zero. This can be used to set the direction the robot is currently facing to the
-     * 'forwards' direction.
-     */
-    public void zeroGyroscope() {
-        m_navx.zeroYaw();
-    }
-
-    public Rotation2d getGyroscopeRotation() {
-        if (m_navx.isMagnetometerCalibrated()) {
-            // We will only get valid fused headings if the magnetometer is calibrated
-            return Rotation2d.fromDegrees(m_navx.getFusedHeading());
-        }
-
-        // We have to invert the angle of the NavX so that rotating the robot counter-clockwise makes the angle increase.
-        return Rotation2d.fromDegrees(360.0 - m_navx.getYaw());
-    }
-
     public Pose2d getPose() {
         return m_odometry.getPoseMeters();
     }
@@ -221,7 +203,11 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     @Override
     public void percentOutDrive(double tx, double ty, double rot) {
-        // TODO
+        double vxMetersPerSecond = tx * MAX_VELOCITY_METERS_PER_SECOND;
+        double vyMetersPerSecond = ty * MAX_VELOCITY_METERS_PER_SECOND;
+        double rotRadiansPerSecond = rot * MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND;
+        ChassisSpeeds speeds = new ChassisSpeeds(vxMetersPerSecond, vyMetersPerSecond, rotRadiansPerSecond);
+        drive(speeds);
     }
 
     public void periodic() {

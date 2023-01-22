@@ -10,12 +10,20 @@ import java.util.function.DoubleSupplier;
 
 public class DriveWithJoystick extends CommandBase {
 
-    private final SDSDrivetrain m_drivetrain;
+    private final DrivetrainBase m_drivetrain;
     private final DoubleSupplier txSupplier;
     private final DoubleSupplier tySupplier;
     private final DoubleSupplier rotSupplier;
 
-    public DriveWithJoystick(SDSDrivetrain drive,
+    /**
+     * USE WPILIB COORDINATES X DRIVES FORWARDS, Y DRIVES LEFT
+     * using percentage inputs (-1, 1)
+     * @param drive
+     * @param translationXSupplier
+     * @param translationYSupplier
+     * @param rotationSupplier
+     */
+    public DriveWithJoystick(DrivetrainBase drive,
                              DoubleSupplier translationXSupplier,
                              DoubleSupplier translationYSupplier,
                              DoubleSupplier rotationSupplier) {
@@ -29,15 +37,6 @@ public class DriveWithJoystick extends CommandBase {
 
     @Override
     public void execute() {
-        SmartDashboard.putNumberArray("controller inputs:", new Double[] {txSupplier.getAsDouble(), tySupplier.getAsDouble(), rotSupplier.getAsDouble()});
-
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                txSupplier.getAsDouble(),
-                tySupplier.getAsDouble(),
-                rotSupplier.getAsDouble(),
-                m_drivetrain.getGyroscopeRotation()
-                );
-
-        m_drivetrain.drive(speeds);
+        m_drivetrain.percentOutDrive(txSupplier.getAsDouble(), tySupplier.getAsDouble(), rotSupplier.getAsDouble());
     }
 }

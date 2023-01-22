@@ -20,6 +20,7 @@ public final class Constants {
       public static final int kDriverControllerPort = 0;
     }
 
+    public static final String robotName = StormProp.getString("robotName", "");
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
     public static final int logitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
     public static final double kTemperatureRampThreshold = StormProp.getNumber("SparkMaxTemperatureRampThreshold", 45.0);
@@ -77,8 +78,8 @@ public final class Constants {
     public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
     public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
 
+    public static String driveType = StormProp.getString("driveType", "");
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
     public static boolean useController = StormProp.getBoolean("useController", false);
-    //subsystem configs
 }

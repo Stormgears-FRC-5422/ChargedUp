@@ -40,24 +40,11 @@ public class MecanumDrivetrain extends DrivetrainBase {
 
     @Override
     public void drive(ChassisSpeeds chassisSpeeds) {
-        m_drive.driveCartesian(chassisSpeeds.vxMetersPerSecond/10, chassisSpeeds.vyMetersPerSecond/10, chassisSpeeds.omegaRadiansPerSecond/6.28);
     }
-
     @Override
     public void percentOutDrive(double tx, double ty, double rot) {
-
+        m_drive.driveCartesian(tx, ty, rot);
     }
-
-    @Override
-    public void zeroGyroscope() {
-
-    }
-
-    @Override
-    public Rotation2d getGyroscopeRotation() {
-        return null;
-    }
-
     @Override
     public Pose2d getPose() {
         return null;

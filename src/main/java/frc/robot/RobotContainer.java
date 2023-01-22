@@ -14,8 +14,13 @@ import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drive.DrivetrainBase;
+import frc.robot.subsystems.drive.DrivetrainFactory;
+import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.robot.subsystems.drive.SDSDrivetrain;
 import frc.utils.joysticks.StormLogitechController;
+
+import static frc.robot.Constants.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -24,16 +29,15 @@ import frc.utils.joysticks.StormLogitechController;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-
-  SDSDrivetrain m_drivetrain;
+  DrivetrainBase m_drivetrain;
   StormLogitechController m_controller;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  public RobotContainer() {
+  public RobotContainer() throws IllegalDriveTypeException {
     // Configure the trigger bindings
-    if (Constants.useDrive)
-      m_drivetrain = new SDSDrivetrain();
-    if (Constants.useController)
+    if (useDrive)
+      m_drivetrain = DrivetrainFactory.getInstance(driveType);
+    if (useController)
       m_controller = new StormLogitechController(0);
 
     configureBindings();
@@ -49,16 +53,16 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    if (Constants.useDrive && Constants.useController) {
+    if (useDrive && useController) {
       SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(0.5);
       SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(0.5);
       SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(0.5);
 
       m_drivetrain.setDefaultCommand(new DriveWithJoystick(
               m_drivetrain,
-              () -> forwardInputLimiter.calculate(m_controller.getYAxis()) * 0.5 * m_drivetrain.MAX_VELOCITY_METERS_PER_SECOND,
-              () -> sidewaysInputLimiter.calculate(m_controller.getYAxis()) * 0.5 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
-              () -> rotationInputLimiter.calculate(m_controller.getZAxis()) * 0.8 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND
+              () -> forwardInputLimiter.calculate(m_controller.getWpiXAxis()) * 0.5,
+              () -> sidewaysInputLimiter.calculate(m_controller.getWpiYAxis()) * 0.5,
+              () -> rotationInputLimiter.calculate(m_controller.getZAxis()) * 0.8
       ));
     }
   }
