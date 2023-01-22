@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
@@ -24,12 +25,17 @@ import frc.utils.joysticks.StormLogitechController;
  */
 public class RobotContainer {
 
-  SDSDrivetrain m_drivetrain = new SDSDrivetrain();
-  StormLogitechController m_controller = new StormLogitechController(0);
+  SDSDrivetrain m_drivetrain;
+  StormLogitechController m_controller;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
+    if (Constants.useDrive)
+      m_drivetrain = new SDSDrivetrain();
+    if (Constants.useController)
+      m_controller = new StormLogitechController(0);
+
     configureBindings();
   }
 
@@ -43,12 +49,18 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    m_drivetrain.setDefaultCommand(new DriveWithJoystick(
-            m_drivetrain,
-            () -> m_controller.getYAxis() * 0.5 * m_drivetrain.MAX_VELOCITY_METERS_PER_SECOND,
-            () -> m_controller.getXAxis() * 0.5 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
-            () -> m_controller.getZAxis() * 0.8 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND
-    ));
+    if (Constants.useDrive && Constants.useController) {
+      SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(0.5);
+      SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(0.5);
+      SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(0.5);
+
+      m_drivetrain.setDefaultCommand(new DriveWithJoystick(
+              m_drivetrain,
+              () -> forwardInputLimiter.calculate(m_controller.getYAxis()) * 0.5 * m_drivetrain.MAX_VELOCITY_METERS_PER_SECOND,
+              () -> sidewaysInputLimiter.calculate(m_controller.getYAxis()) * 0.5 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND,
+              () -> rotationInputLimiter.calculate(m_controller.getZAxis()) * 0.8 * m_drivetrain.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND
+      ));
+    }
   }
 
   /**

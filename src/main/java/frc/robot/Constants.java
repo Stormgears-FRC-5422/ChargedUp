@@ -76,4 +76,9 @@ public final class Constants {
     public static final int BACK_RIGHT_MODULE_STEER_MOTOR = backRightSwivelID;
     public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
     public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
+
+    public static boolean useDrive = StormProp.getBoolean("useDrive", false);
+    public static boolean useNavX = StormProp.getBoolean("useNavX", false);
+    public static boolean useController = StormProp.getBoolean("useController", false);
+    //subsystem configs
 }
