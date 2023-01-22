@@ -39,10 +39,10 @@ public final class Constants {
     public static final int backLeftSwivelID = StormProp.getInt("backLeftSwivelID",0);
     public static final int backRightSwivelID = StormProp.getInt("backRightSwivelID",0);
 
-    public static final int frontLeftTalonID = StormProp.getInt("frontLeftTalonID",0);
-    public static final int frontRightTalonID = StormProp.getInt("frontRightTalonID",0);
-    public static final int backLeftTalonID = StormProp.getInt("backLeftTalonID",0);
-    public static final int backRightTalonID = StormProp.getInt("backRightTalonID",0);
+    public static final int frontLeftTalonID = StormProp.getInt("frontLeftTalonID",4);
+    public static final int frontRightTalonID = StormProp.getInt("frontRightTalonID",9);
+    public static final int backLeftTalonID = StormProp.getInt("backLeftTalonID",2);
+    public static final int backRightTalonID = StormProp.getInt("backRightTalonID",3);
 
     public static final int kSwivelEncoderTicksPerRotation = StormProp.getInt("swivelEncoderTicksPerRotation",0);
     public static final int frontLeftOffsetTicks = StormProp.getInt("frontLeftOffsetTicks",0);
@@ -76,4 +76,8 @@ public final class Constants {
     public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightTalonID;
     public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
 
-}
+
+
+
+
+  }

@@ -5,15 +5,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.NavX;
+import frc.robot.subsystems.MecanumDrive;
 import frc.utils.joysticks.StormLogitechController;
+import frc.robot.commands.JoystickDrive;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -26,13 +24,21 @@ public class RobotContainer {
   NavX m_gyro;
 
   StormLogitechController m_controller = new StormLogitechController(0);
+  private final MecanumDrive mecanumdrive = new MecanumDrive();
   Trigger zeroGyroTrigger = new Trigger(() -> m_controller.getRawButton(1));
+
+  private final JoystickDrive joystickDrive = new JoystickDrive(mecanumdrive, m_controller::getYAxis,
+          m_controller::getXAxis, m_controller::getZAxis, m_controller::getSliderAxis);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+
+
     m_gyro = new NavX();
     // Configure the trigger bindings
     configureBindings();
+
+    mecanumdrive.setDefaultCommand(joystickDrive);
   }
 
   /**
