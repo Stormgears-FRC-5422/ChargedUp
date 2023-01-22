@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 import static frc.robot.Constants.*;
 
-public class DeepSpaceDrivetrain extends DrivetrainBase {
+public class MecanumDrivetrain extends DrivetrainBase {
 
     private final WPI_TalonSRX m_frontLeftTalon;
     private final WPI_TalonSRX m_frontRightTalon;
@@ -20,7 +20,7 @@ public class DeepSpaceDrivetrain extends DrivetrainBase {
 
     private final MecanumDrive m_drive;
 
-    public DeepSpaceDrivetrain() {
+    public MecanumDrivetrain() {
         m_frontLeftTalon = new WPI_TalonSRX(frontLeftEncoderID);
         m_frontRightTalon = new WPI_TalonSRX(frontRightEncoderID);
         m_backLeftTalon = new WPI_TalonSRX(backLeftEncoderID);

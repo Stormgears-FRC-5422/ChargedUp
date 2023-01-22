@@ -15,7 +15,7 @@ import frc.robot.subsystems.NavX;
 
 import static frc.robot.Constants.*;
 
-public class SDSDrivetrain extends SubsystemBase {
+public class SDSDrivetrain extends DrivetrainBase {
     /**
      * The maximum voltage that will be delivered to the drive motors.
      * <p>
@@ -217,6 +217,11 @@ public class SDSDrivetrain extends SubsystemBase {
 
     public void drive(ChassisSpeeds chassisSpeeds) {
         m_chassisSpeeds = chassisSpeeds;
+    }
+
+    @Override
+    public void percentOutDrive(double tx, double ty, double rot) {
+        // TODO
     }
 
     public void periodic() {
