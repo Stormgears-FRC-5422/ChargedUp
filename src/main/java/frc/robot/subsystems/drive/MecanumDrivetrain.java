@@ -2,49 +2,71 @@ package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
-import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 import static frc.robot.Constants.*;
 
 public class MecanumDrivetrain extends DrivetrainBase {
+    /**
+     * The maximum voltage that will be delivered to the drive motors.
+     * <p>
+     * This can be reduced to cap the robot's maximum speed. Typically, this is useful during initial testing of the robot.
+     */
+    public static final double MAX_VOLTAGE = 12.0;
+
+    private final MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics(
+            // Front left
+            new Translation2d(DRIVETRAIN_WHEELBASE_METERS / 2.0, DRIVETRAIN_TRACKWIDTH_METERS / 2.0),
+            // Front right
+            new Translation2d(DRIVETRAIN_WHEELBASE_METERS / 2.0, -DRIVETRAIN_TRACKWIDTH_METERS / 2.0),
+            // Back left
+            new Translation2d(-DRIVETRAIN_WHEELBASE_METERS / 2.0, DRIVETRAIN_TRACKWIDTH_METERS / 2.0),
+            // Back right
+            new Translation2d(-DRIVETRAIN_WHEELBASE_METERS / 2.0, -DRIVETRAIN_TRACKWIDTH_METERS / 2.0)
+    );
+
+    //private final MecanumDriveOdometry m_odometry;
+    private final MecanumDrive m_drive;
 
     private final WPI_TalonSRX m_frontLeftTalon;
     private final WPI_TalonSRX m_frontRightTalon;
     private final WPI_TalonSRX m_backLeftTalon;
     private final WPI_TalonSRX m_backRightTalon;
 
-    private final MecanumDrive m_drive;
 
     public MecanumDrivetrain() {
-        m_frontLeftTalon = new WPI_TalonSRX(frontLeftEncoderID);
-        m_frontRightTalon = new WPI_TalonSRX(frontRightEncoderID);
-        m_backLeftTalon = new WPI_TalonSRX(backLeftEncoderID);
-        m_backRightTalon = new WPI_TalonSRX(backRightEncoderID);
+        // TODO use StormTalon with voltage clamp
+        m_frontLeftTalon = new WPI_TalonSRX(frontLeftDriveID);
+        m_frontRightTalon = new WPI_TalonSRX(frontRightDriveID);
+        m_backLeftTalon = new WPI_TalonSRX(backLeftDriveID);
+        m_backRightTalon = new WPI_TalonSRX(backRightDriveID);
+
         //Fix
         m_frontRightTalon.setInverted(true);
         m_backRightTalon.setInverted(true);
 
         m_drive = new MecanumDrive(m_frontLeftTalon, m_backLeftTalon, m_frontRightTalon, m_backRightTalon);
+
+        double maxVelocityMetersPerSecond = 2 * Math.PI * kWheelRadiumMeters * kWheelMaxRPM / 60.0;
+        double maxAngularVelocityRadiansPerSecond = maxVelocityMetersPerSecond /
+                Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
+
+        super.setMaxVelocities(maxVelocityMetersPerSecond, maxAngularVelocityRadiansPerSecond);
     }
 
     @Override
     public void periodic() {
+        MecanumDriveWheelSpeeds wheelSpeeds = m_kinematics.toWheelSpeeds(m_chassisSpeeds);
+        wheelSpeeds.desaturate(this.m_maxVelocityMetersPerSecond);
 
-
+        m_frontLeftTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.frontLeftMetersPerSecond / m_maxVelocityMetersPerSecond);
+        m_frontRightTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.frontRightMetersPerSecond / m_maxVelocityMetersPerSecond);
+        m_backLeftTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.rearLeftMetersPerSecond / m_maxVelocityMetersPerSecond);
+        m_backRightTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.rearRightMetersPerSecond / m_maxVelocityMetersPerSecond);
     }
 
-    @Override
-    public void drive(ChassisSpeeds chassisSpeeds) {
-    }
-    @Override
-    public void percentOutDrive(double tx, double ty, double rot) {
-        m_drive.driveCartesian(tx, ty, rot);
-    }
     @Override
     public Pose2d getPose() {
         return null;

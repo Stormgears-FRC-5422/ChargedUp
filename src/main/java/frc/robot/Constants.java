@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.util.Units;
 import frc.utils.configfile.StormProp;
 
   /**
@@ -22,7 +21,7 @@ public final class Constants {
 
     public static final String robotName = StormProp.getString("robotName", "");
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
-    public static final int logitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
+    public static final int kLogitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
     public static final double kTemperatureRampThreshold = StormProp.getNumber("SparkMaxTemperatureRampThreshold", 45.0);
     public static final double kTemperatureRampLimit = StormProp.getNumber("SparkMaxTemperatureRampLimit", 60.0);
     public static final double kSparkMaxCurrentLimit = StormProp.getNumber("SparkMaxCurrentLimit", 35.0);
@@ -56,6 +55,10 @@ public final class Constants {
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
     public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
 
+    // <mecanum> Not needed for swerve, just mecanum
+    public static final double kWheelRadiumMeters = StormProp.getNumber("wheelRadiusMeters", 0.);
+    public static final double kWheelMaxRPM = StormProp.getNumber("wheelMaxRPM", 0.);
+    // </mecanum>
 
     // Map to SDS implementation constants
     public static final int FRONT_LEFT_MODULE_DRIVE_MOTOR = frontLeftDriveID;
@@ -78,7 +81,9 @@ public final class Constants {
     public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
     public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
 
-    public static String driveType = StormProp.getString("driveType", "");
+    public static final String driveType = StormProp.getString("driveType", "");
+
+    // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
     public static boolean useController = StormProp.getBoolean("useController", false);

@@ -6,17 +6,16 @@ public class DrivetrainFactory {
     public static DrivetrainBase getInstance(String driveType) throws IllegalDriveTypeException {
         if (instance != null)
             return instance;
-            switch (driveType) {
-                case "SwerveDrive":
-                    instance = new SDSDrivetrain();
-                    return instance;
-                case "MecanumDrive":
-                    instance = new MecanumDrivetrain();
-                    return instance;
-                default:
-                    if (instance != null)
-                        return instance;
-                    throw new IllegalDriveTypeException("Illegal Drive Type: " + driveType + " ---!");
-            }
+
+        switch (driveType) {
+            case "SwerveDrive":
+                instance = new SDSDrivetrain();
+                return instance;
+            case "MecanumDrive":
+                instance = new MecanumDrivetrain();
+                return instance;
+            default:
+                throw new IllegalDriveTypeException("Illegal Drive Type: " + driveType + " ---!");
+        }
     }
 }

@@ -1,10 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.drive.DrivetrainBase;
-import frc.robot.subsystems.drive.SDSDrivetrain;
 
 import java.util.function.DoubleSupplier;
 
@@ -14,6 +12,7 @@ public class DriveWithJoystick extends CommandBase {
     private final DoubleSupplier txSupplier;
     private final DoubleSupplier tySupplier;
     private final DoubleSupplier rotSupplier;
+    private boolean useFieldRelative = false;
 
     /**
      * USE WPILIB COORDINATES X DRIVES FORWARDS, Y DRIVES LEFT
@@ -35,8 +34,12 @@ public class DriveWithJoystick extends CommandBase {
         addRequirements(drive);
     }
 
+    public void setUseFieldRelative(boolean useFieldRelative) {
+        this.useFieldRelative = useFieldRelative;
+    }
     @Override
     public void execute() {
-        m_drivetrain.percentOutDrive(txSupplier.getAsDouble(), tySupplier.getAsDouble(), rotSupplier.getAsDouble());
+        m_drivetrain.percentOutDrive(new ChassisSpeeds(txSupplier.getAsDouble(), tySupplier.getAsDouble(), rotSupplier.getAsDouble()),
+                                     useFieldRelative);
     }
 }

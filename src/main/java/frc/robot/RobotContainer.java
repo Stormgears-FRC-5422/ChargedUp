@@ -34,12 +34,22 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
-    // Configure the trigger bindings
-    if (useDrive)
-      m_drivetrain = DrivetrainFactory.getInstance(driveType);
-    if (useController)
-      m_controller = new StormLogitechController(0);
 
+    // Note the pattern of attempting to create the object then disabling it if that creation fails
+    if (useDrive) {
+      try {
+        m_drivetrain = DrivetrainFactory.getInstance(driveType);
+      } catch(Exception e) {
+        e.printStackTrace();
+        useDrive = false;
+      }
+    }
+
+    // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
+    if (useController)
+      m_controller = new StormLogitechController(kLogitechControllerPort);
+
+    // Configure the trigger bindings
     configureBindings();
   }
 
@@ -53,7 +63,9 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+
     if (useDrive && useController) {
+      // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
       SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(0.5);
       SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(0.5);
       SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(0.5);
@@ -65,6 +77,7 @@ public class RobotContainer {
               () -> rotationInputLimiter.calculate(m_controller.getZAxis()) * 0.8
       ));
     }
+
   }
 
   /**
