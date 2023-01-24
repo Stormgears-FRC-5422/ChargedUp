@@ -31,6 +31,7 @@ import static frc.robot.Constants.*;
 public class RobotContainer {
   DrivetrainBase m_drivetrain;
   StormLogitechController m_controller;
+  Trigger toggleFieldOrientedDrive;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
@@ -46,8 +47,10 @@ public class RobotContainer {
     }
 
     // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
-    if (useController)
+    if (useController) {
       m_controller = new StormLogitechController(kLogitechControllerPort);
+      toggleFieldOrientedDrive = new Trigger(() -> m_controller.getRawButtonPressed(0));
+    }
 
     // Configure the trigger bindings
     configureBindings();
@@ -76,13 +79,13 @@ public class RobotContainer {
 //              () -> sidewaysInputLimiter.calculate(m_controller.getWpiYAxis()),
 //              () -> rotationInputLimiter.calculate(m_controller.getZAxis())
 //      ));
-
-        m_drivetrain.setDefaultCommand(new DriveWithJoystick(
-          m_drivetrain,
-          () -> m_controller.getWpiXAxis(),
-          () -> m_controller.getWpiYAxis(),
-          () -> m_controller.getWpiZAxis()
-      ));
+        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+                m_drivetrain,
+                () -> m_controller.getWpiXAxis(),
+                () -> m_controller.getWpiYAxis(),
+                () -> m_controller.getWpiZAxis()
+        );
+        m_drivetrain.setDefaultCommand(driveWithJoystick);
 
     }
 
