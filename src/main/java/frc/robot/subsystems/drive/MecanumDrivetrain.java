@@ -28,13 +28,11 @@ public class MecanumDrivetrain extends DrivetrainBase {
     );
 
     //private final MecanumDriveOdometry m_odometry;
-    private final MecanumDrive m_drive;
 
     private final WPI_TalonSRX m_frontLeftTalon;
     private final WPI_TalonSRX m_frontRightTalon;
     private final WPI_TalonSRX m_backLeftTalon;
     private final WPI_TalonSRX m_backRightTalon;
-
 
     public MecanumDrivetrain() {
         // TODO use StormTalon with voltage clamp
@@ -46,8 +44,6 @@ public class MecanumDrivetrain extends DrivetrainBase {
         //Fix
         m_frontRightTalon.setInverted(true);
         m_backRightTalon.setInverted(true);
-
-        m_drive = new MecanumDrive(m_frontLeftTalon, m_backLeftTalon, m_frontRightTalon, m_backRightTalon);
 
         double maxVelocityMetersPerSecond = 2 * Math.PI * kWheelRadiumMeters * kWheelMaxRPM / 60.0;
         double maxAngularVelocityRadiansPerSecond = maxVelocityMetersPerSecond /

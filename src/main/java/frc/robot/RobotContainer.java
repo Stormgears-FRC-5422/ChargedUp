@@ -70,12 +70,20 @@ public class RobotContainer {
       SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(0.5);
       SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(0.5);
 
-      m_drivetrain.setDefaultCommand(new DriveWithJoystick(
-              m_drivetrain,
-              () -> forwardInputLimiter.calculate(m_controller.getWpiXAxis()) * 0.5,
-              () -> sidewaysInputLimiter.calculate(m_controller.getWpiYAxis()) * 0.5,
-              () -> rotationInputLimiter.calculate(m_controller.getZAxis()) * 0.8
+//      m_drivetrain.setDefaultCommand(new DriveWithJoystick(
+//              m_drivetrain,
+//              () -> forwardInputLimiter.calculate(m_controller.getWpiXAxis()),
+//              () -> sidewaysInputLimiter.calculate(m_controller.getWpiYAxis()),
+//              () -> rotationInputLimiter.calculate(m_controller.getZAxis())
+//      ));
+
+        m_drivetrain.setDefaultCommand(new DriveWithJoystick(
+          m_drivetrain,
+          () -> m_controller.getWpiXAxis(),
+          () -> m_controller.getWpiYAxis(),
+          () -> m_controller.getWpiZAxis()
       ));
+
     }
 
   }
