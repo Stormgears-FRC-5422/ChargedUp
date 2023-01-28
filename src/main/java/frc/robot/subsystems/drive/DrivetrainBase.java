@@ -92,6 +92,4 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     public abstract Pose2d getPose();
 
-    public abstract void setOdometry(Pose2d pose);
-
 }

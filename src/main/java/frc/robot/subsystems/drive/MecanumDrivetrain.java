@@ -67,9 +67,4 @@ public class MecanumDrivetrain extends DrivetrainBase {
     public Pose2d getPose() {
         return null;
     }
-
-    @Override
-    public void setOdometry(Pose2d pose) {
-
-    }
 }

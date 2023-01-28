@@ -44,8 +44,5 @@ public class StormLogitechController extends Joystick {
     public double getWpiZAxis(){
         return -getZAxis();
     }
-
-
-
 }
 

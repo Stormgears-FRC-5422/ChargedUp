@@ -1,6 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import com.swervedrivespecialties.swervelib.*;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -35,7 +36,7 @@ public class SDSDrivetrain extends DrivetrainBase {
             new Translation2d(-DRIVETRAIN_WHEELBASE_METERS / 2.0, -DRIVETRAIN_TRACKWIDTH_METERS / 2.0)
     );
 
-    private final SwerveDriveOdometry m_odometry;
+    private final SwerveDrivePoseEstimator m_poseEstimator;
 
     // These are our modules. We initialize them in the constructor.
     // TODO use StormSparks with voltage and current safeties
@@ -43,7 +44,6 @@ public class SDSDrivetrain extends DrivetrainBase {
     private final SwerveModule m_frontRightModule;
     private final SwerveModule m_backLeftModule;
     private final SwerveModule m_backRightModule;
-    private final SwerveModule[] m_swerveModules;
 
 
     public SDSDrivetrain() {
@@ -119,10 +119,12 @@ public class SDSDrivetrain extends DrivetrainBase {
                 BACK_RIGHT_MODULE_STEER_OFFSET
         );
 
-        m_swerveModules = new SwerveModule[]{m_frontLeftModule, m_frontRightModule, m_backLeftModule, m_backRightModule};
-
-        m_odometry = new SwerveDriveOdometry(m_kinematics, getGyroscopeRotation(), getPositions(),
-                                             new Pose2d(new Translation2d(0d, 0d), new Rotation2d()));
+        m_poseEstimator = new SwerveDrivePoseEstimator(
+                m_kinematics,
+                getGyroscopeRotation(),
+                getPositions(),
+                new Pose2d(new Translation2d(), getGyroscopeRotation())
+        );
     }
 
     private SwerveModulePosition[] getPositions() {
@@ -135,18 +137,18 @@ public class SDSDrivetrain extends DrivetrainBase {
     }
 
     public Pose2d getPose() {
-        return m_odometry.getPoseMeters();
+        return m_poseEstimator.getEstimatedPosition();
     }
 
-    public void setOdometry(Pose2d pose) {
-        m_odometry.resetPosition(getGyroscopeRotation(), getPositions(), pose);
+    public void resetPose(Pose2d pose) {
+        m_poseEstimator.resetPosition(getGyroscopeRotation(), getPositions(), pose);
     }
 
 
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);
-        m_odometry.update(getGyroscopeRotation(), getPositions());
+        m_poseEstimator.update(getGyroscopeRotation(), getPositions());
 
         m_frontLeftModule.set(MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
         m_frontRightModule.set(MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
