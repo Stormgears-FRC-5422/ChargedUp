@@ -106,4 +106,6 @@ public class AddressableLEDBufferRGBW extends AddressableLEDBuffer {
   public int getEffectiveLength() {
     return super.getLength();
   }
+
+
 }

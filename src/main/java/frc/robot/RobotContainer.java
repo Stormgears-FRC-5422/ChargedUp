@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.MecanumDrive;
+import frc.robot.subsystems.NeoPixel;
 import frc.utils.joysticks.StormLogitechController;
 import frc.robot.commands.JoystickDrive;
 
@@ -35,6 +36,8 @@ public class RobotContainer {
 
 
     m_gyro = new NavX();
+
+    NeoPixel neoPixel = new NeoPixel();
     // Configure the trigger bindings
     configureBindings();
 
