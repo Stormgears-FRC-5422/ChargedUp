@@ -233,7 +233,7 @@ public class StormProp {
         if (!overrideInit) {
             overrideInit();
         }
-        String[] Blacklist = {"robotName", "hasNavX", "rearRightTalonId", "rearLeftTalonId", "frontRightTalonId", "frontLeftTalonId", "wheelRadius"};
+        String[] Blacklist = {"robotName", "hasNavX", "rearRightTalonId", "rearLeftTalonId", "frontRightTalonId", "frontLeftTalonId", "wheelRadius", "navXconnection"};
         Set<String> keys = properties.stringPropertyNames();
         for (String key : keys) {
       if (!Arrays.asList(Blacklist).contains(key)) {

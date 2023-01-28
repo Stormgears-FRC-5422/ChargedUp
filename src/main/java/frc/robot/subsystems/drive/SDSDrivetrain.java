@@ -93,7 +93,7 @@ public class SDSDrivetrain extends DrivetrainBase {
             default:
                 theGearRatio = Mk4iSwerveModuleHelper.GearRatio.L3;  // Have to pick something
                 moduleConfiguration = SdsModuleConfigurations.MK4I_L3;
-        };
+        }
 
         // Derived from module details
         this.MAX_VELOCITY_METERS_PER_SECOND= kSparkMaxFreeSpeedRPM * kDriveSpeedScale / 60.0 *
@@ -117,7 +117,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_frontRightModule = Mk4iSwerveModuleHelper.createNeo(
                 tab.getLayout("Front Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
-                        .withPosition(0, 0),
+                        .withPosition(2, 0),
                 theGearRatio,
                 FRONT_RIGHT_MODULE_DRIVE_MOTOR,
                 FRONT_RIGHT_MODULE_STEER_MOTOR,
@@ -128,7 +128,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_backLeftModule = Mk4iSwerveModuleHelper.createNeo(
                 tab.getLayout("Back Left Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
-                        .withPosition(0, 0),
+                        .withPosition(4, 0),
                 theGearRatio,
                 BACK_LEFT_MODULE_DRIVE_MOTOR,
                 BACK_LEFT_MODULE_STEER_MOTOR,
@@ -139,7 +139,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_backRightModule = Mk4iSwerveModuleHelper.createNeo(
                 tab.getLayout("Back Right Module", BuiltInLayouts.kList)
                         .withSize(2, 4)
-                        .withPosition(0, 0),
+                        .withPosition(6, 0),
                 theGearRatio,
                 BACK_RIGHT_MODULE_DRIVE_MOTOR,
                 BACK_RIGHT_MODULE_STEER_MOTOR,

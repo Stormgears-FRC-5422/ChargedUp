@@ -2,17 +2,39 @@ package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import java.util.SortedMap;
+import static frc.robot.Constants.navXConnection;
 
 public class NavX extends SubsystemBase {
-    private AHRS m_gyro;
 
+    private ShuffleboardTab navXtab = Shuffleboard.getTab("NavX");
+
+
+
+    private AHRS m_gyro;
     public NavX() {
-        m_gyro = new AHRS(SPI.Port.kMXP);
+        switch (navXConnection) {
+            case "SPI":
+                m_gyro = new AHRS(SPI.Port.kMXP);
+                break;
+            case "USB":
+                m_gyro = new AHRS(SerialPort.Port.kUSB);
+                break;
+            default:
+                m_gyro = new AHRS(SPI.Port.kMXP);
+                 System.out.println("NO NavX Connection Given. Defauly NavX connection used: SPI");
+                break;
+
+
+
+        }
     }
+
 
     public double getYaw() {
         return m_gyro.getYaw();
@@ -40,8 +62,8 @@ public class NavX extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("yaw", getYaw());
-        SmartDashboard.putNumber("roll", getRoll());
-        SmartDashboard.putNumber("pitch", getPitch());
+            navXtab.add("yaw", getYaw());
+            navXtab.add("roll", getRoll());
+            navXtab.add("Pitch", getPitch());
     }
 }

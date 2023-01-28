@@ -21,6 +21,8 @@ public final class Constants {
     }
 
     public static final String robotName = StormProp.getString("robotName", "");
+
+    public static final String navXConnection = StormProp.getString("navXConnection", "");
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
     public static final int logitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
     public static final double kTemperatureRampThreshold = StormProp.getNumber("SparkMaxTemperatureRampThreshold", 45.0);
