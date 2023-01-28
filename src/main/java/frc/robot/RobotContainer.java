@@ -69,9 +69,9 @@ public class RobotContainer {
 
     if (useDrive && useController) {
       // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
-      SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(0.5);
-      SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(0.5);
-      SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(0.5);
+      SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
+      SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
+      SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
 //      m_drivetrain.setDefaultCommand(new DriveWithJoystick(
 //              m_drivetrain,
@@ -81,12 +81,11 @@ public class RobotContainer {
 //      ));
         DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                 m_drivetrain,
-                () -> m_controller.getWpiXAxis(),
-                () -> m_controller.getWpiYAxis(),
-                () -> m_controller.getWpiZAxis()
+                () -> m_controller.getWpiXAxis() * 0,
+                () -> m_controller.getWpiYAxis() * 0,
+                () -> m_controller.getWpiZAxis() * 0
         );
         m_drivetrain.setDefaultCommand(driveWithJoystick);
-
     }
 
   }
