@@ -29,9 +29,6 @@ public class NavX extends SubsystemBase {
                 m_gyro = new AHRS(SPI.Port.kMXP);
                  System.out.println("NO NavX Connection Given. Defauly NavX connection used: SPI");
                 break;
-
-
-
         }
     }
 
@@ -58,12 +55,5 @@ public class NavX extends SubsystemBase {
 
     public double getFusedHeading() {
         return m_gyro.getFusedHeading();
-    }
-
-    @Override
-    public void periodic() {
-            navXtab.add("yaw", getYaw());
-            navXtab.add("roll", getRoll());
-            navXtab.add("Pitch", getPitch());
     }
 }

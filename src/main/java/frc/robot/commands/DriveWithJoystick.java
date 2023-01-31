@@ -3,8 +3,10 @@ package frc.robot.commands;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class DriveWithJoystick extends CommandBase {
@@ -13,6 +15,7 @@ public class DriveWithJoystick extends CommandBase {
     private final DoubleSupplier txSupplier;
     private final DoubleSupplier tySupplier;
     private final DoubleSupplier rotSupplier;
+    private final BooleanSupplier precisionModeSupplier;
     private boolean useFieldRelative = false;
 
     /**
@@ -22,28 +25,45 @@ public class DriveWithJoystick extends CommandBase {
      * @param translationXSupplier
      * @param translationYSupplier
      * @param rotationSupplier
+     * @param percisionModeSupplier
      */
     public DriveWithJoystick(DrivetrainBase drive,
                              DoubleSupplier translationXSupplier,
                              DoubleSupplier translationYSupplier,
-                             DoubleSupplier rotationSupplier) {
+                             DoubleSupplier rotationSupplier,
+                             BooleanSupplier percisionModeSupplier) {
+
         this.m_drivetrain = drive;
         this.txSupplier = translationXSupplier;
         this.tySupplier = translationYSupplier;
         this.rotSupplier = rotationSupplier;
+        this.precisionModeSupplier = percisionModeSupplier;
 
         addRequirements(drive);
     }
 
-    public void setUseFieldRelative(boolean useFieldRelative) {
-        this.useFieldRelative = useFieldRelative;
+    public void toggleFieldRelative() {
+        useFieldRelative = !useFieldRelative;
     }
     @Override
     public void execute() {
-        SmartDashboard.putNumber("wpi X:", txSupplier.getAsDouble());
-        SmartDashboard.putNumber("wpi y:", tySupplier.getAsDouble());
-        SmartDashboard.putNumber("wpi z:", rotSupplier.getAsDouble());
-        m_drivetrain.percentOutDrive(new ChassisSpeeds(txSupplier.getAsDouble(), tySupplier.getAsDouble(), rotSupplier.getAsDouble()),
-                                     useFieldRelative);
+//        SmartDashboard.putNumber("wpi X:", txSupplier.getAsDouble());
+//        SmartDashboard.putNumber("wpi y:", tySupplier.getAsDouble());
+//        SmartDashboard.putNumber("wpi z:", rotSupplier.getAsDouble());
+//        SmartDashboard.putBoolean("fieldOriented", useFieldRelative);
+        if (precisionModeSupplier.getAsBoolean() == true) {
+            m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
+        } else {
+            m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
+        }
+
+        m_drivetrain.percentOutDrive(
+                new ChassisSpeeds(txSupplier.getAsDouble(),
+                        tySupplier.getAsDouble(),
+                        rotSupplier.getAsDouble()),
+                useFieldRelative
+        );
+
+        SmartDashboard.putBoolean("fieldRelative", useFieldRelative);
     }
 }

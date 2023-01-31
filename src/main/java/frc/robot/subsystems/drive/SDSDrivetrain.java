@@ -1,14 +1,17 @@
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix.sensors.CANCoder;
 import com.swervedrivespecialties.swervelib.*;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import static frc.robot.Constants.*;
 
@@ -38,6 +41,11 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     private final SwerveDrivePoseEstimator m_poseEstimator;
 
+    private CANCoder fl;
+    private CANCoder fr;
+    private CANCoder bl;
+    private CANCoder br;
+
     // These are our modules. We initialize them in the constructor.
     // TODO use StormSparks with voltage and current safeties
     private final SwerveModule m_frontLeftModule;
@@ -45,8 +53,11 @@ public class SDSDrivetrain extends DrivetrainBase {
     private final SwerveModule m_backLeftModule;
     private final SwerveModule m_backRightModule;
 
+    private final Field2d field = new Field2d();
 
     public SDSDrivetrain() {
+        initEncoders();
+
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
         Mk4iSwerveModuleHelper.GearRatio theGearRatio;
         ModuleConfiguration moduleConfiguration;
@@ -75,10 +86,21 @@ public class SDSDrivetrain extends DrivetrainBase {
 
         super.setMaxVelocities(maxVelocityMetersPerSecond, maxAngularVelocityRadiansPerSecond);
 
+        ShuffleboardLayout frontLeftModuleLayout = tab.getLayout("Front Left Module", BuiltInLayouts.kList)
+                .withSize(2, 4)
+                .withPosition(0, 0);
+        ShuffleboardLayout frontRightModuleLayout = tab.getLayout("Front Right Module", BuiltInLayouts.kList)
+                .withSize(2, 4)
+                .withPosition(2, 0);
+        ShuffleboardLayout backLeftModuleLayout = tab.getLayout("Back Left Module", BuiltInLayouts.kList)
+                .withSize(2, 4)
+                .withPosition(4, 0);
+        ShuffleboardLayout backRightModuleLayout = tab.getLayout("Back Right Module", BuiltInLayouts.kList)
+                .withSize(2, 4)
+                .withPosition(6, 0);
+
         m_frontLeftModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Front Left Module", BuiltInLayouts.kList)
-                        .withSize(2, 4)
-                        .withPosition(0, 0),
+                frontLeftModuleLayout,
                 theGearRatio,
                 FRONT_LEFT_MODULE_DRIVE_MOTOR,
                 FRONT_LEFT_MODULE_STEER_MOTOR,
@@ -87,9 +109,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         );
 
         m_frontRightModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Front Right Module", BuiltInLayouts.kList)
-                        .withSize(2, 4)
-                        .withPosition(2, 0),
+                frontRightModuleLayout,
                 theGearRatio,
                 FRONT_RIGHT_MODULE_DRIVE_MOTOR,
                 FRONT_RIGHT_MODULE_STEER_MOTOR,
@@ -98,9 +118,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         );
 
         m_backLeftModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Back Left Module", BuiltInLayouts.kList)
-                        .withSize(2, 4)
-                        .withPosition(4, 0),
+                backLeftModuleLayout,
                 theGearRatio,
                 BACK_LEFT_MODULE_DRIVE_MOTOR,
                 BACK_LEFT_MODULE_STEER_MOTOR,
@@ -109,9 +127,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         );
 
         m_backRightModule = Mk4iSwerveModuleHelper.createNeo(
-                tab.getLayout("Back Right Module", BuiltInLayouts.kList)
-                        .withSize(2, 4)
-                        .withPosition(6, 0),
+                backRightModuleLayout,
                 theGearRatio,
                 BACK_RIGHT_MODULE_DRIVE_MOTOR,
                 BACK_RIGHT_MODULE_STEER_MOTOR,
@@ -119,12 +135,19 @@ public class SDSDrivetrain extends DrivetrainBase {
                 BACK_RIGHT_MODULE_STEER_OFFSET
         );
 
+        frontLeftModuleLayout.addString("last error", () -> fl.getLastError().toString());
+        frontRightModuleLayout.addString("last error", () -> fr.getLastError().toString());
+        backLeftModuleLayout.addString("last error", () -> bl.getLastError().toString());
+        backRightModuleLayout.addString("last error", () -> br.getLastError().toString());
+
         m_poseEstimator = new SwerveDrivePoseEstimator(
                 m_kinematics,
                 getGyroscopeRotation(),
                 getPositions(),
-                new Pose2d(new Translation2d(), getGyroscopeRotation())
+                new Pose2d(new Translation2d(10, 10), getGyroscopeRotation())
         );
+
+        SmartDashboard.putData(field);
     }
 
     private SwerveModulePosition[] getPositions() {
@@ -144,15 +167,59 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_poseEstimator.resetPosition(getGyroscopeRotation(), getPositions(), pose);
     }
 
-
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);
         m_poseEstimator.update(getGyroscopeRotation(), getPositions());
+        field.setRobotPose(getPose());
 
         m_frontLeftModule.set(MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
         m_frontRightModule.set(MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
         m_backLeftModule.set(MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
         m_backRightModule.set(MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
     }
+
+    private void initEncoders() {
+        fl = new CANCoder(FRONT_LEFT_MODULE_STEER_ENCODER);
+        fr = new CANCoder(FRONT_RIGHT_MODULE_STEER_ENCODER);
+        bl = new CANCoder(BACK_LEFT_MODULE_STEER_ENCODER);
+        br = new CANCoder(BACK_RIGHT_MODULE_STEER_ENCODER);
+        CANCoder[] arr = new CANCoder[]{fl, fr, bl, br};
+
+        System.out.println("**********");
+        System.out.println("** FL " + (Math.toDegrees(-FRONT_LEFT_MODULE_STEER_OFFSET)));
+        System.out.println("** FR " + (Math.toDegrees(-FRONT_RIGHT_MODULE_STEER_OFFSET)));
+        System.out.println("** BL " + (Math.toDegrees(-BACK_LEFT_MODULE_STEER_OFFSET)));
+        System.out.println("** BR " + (Math.toDegrees(-BACK_RIGHT_MODULE_STEER_OFFSET)));
+        System.out.println("**********");
+
+        for (CANCoder tmp : arr) {
+            System.out.println("**********");
+            System.out.println("** ID  " + tmp.getDeviceID());
+            System.out.println("** Abs " + tmp.getAbsolutePosition());
+            System.out.println("** Pos " + tmp.getPosition());
+            System.out.println("** Off " + tmp.configGetMagnetOffset());
+            System.out.println("**********");
+            tmp.configFactoryDefault();
+        }
+
+        System.out.println("\n**********");
+        System.out.println("** Setting new offset ");
+        System.out.println("**********\n");
+
+        System.out.println(fl.configMagnetOffset(Math.toDegrees(FRONT_LEFT_MODULE_STEER_OFFSET), 50));
+        System.out.println(fr.configMagnetOffset(Math.toDegrees(FRONT_RIGHT_MODULE_STEER_OFFSET), 50));
+        System.out.println(bl.configMagnetOffset(Math.toDegrees(BACK_LEFT_MODULE_STEER_OFFSET), 50));
+        System.out.println(br.configMagnetOffset(Math.toDegrees(BACK_RIGHT_MODULE_STEER_OFFSET), 50));
+
+        for (CANCoder tmp : arr) {
+            System.out.println("**********");
+            System.out.println("** ID  " + tmp.getDeviceID());
+            System.out.println("** Abs " + tmp.getAbsolutePosition());
+            System.out.println("** Pos " + tmp.getPosition());
+            System.out.println("** Off " + tmp.configGetMagnetOffset());
+            System.out.println("**********");
+        }
+    }
+
 }

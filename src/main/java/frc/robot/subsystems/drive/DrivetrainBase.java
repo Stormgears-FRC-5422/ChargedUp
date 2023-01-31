@@ -75,7 +75,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     public void zeroGyroscope() {
         if (m_gyro == null) return;
-
         m_gyro.zeroYaw();
     }
     public Rotation2d getGyroscopeRotation() {

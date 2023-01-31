@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.utils.configfile.StormProp;
 
+
   /**
    * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
    * constants. This class should not be used for any other purpose. All constants should be declared
@@ -15,13 +16,9 @@ import frc.utils.configfile.StormProp;
    * constants are needed, to reduce verbosity.
    */
 public final class Constants {
-    public static class OperatorConstants {
-      public static final int kDriverControllerPort = 0;
-    }
 
     public static final String robotName = StormProp.getString("robotName", "");
 
-    public static final String navXConnection = StormProp.getString("navXConnection", "");
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
     public static final int kLogitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
     public static final double kTemperatureRampThreshold = StormProp.getNumber("SparkMaxTemperatureRampThreshold", 45.0);
@@ -32,6 +29,8 @@ public final class Constants {
 
     public static final double kSparkMaxFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
     public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
+    public static final double kPrecisionSpeedScale = StormProp.getNumber("precisionSpeedScale", 0.0);
+
     public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
     public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);
     public static final int backLeftDriveID = StormProp.getInt("backLeftDriveID", 0);
@@ -88,5 +87,7 @@ public final class Constants {
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
-    public static boolean useController = StormProp.getBoolean("useController", false);
+    public static boolean useController = StormProp.getBoolean("useController", true);
+    public static final String navXConnection = StormProp.getString("navXConnection", "");
+
 }

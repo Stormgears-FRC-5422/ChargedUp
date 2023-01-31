@@ -4,20 +4,17 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.ErrorCode;
+import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
 import frc.robot.commands.DriveWithJoystick;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-import frc.robot.subsystems.drive.SDSDrivetrain;
 import frc.utils.joysticks.StormLogitechController;
 
 import static frc.robot.Constants.*;
@@ -29,9 +26,9 @@ import static frc.robot.Constants.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
   DrivetrainBase m_drivetrain;
   StormLogitechController m_controller;
-  Trigger toggleFieldOrientedDrive;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
@@ -43,13 +40,18 @@ public class RobotContainer {
       } catch(Exception e) {
         e.printStackTrace();
         useDrive = false;
+        System.out.println("NOT using drive - caught exception!");
       }
+    } else {
+      System.out.println("NOT using drive");
     }
 
     // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
     if (useController) {
       m_controller = new StormLogitechController(kLogitechControllerPort);
-      toggleFieldOrientedDrive = new Trigger(() -> m_controller.getRawButtonPressed(0));
+      System.out.println("using controller");
+    } else {
+      System.out.println("NOT using controller");
     }
 
     // Configure the trigger bindings
@@ -81,11 +83,15 @@ public class RobotContainer {
 //      ));
         DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                 m_drivetrain,
-                () -> m_controller.getWpiXAxis() * 0,
-                () -> m_controller.getWpiYAxis() * 0,
-                () -> m_controller.getWpiZAxis() * 0
-        );
+                () -> -m_controller.getWpiXAxis() * kDriveSpeedScale,
+                () -> -m_controller.getWpiYAxis() * kDriveSpeedScale,
+                () -> -m_controller.getWpiZAxis() * kDriveSpeedScale,
+                () -> m_controller.getRawButton(2));
+
         m_drivetrain.setDefaultCommand(driveWithJoystick);
+
+        new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(()-> m_drivetrain.zeroGyroscope()));
+        new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(() -> driveWithJoystick.toggleFieldRelative()));
     }
 
   }
@@ -99,4 +105,6 @@ public class RobotContainer {
     // An example command will be run in autonomous
     return new InstantCommand(() -> System.out.println("Autonomous"));
   }
+
 }
+
