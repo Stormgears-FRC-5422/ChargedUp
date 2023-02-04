@@ -10,61 +10,52 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
- import edu.wpi.first.networktables.NetworkTableEntry;
- import edu.wpi.first.wpilibj.Compressor;
- import edu.wpi.first.wpilibj.CompressorConfigType;
- import edu.wpi.first.wpilibj.PneumaticsModuleType;
- import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
- import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
- import edu.wpi.first.wpilibj2.command.SubsystemBase;
- import frc.robot.Robot;
- // import org.usfirst.frc5422.Minimec.commands.Pneumatics.RunCompressor;
- import frc.utils.configfile.StormProp;
- // import org.usfirst.frc5422.Minimec.Robot;
+import static frc.robot.Constants.*;
 
- public class Compression extends SubsystemBase {
-     private boolean running;
-     public Compressor mainCompressor;
-    
-     public Compression() {
-         mainCompressor = new Compressor(StormProp.getInt("CompressorModuleId",-1), PneumaticsModuleType.CTREPCM);
-         
-         running = false;
-     }
+public class Compression extends SubsystemBase {
+    private boolean running;
+    public Compressor mainCompressor;
+
+    public Compression() {
+        mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
+        mainCompressor.disable();
+        running = false;
+        printStatus();
+    }
 
     // @Override
     // public void initDefaultCommand() {
     //     setDefaultCommand(new RunCompressor());
     // }
 
-    // @Override
-    // public void periodic() {
-
-    // }
+//     @Override
+//     public void periodic() {
+//        printStatus();
+//     }
 
     // public boolean isActiveAndCharged() {
     //     return (running && mainCompressor.getPressureSwitchValue());
     // }
 
-    // Put methods for controlling this subsystem
-    // here. Call these from Commands.
-     public void startCompressor() {
-         running = true;
+    public void startCompressor() {
+        running = true;
+        mainCompressor.enableDigital();
+        printStatus();
+    }
 
+    public void stopCompressor(){
+        running = false;
+        mainCompressor.disable();
+        printStatus();
+    }
 
-         mainCompressor.enableDigital();
-//
-//         if (Robot.debug) System.out.println("Compressor status: " + mainCompressor.isEnabled());
-//         if (Robot.debug) System.out.println("Compressor pressure switch value: " + mainCompressor.getPressureSwitchValue());
-//         if (Robot.debug) System.out.println("Compressor current (amps): " + mainCompressor.getCurrent());
-     }
-
-     public void stopCompressor(){
-         running = false;
-        
-         mainCompressor.disable();
-         if (Robot.debug) System.out.println("Compressor off: " + !mainCompressor.isEnabled());
-
-     }
- }
+    private void printStatus() {
+        System.out.println("\n\nShould be running: " + running);
+        System.out.println("Compressor isEnabled: " + mainCompressor.isEnabled());
+        System.out.println("Compressor getPressureSwitchValve: " + mainCompressor.getPressureSwitchValue());
+    }
+}

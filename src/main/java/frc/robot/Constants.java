@@ -6,8 +6,6 @@ package frc.robot;
 
 import frc.utils.configfile.StormProp;
 
-import javax.print.attribute.standard.Compression;
-
 
 /**
    * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -87,6 +85,8 @@ public final class Constants {
     public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
 
     public static final String driveType = StormProp.getString("driveType", "");
+
+    public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
 
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
