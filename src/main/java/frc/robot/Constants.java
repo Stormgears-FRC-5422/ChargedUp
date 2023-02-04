@@ -6,8 +6,10 @@ package frc.robot;
 
 import frc.utils.configfile.StormProp;
 
+import javax.print.attribute.standard.Compression;
 
-  /**
+
+/**
    * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
    * constants. This class should not be used for any other purpose. All constants should be declared
    * globally (i.e. public static). Do not put anything functional in this class.
@@ -18,6 +20,8 @@ import frc.utils.configfile.StormProp;
 public final class Constants {
 
     public static final String robotName = StormProp.getString("robotName", "");
+
+    public static final boolean useCompressor = StormProp.getBoolean("useCompressor",true);
 
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
     public static final int kLogitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
@@ -90,4 +94,5 @@ public final class Constants {
     public static boolean useController = StormProp.getBoolean("useController", true);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
-}
+
+  }

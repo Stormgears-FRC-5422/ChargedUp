@@ -12,8 +12,11 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
+
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.StormLogitechController;
 
@@ -28,10 +31,14 @@ import static frc.robot.Constants.*;
 public class RobotContainer {
 
   DrivetrainBase m_drivetrain;
+  Compression compressor;
+
   StormLogitechController m_controller;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
+
+    if (useCompressor) compressor = new Compression();
 
     // Note the pattern of attempting to create the object then disabling it if that creation fails
     if (useDrive) {

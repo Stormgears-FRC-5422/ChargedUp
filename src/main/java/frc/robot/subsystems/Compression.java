@@ -8,35 +8,29 @@
 // update. Deleting the comments indicating the section will prevent
 // it from being updated in the future.
 
-
-// package frc.robot.subsystems;
-
-
-// import edu.wpi.first.networktables.NetworkTableEntry;
-// import edu.wpi.first.wpilibj.Compressor;
-// import edu.wpi.first.wpilibj.CompressorConfigType;
-// import edu.wpi.first.wpilibj.PneumaticsModuleType;
-// import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-// import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-// import edu.wpi.first.wpilibj2.command.SubsystemBase;
-// import frc.robot.Robot;
-// // import org.usfirst.frc5422.Minimec.commands.Pneumatics.RunCompressor;
-// import frc.utils.configfile.StormProp;
-// // import org.usfirst.frc5422.Minimec.Robot;
+package frc.robot.subsystems;
 
 
-/**
- *
- */
-// public class Compression extends SubsystemBase {
-//     private boolean running;
-//     private Compressor mainCompressor;
+ import edu.wpi.first.networktables.NetworkTableEntry;
+ import edu.wpi.first.wpilibj.Compressor;
+ import edu.wpi.first.wpilibj.CompressorConfigType;
+ import edu.wpi.first.wpilibj.PneumaticsModuleType;
+ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+ import edu.wpi.first.wpilibj2.command.SubsystemBase;
+ import frc.robot.Robot;
+ // import org.usfirst.frc5422.Minimec.commands.Pneumatics.RunCompressor;
+ import frc.utils.configfile.StormProp;
+ // import org.usfirst.frc5422.Minimec.Robot;
 
-//     public Compression() {
-//         mainCompressor = new Compressor(StormProp.getInt("CompressorModuleId",-1), PneumaticsModuleType.CTREPCM);
-//         mainCompressor.enableDigital(); // compressor begins enabled
-//         running = false;
-//     }
+ public class Compression extends SubsystemBase {
+     private boolean running;
+     public Compressor mainCompressor;
+     public Compression() {
+         mainCompressor = new Compressor(StormProp.getInt("CompressorModuleId",-1), PneumaticsModuleType.CTREPCM);
+         mainCompressor.enableDigital(); // compressor begins enabled
+         running = false;
+     }
 
     // @Override
     // public void initDefaultCommand() {
@@ -54,22 +48,22 @@
 
     // Put methods for controlling this subsystem
     // here. Call these from Commands.
-    // public void startCompressor() {
-    //     running = true;
-        // mainCompressor.setClosedLoopControl(true);
+     public void startCompressor() {
+         running = true;
+//         mainCompressor.setClosedLoopControl(true);
 
-//         mainCompressor.enableDigital(); 
-
+         mainCompressor.enableDigital();
+//
 //         if (Robot.debug) System.out.println("Compressor status: " + mainCompressor.isEnabled());
 //         if (Robot.debug) System.out.println("Compressor pressure switch value: " + mainCompressor.getPressureSwitchValue());
 //         if (Robot.debug) System.out.println("Compressor current (amps): " + mainCompressor.getCurrent());
-//     }
+     }
 
-//     public void stopCompressor(){
-//         running = false;
-//         // mainCompressor.setClosedLoopControl(false);
-//         mainCompressor.disable();
-//         if (Robot.debug) System.out.println("Compressor off: " + !mainCompressor.isEnabled());
+     public void stopCompressor(){
+         running = false;
+         // mainCompressor.setClosedLoopControl(false);
+         mainCompressor.disable();
+         if (Robot.debug) System.out.println("Compressor off: " + !mainCompressor.isEnabled());
 
-//     }
-// }
+     }
+ }
