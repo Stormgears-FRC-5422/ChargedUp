@@ -31,7 +31,7 @@ import static frc.robot.Constants.*;
 public class RobotContainer {
   GyroCommand m_gyrocommand;
   DrivetrainBase m_drivetrain;
-  Compression compressor;
+  public Compression compressor;
 
   StormLogitechController m_controller;
 

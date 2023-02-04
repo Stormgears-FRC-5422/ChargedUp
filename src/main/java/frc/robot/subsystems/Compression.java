@@ -26,9 +26,10 @@ package frc.robot.subsystems;
  public class Compression extends SubsystemBase {
      private boolean running;
      public Compressor mainCompressor;
+    
      public Compression() {
          mainCompressor = new Compressor(StormProp.getInt("CompressorModuleId",-1), PneumaticsModuleType.CTREPCM);
-         mainCompressor.enableDigital(); // compressor begins enabled
+         
          running = false;
      }
 
@@ -50,7 +51,7 @@ package frc.robot.subsystems;
     // here. Call these from Commands.
      public void startCompressor() {
          running = true;
-//         mainCompressor.setClosedLoopControl(true);
+
 
          mainCompressor.enableDigital();
 //
@@ -61,7 +62,7 @@ package frc.robot.subsystems;
 
      public void stopCompressor(){
          running = false;
-         // mainCompressor.setClosedLoopControl(false);
+        
          mainCompressor.disable();
          if (Robot.debug) System.out.println("Compressor off: " + !mainCompressor.isEnabled());
 
