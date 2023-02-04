@@ -12,6 +12,7 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.GyroCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
@@ -26,7 +27,7 @@ import static frc.robot.Constants.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-
+  GyroCommand m_gyrocommand;
   DrivetrainBase m_drivetrain;
   StormLogitechController m_controller;
 
@@ -90,8 +91,11 @@ public class RobotContainer {
 
         m_drivetrain.setDefaultCommand(driveWithJoystick);
 
+        m_gyrocommand = new GyroCommand(m_drivetrain, 200);
+
         new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(()-> m_drivetrain.zeroGyroscope()));
         new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(() -> driveWithJoystick.toggleFieldRelative()));
+        new Trigger(() -> m_controller.getRawButton(4)).onTrue(m_gyrocommand);
     }
 
   }
