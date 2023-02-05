@@ -97,11 +97,11 @@ public class RobotContainer {
 
         m_drivetrain.setDefaultCommand(driveWithJoystick);
 
-        m_gyrocommand = new GyroCommand(m_drivetrain, 200);
+        m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
         new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(()-> m_drivetrain.zeroGyroscope()));
         new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(() -> driveWithJoystick.toggleFieldRelative()));
-        new Trigger(() -> m_controller.getRawButton(4)).onTrue(m_gyrocommand);
+        new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
     }
 
   }

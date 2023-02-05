@@ -11,6 +11,9 @@ public class GyroCommand extends CommandBase {
 
     private double m_targetValue;
     private double m_currAngle;
+    private double m_error;
+    private double Kp = 0.0008;
+
 
 
 
@@ -25,17 +28,20 @@ public class GyroCommand extends CommandBase {
     public void initialize() {
         System.out.println("GyroCommand Starting");
         m_currAngle = m_drivetrain.getGyroscopeRotation().getDegrees();
+
     }
 
     @Override
     public void execute() {
+        m_error = m_targetValue - m_currAngle;
         m_currAngle = m_drivetrain.getGyroscopeRotation().getDegrees();
+        double turnSpeed = m_error * Kp;
         if(m_currAngle < m_targetValue) {
             m_drivetrain.percentOutDrive(
                     new ChassisSpeeds(
                             0.,
                             0.,
-                            -0.1
+                            -turnSpeed
                     ),
                     false
             );
@@ -45,7 +51,7 @@ public class GyroCommand extends CommandBase {
                 new ChassisSpeeds(
                         0.,
                         0.,
-                        0.1
+                        turnSpeed
                     ),
                 false
             );
@@ -66,7 +72,13 @@ public class GyroCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return m_currAngle < 1.1 * m_targetValue && m_currAngle > 0.9 * m_targetValue;
+        System.out.println("Current Angle: " + m_currAngle);
+        System.out.println("Target Angle:" + m_targetValue);
+//        double  m_Posthres = m_targetValue - 0.5;
+//        double  m_Negthres = m_targetValue - 0.5;
+
+        System.out.println("Error: " + m_error);
+        return (m_error < 0.5 ) && (m_error > -0.5);
     }
 
 }

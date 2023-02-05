@@ -44,6 +44,7 @@ public class DriveWithJoystick extends CommandBase {
 
     public void toggleFieldRelative() {
         useFieldRelative = !useFieldRelative;
+        System.out.println("Field Relative mode toggled: " + useFieldRelative);
     }
     @Override
     public void execute() {

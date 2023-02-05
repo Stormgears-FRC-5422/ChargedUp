@@ -146,9 +146,8 @@ public class SDSDrivetrain extends DrivetrainBase {
                 getPositions(),
                 new Pose2d(new Translation2d(10, 10), getGyroscopeRotation())
         );
-
-        SmartDashboard.putData(field);
         tab.addNumber("yaw", () -> getGyroscopeRotation().getDegrees());
+        SmartDashboard.putData(field);
     }
 
     private SwerveModulePosition[] getPositions() {
