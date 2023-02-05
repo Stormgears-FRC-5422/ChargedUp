@@ -87,7 +87,7 @@ public final class Constants {
     public static final String driveType = StormProp.getString("driveType", "");
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
-
+    public static final int kSolendoidChannel = StormProp.getInt("SolenoidChannel", -1);
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);

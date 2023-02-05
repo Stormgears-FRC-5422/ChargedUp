@@ -77,6 +77,7 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     if(useCompressor) {
       m_robotContainer.compressor.stopCompressor();
+      m_robotContainer.compressor.setPiston(false);
     }
   }
 
@@ -91,6 +92,10 @@ public class Robot extends TimedRobot {
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
+    }
+
+    if(useCompressor) {
+      m_robotContainer.compressor.setPiston(true);
     }
   }
 

@@ -12,34 +12,28 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.*;
 
 public class Compression extends SubsystemBase {
     private boolean running;
-    public Compressor mainCompressor;
+    private boolean solenoidSet;
+    private Compressor mainCompressor;
+    private Solenoid solenoid;
 
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
         mainCompressor.disable();
+
+        solenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, kSolendoidChannel);
+        solenoid.set(false);
+
         running = false;
+        solenoidSet = false;
         printStatus();
     }
-
-    // @Override
-    // public void initDefaultCommand() {
-    //     setDefaultCommand(new RunCompressor());
-    // }
-
-//     @Override
-//     public void periodic() {
-//        printStatus();
-//     }
-
-    // public boolean isActiveAndCharged() {
-    //     return (running && mainCompressor.getPressureSwitchValue());
-    // }
 
     public void startCompressor() {
         running = true;
@@ -53,9 +47,16 @@ public class Compression extends SubsystemBase {
         printStatus();
     }
 
+    public void setPiston(boolean isOn) {
+        solenoid.set(isOn);
+        solenoidSet = isOn;
+    }
+
     private void printStatus() {
         System.out.println("\n\nShould be running: " + running);
+        System.out.println("Solenoid should be enabled(): " + solenoidSet);
         System.out.println("Compressor isEnabled: " + mainCompressor.isEnabled());
         System.out.println("Compressor getPressureSwitchValve: " + mainCompressor.getPressureSwitchValue());
+        System.out.println("Solenoid isEnabled(): " + !solenoid.isDisabled());
     }
 }
