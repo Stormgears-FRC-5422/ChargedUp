@@ -61,6 +61,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
         Mk4iSwerveModuleHelper.GearRatio theGearRatio;
         ModuleConfiguration moduleConfiguration;
+        Mk4ModuleConfiguration modifiedModuleConfiguration;
 
         switch(kMK4iModuleKind) {
             case "L1":
@@ -76,6 +77,15 @@ public class SDSDrivetrain extends DrivetrainBase {
                 theGearRatio = Mk4iSwerveModuleHelper.GearRatio.L3;  // Have to pick something
                 moduleConfiguration = SdsModuleConfigurations.MK4I_L3;
         }
+
+//        modifiedModuleConfiguration = new Mk4ModuleConfiguration(moduleConfiguration.getWheelDiameter(),
+//                                                                moduleConfiguration.getDriveReduction(),
+//                                                                !moduleConfiguration.isDriveInverted(),
+//                                                                moduleConfiguration.getSteerReduction(),
+//                                                                !moduleConfiguration.isSteerInverted());
+//
+//        usedModuleConfiguration = actualModuleConfiguration;
+//        usedModuleConfiguration = moduleConfiguration;
 
         // Derived from module details above
         double maxVelocityMetersPerSecond = kSparkMaxFreeSpeedRPM / 60.0 *
@@ -173,10 +183,10 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_poseEstimator.update(getGyroscopeRotation(), getPositions());
         field.setRobotPose(getPose());
 
-        m_frontLeftModule.set(MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
-        m_frontRightModule.set(MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
-        m_backLeftModule.set(MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
-        m_backRightModule.set(MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
+        m_frontLeftModule.set(-MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
+        m_frontRightModule.set(-MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
+        m_backLeftModule.set(-MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
+        m_backRightModule.set(-MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
     }
 
     private void initEncoders() {

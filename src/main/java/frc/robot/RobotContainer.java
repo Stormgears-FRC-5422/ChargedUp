@@ -90,9 +90,9 @@ public class RobotContainer {
 //      ));
         DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                 m_drivetrain,
-                () -> -m_controller.getWpiXAxis() * kDriveSpeedScale,
-                () -> -m_controller.getWpiYAxis() * kDriveSpeedScale,
-                () -> -m_controller.getWpiZAxis() * kDriveSpeedScale,
+                () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
+                () -> m_controller.getWpiYAxis() * kDriveSpeedScale,
+                () -> m_controller.getWpiZAxis() * kDriveSpeedScale,
                 () -> m_controller.getRawButton(2));
 
         m_drivetrain.setDefaultCommand(driveWithJoystick);

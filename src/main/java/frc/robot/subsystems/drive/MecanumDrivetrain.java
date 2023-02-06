@@ -41,11 +41,10 @@ public class MecanumDrivetrain extends DrivetrainBase {
         m_backLeftTalon = new WPI_TalonSRX(backLeftDriveID);
         m_backRightTalon = new WPI_TalonSRX(backRightDriveID);
 
-        //Fix
-        m_frontLeftTalon.setInverted(true);
-        m_backLeftTalon.setInverted(true);
-        m_frontRightTalon.setInverted(false);
-        m_backRightTalon.setInverted(false);
+        m_frontLeftTalon.setInverted(false);
+        m_backLeftTalon.setInverted(false);
+        m_frontRightTalon.setInverted(true);
+        m_backRightTalon.setInverted(true);
 
         double maxVelocityMetersPerSecond = 2 * Math.PI * kWheelRadiumMeters * kWheelMaxRPM / 60.0;
         double maxAngularVelocityRadiansPerSecond = maxVelocityMetersPerSecond /

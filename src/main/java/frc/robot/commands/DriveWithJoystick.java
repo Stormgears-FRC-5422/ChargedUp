@@ -25,19 +25,19 @@ public class DriveWithJoystick extends CommandBase {
      * @param translationXSupplier
      * @param translationYSupplier
      * @param rotationSupplier
-     * @param percisionModeSupplier
+     * @param precisionModeSupplier
      */
     public DriveWithJoystick(DrivetrainBase drive,
                              DoubleSupplier translationXSupplier,
                              DoubleSupplier translationYSupplier,
                              DoubleSupplier rotationSupplier,
-                             BooleanSupplier percisionModeSupplier) {
+                             BooleanSupplier precisionModeSupplier) {
 
         this.m_drivetrain = drive;
         this.txSupplier = translationXSupplier;
         this.tySupplier = translationYSupplier;
         this.rotSupplier = rotationSupplier;
-        this.precisionModeSupplier = percisionModeSupplier;
+        this.precisionModeSupplier = precisionModeSupplier;
 
         addRequirements(drive);
     }
