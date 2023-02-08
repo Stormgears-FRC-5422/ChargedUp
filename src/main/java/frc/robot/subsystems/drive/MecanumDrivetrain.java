@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 import static frc.robot.Constants.*;
@@ -54,6 +55,21 @@ public class MecanumDrivetrain extends DrivetrainBase {
     }
 
     @Override
+    public SwerveDriveKinematics getSwerveDriveKinematics() {
+        return null;
+    }
+
+    @Override
+    public SwerveModulePosition[] getSwerveModulePositions() {
+        return new SwerveModulePosition[0];
+    }
+
+    @Override
+    public void goToTrajectoryState(Trajectory.State goalState) {
+
+    }
+
+    @Override
     public void periodic() {
         MecanumDriveWheelSpeeds wheelSpeeds = m_kinematics.toWheelSpeeds(m_chassisSpeeds);
         wheelSpeeds.desaturate(this.m_maxVelocityMetersPerSecond);
@@ -62,10 +78,5 @@ public class MecanumDrivetrain extends DrivetrainBase {
         m_frontRightTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.frontRightMetersPerSecond / m_maxVelocityMetersPerSecond);
         m_backLeftTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.rearLeftMetersPerSecond / m_maxVelocityMetersPerSecond);
         m_backRightTalon.setVoltage(MAX_VOLTAGE * wheelSpeeds.rearRightMetersPerSecond / m_maxVelocityMetersPerSecond);
-    }
-
-    @Override
-    public Pose2d getPose() {
-        return null;
     }
 }

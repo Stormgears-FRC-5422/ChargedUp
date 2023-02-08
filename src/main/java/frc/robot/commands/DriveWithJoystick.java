@@ -59,7 +59,8 @@ public class DriveWithJoystick extends CommandBase {
         }
 
         m_drivetrain.percentOutDrive(
-                new ChassisSpeeds(txSupplier.getAsDouble(),
+                new ChassisSpeeds(
+                        txSupplier.getAsDouble(),
                         tySupplier.getAsDouble(),
                         rotSupplier.getAsDouble()),
                 useFieldRelative

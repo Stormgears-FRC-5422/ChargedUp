@@ -7,11 +7,17 @@ package frc.robot;
 import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.TrapezoidMoveForward;
+import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.GyroCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -29,16 +35,26 @@ import static frc.robot.Constants.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+  RobotState m_robotState;
   GyroCommand m_gyrocommand;
   DrivetrainBase m_drivetrain;
+  PoseEstimator m_poseEstimator;
+
   public Compression compressor;
 
   StormLogitechController m_controller;
+
+  private ShuffleboardTab mainTab;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
 
     if (useCompressor) compressor = new Compression();
+
+    mainTab = Shuffleboard.getTab("Main");
+
+    m_robotState = RobotState.getInstance();
+    m_robotState.setStartPose(new Pose2d());
 
     // Note the pattern of attempting to create the object then disabling it if that creation fails
     if (useDrive) {
@@ -51,6 +67,13 @@ public class RobotContainer {
       }
     } else {
       System.out.println("NOT using drive");
+    }
+
+    if (driveType.equals("SwerveDrive")) {
+      m_poseEstimator = new PoseEstimator(
+              m_drivetrain.getSwerveDriveKinematics(),
+              m_drivetrain.getGyroscopeRotation(),
+              m_drivetrain.getSwerveModulePositions());
     }
 
     // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
@@ -100,10 +123,13 @@ public class RobotContainer {
         m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
         new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(()-> m_drivetrain.zeroGyroscope()));
-        new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(() -> driveWithJoystick.toggleFieldRelative()));
+        new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
         new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
     }
 
+    if (useDrive) {
+      SmartDashboard.putData("Trapezoid Move Forward Command", new TrapezoidMoveForward(m_drivetrain, m_poseEstimator, 1, 1, 0.1));
+    }
   }
 
   /**
@@ -116,5 +142,8 @@ public class RobotContainer {
     return new InstantCommand(() -> System.out.println("Autonomous"));
   }
 
+  PoseEstimator getPoseEstimator() {
+    return m_poseEstimator;
+  }
 }
 

@@ -7,7 +7,7 @@ package frc.robot;
 import frc.utils.configfile.StormProp;
 
 
-/**
+  /**
    * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
    * constants. This class should not be used for any other purpose. All constants should be declared
    * globally (i.e. public static). Do not put anything functional in this class.
@@ -26,7 +26,6 @@ public final class Constants {
     public static final double kTemperatureRampThreshold = StormProp.getNumber("SparkMaxTemperatureRampThreshold", 45.0);
     public static final double kTemperatureRampLimit = StormProp.getNumber("SparkMaxTemperatureRampLimit", 60.0);
     public static final double kSparkMaxCurrentLimit = StormProp.getNumber("SparkMaxCurrentLimit", 35.0);
-
     public static final double kSparkMaxCurrentLimit550 = StormProp.getNumber("SparkMax550CurrentLimit", 25.0);
 
     public static final double kSparkMaxFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
@@ -94,5 +93,4 @@ public final class Constants {
     public static boolean useController = StormProp.getBoolean("useController", true);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
-
-  }
+}

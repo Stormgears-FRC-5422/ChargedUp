@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-
-import javax.print.attribute.standard.Compression;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -26,6 +24,7 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  private RobotState m_state;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -54,6 +53,13 @@ public class Robot extends TimedRobot {
     } catch (IllegalDriveTypeException e) {
       throw new RuntimeException(e);
     }
+
+    m_state = RobotState.getInstance();
+
+    System.out.println(
+            "\n ************************** \n" +
+                    "Timer at start " + m_state.getTime() +
+                    "\n *********************** \n");
   }
 
   /**
@@ -70,11 +76,16 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    m_state.update();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    m_state.stopTimer();
+    m_state.resetPose();
+    m_robotContainer.getPoseEstimator().resetEstimator();
+
     if(useCompressor) {
       m_robotContainer.compressor.stopCompressor();
       m_robotContainer.compressor.setPiston(false);
@@ -94,6 +105,15 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.schedule();
     }
 
+    m_state.startTimer();
+    System.out.println(
+            "***************** \n" +
+            "Auto Mode Start Time: " + m_state.getTime()
+                    + "\n" +
+            "*****************");
+    m_state.resetPose();
+    m_robotContainer.getPoseEstimator().resetEstimator();
+
     if(useCompressor) {
       m_robotContainer.compressor.setPiston(true);
     }
@@ -112,6 +132,12 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    m_state.startTimer();
+    System.out.println(
+            "***************** \n" +
+                    "Teleop Mode Start Time: " + m_state.getTime()
+                    + "\n" +
+                    "*****************");
 
     if(useCompressor) {
       m_robotContainer.compressor.startCompressor();
@@ -127,16 +153,28 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+
+    System.out.println(
+            "***************** \n" +
+                    "Test Mode Start Time: " + m_state.getTime()
+                    + "\n" +
+                    "*****************");
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
 
-
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+
+    System.out.println(
+            "***************** \n" +
+                    "Simulation Mode Start Time: " + m_state.getTime()
+                    + "\n" +
+                    "*****************");
+  }
 
   /** This function is called periodically whilst in simulation. */
   @Override

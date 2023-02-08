@@ -2,16 +2,18 @@ package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.sensors.CANCoder;
 import com.swervedrivespecialties.swervelib.*;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotState;
 
 import static frc.robot.Constants.*;
 
@@ -39,8 +41,6 @@ public class SDSDrivetrain extends DrivetrainBase {
             new Translation2d(-DRIVETRAIN_WHEELBASE_METERS / 2.0, -DRIVETRAIN_TRACKWIDTH_METERS / 2.0)
     );
 
-    private final SwerveDrivePoseEstimator m_poseEstimator;
-
     private CANCoder fl;
     private CANCoder fr;
     private CANCoder bl;
@@ -53,10 +53,20 @@ public class SDSDrivetrain extends DrivetrainBase {
     private final SwerveModule m_backLeftModule;
     private final SwerveModule m_backRightModule;
 
-    private final Field2d field = new Field2d();
+    private RobotState m_robotState;
+
+    HolonomicDriveController m_controller = new HolonomicDriveController(
+            new PIDController(1.0, 0., 0.),
+            new PIDController(1.0, 0., 0.),
+            new ProfiledPIDController(1.0, 0., 0.,
+                    new TrapezoidProfile.Constraints(
+                            m_maxVelocityMetersPerSecond,
+                            m_maxAngularVelocityRadiansPerSecond))
+    );
 
     public SDSDrivetrain() {
         initEncoders();
+        m_robotState = RobotState.getInstance();
 
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
         Mk4iSwerveModuleHelper.GearRatio theGearRatio;
@@ -149,18 +159,15 @@ public class SDSDrivetrain extends DrivetrainBase {
         frontRightModuleLayout.addString("last error", () -> fr.getLastError().toString());
         backLeftModuleLayout.addString("last error", () -> bl.getLastError().toString());
         backRightModuleLayout.addString("last error", () -> br.getLastError().toString());
-
-        m_poseEstimator = new SwerveDrivePoseEstimator(
-                m_kinematics,
-                getGyroscopeRotation(),
-                getPositions(),
-                new Pose2d(new Translation2d(10, 10), getGyroscopeRotation())
-        );
-        tab.addNumber("yaw", () -> getGyroscopeRotation().getDegrees());
-        SmartDashboard.putData(field);
     }
 
-    private SwerveModulePosition[] getPositions() {
+    @Override
+    public SwerveDriveKinematics getSwerveDriveKinematics() {
+        return m_kinematics;
+    }
+
+    @Override
+    public SwerveModulePosition[] getSwerveModulePositions() {
         return new SwerveModulePosition[] {
                 m_frontLeftModule.getPosition(),
                 m_frontRightModule.getPosition(),
@@ -169,24 +176,28 @@ public class SDSDrivetrain extends DrivetrainBase {
         };
     }
 
-    public Pose2d getPose() {
-        return m_poseEstimator.getEstimatedPosition();
-    }
-
-    public void resetPose(Pose2d pose) {
-        m_poseEstimator.resetPosition(getGyroscopeRotation(), getPositions(), pose);
+    @Override
+    public void goToTrajectoryState(Trajectory.State goalState) {
+        ChassisSpeeds speeds = m_controller.calculate(
+                m_robotState.getCurrentPose(), goalState, goalState.poseMeters.getRotation()
+        );
+        drive(speeds, true);
     }
 
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);
-        m_poseEstimator.update(getGyroscopeRotation(), getPositions());
-        field.setRobotPose(getPose());
 
         m_frontLeftModule.set(-MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
         m_frontRightModule.set(-MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
         m_backLeftModule.set(-MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
         m_backRightModule.set(-MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
+
+        RobotState.DriveData currentDriveData = new RobotState.DriveData(
+                getSwerveModulePositions(),
+                getGyroscopeRotation()
+        );
+        m_robotState.addDriveData(currentDriveData);
     }
 
     private void initEncoders() {
@@ -231,5 +242,4 @@ public class SDSDrivetrain extends DrivetrainBase {
             System.out.println("**********");
         }
     }
-
 }

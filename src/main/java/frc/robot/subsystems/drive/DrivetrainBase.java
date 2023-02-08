@@ -4,6 +4,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.NavX;
 
@@ -25,23 +30,24 @@ public abstract class DrivetrainBase extends SubsystemBase {
      * <p>
      * This is a measure of how fast the robot should be able to drive in a straight line.
      */
-    protected double m_maxVelocityMetersPerSecond;
+    public double m_maxVelocityMetersPerSecond;
     /**
      * The maximum angular velocity of the robot in radians per second.
      * <p>
      * This is a measure of how fast the robot can rotate in place.
      */
     // Here we calculate the theoretical maximum angular velocity. You can also replace this with a measured amount.
-    protected double m_maxAngularVelocityRadiansPerSecond;
+    public double m_maxAngularVelocityRadiansPerSecond;
 
     // The chassis speeds will always be scaled by this factor. It defaults to kDriveSpeedScale, but can be reset
     // (say by using the slider on the joystick)
     protected double m_driveSpeedScale = 0;
 
     protected ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-
+    protected ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
     DrivetrainBase() {
         setDriveSpeedScale(kDriveSpeedScale);
+        tab.addDouble("Yaw", () -> getGyroscopeRotation().getDegrees());
     }
 
     protected void setMaxVelocities(double maxVelocityMetersPerSecond, double maxAngularVelocityRadiansPerSecond) {
@@ -56,10 +62,12 @@ public abstract class DrivetrainBase extends SubsystemBase {
                 m_driveSpeedScale * speeds.vyMetersPerSecond,
                 m_driveSpeedScale * speeds.omegaRadiansPerSecond);
 
-        if (fieldRelative)
+        if (fieldRelative) {
             m_chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(s, getGyroscopeRotation());
-        else
+        }
+        else {
             m_chassisSpeeds = s;
+        }
     }
 
     public void percentOutDrive(ChassisSpeeds speeds, boolean fieldRelative) {
@@ -71,6 +79,10 @@ public abstract class DrivetrainBase extends SubsystemBase {
 
     public void setDriveSpeedScale(double scale) {
         m_driveSpeedScale = MathUtil.clamp(scale, 0, kDriveSpeedScale);
+    }
+
+    public void stopDrive() {
+        drive(new ChassisSpeeds(0, 0, 0), false);
     }
 
     public void zeroGyroscope() {
@@ -89,6 +101,11 @@ public abstract class DrivetrainBase extends SubsystemBase {
         return Rotation2d.fromDegrees(360.0 - m_gyro.getYaw());
     }
 
-    public abstract Pose2d getPose();
+    public ChassisSpeeds getCurrentChassisSpeeds() {
+        return m_chassisSpeeds;
+    }
 
+    public abstract SwerveDriveKinematics getSwerveDriveKinematics();
+    public abstract SwerveModulePosition[] getSwerveModulePositions();
+    public abstract void goToTrajectoryState(Trajectory.State goalState);
 }

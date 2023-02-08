@@ -3,18 +3,14 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.*;
 
 public class NavX extends SubsystemBase {
 
     private ShuffleboardTab navXtab = Shuffleboard.getTab("NavX");
-
-
 
     private AHRS m_gyro;
     public NavX() {
@@ -30,6 +26,12 @@ public class NavX extends SubsystemBase {
                  System.out.println("NO NavX Connection Given. Defauly NavX connection used: SPI");
                 break;
         }
+
+        navXtab.addNumber("yaw", this::getYaw);
+        navXtab.addNumber("pitch", this::getPitch);
+        navXtab.addNumber("roll", this::getRoll);
+        navXtab.addBoolean("isMagnetometerCalibrated", this::isMagnetometerCalibrated);
+        navXtab.addNumber("fusedHeading", this::getFusedHeading);
     }
 
 
