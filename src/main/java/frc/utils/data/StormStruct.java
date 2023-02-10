@@ -1,54 +1,76 @@
 package frc.utils.data;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.StringArrayTopic;
+import edu.wpi.first.networktables.IntegerArraySubscriber;
+import edu.wpi.first.networktables.IntegerArrayTopic;
+import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.IntegerTopic;
+import edu.wpi.first.networktables.RawTopic;
+import edu.wpi.first.networktables.StringArraySubscriber;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.sql.Struct;
 import java.util.HashMap;
 import java.util.Vector;
 
 public class StormStruct {
-  // Describes a data structure that has been published and described in network tables
-  // Can unpack binary data once intialized
-  private final String[] m_fieldNames;
-  private final HashMap<String, Integer>
-      m_fields; // key is field name, data is position index in binary data
-  private final HashMap<String, Integer>
-      m_sizes; // key is field name, data is byte size in binary data
+    // Describes a data structure that has been published and described in network tables
+    // Can unpack binary data once intialized
+    private final String[] m_fieldNames;
+    private final HashMap<String, Integer> m_fields; // key is field name, data is position index in binary data
+    private final HashMap<String, Integer> m_encodings; // key is field name, data is byte size in binary data
     private int m_struct_size;
-  private final int m_typeid;
-  private final NetworkTableInstance m_ntinst;
+    private final int m_typeid;
+    private final NetworkTableInstance m_ntinst;
+    private final NetworkTable m_base_table;
+    private StringArraySubscriber m_names_sub;
+    private IntegerArraySubscriber m_encodings_sub;
+    private IntegerSubscriber m_type_sub;
 
-  /**
-   * Populate HashMap fields and size
-   *
-   * @param nt_inst Network Tables instance
-   * @param base_table table name where struct data is stored
-   * @param struct_name name of struct being used
-   */
-  public StormStruct(
-      final NetworkTableInstance nt_inst, final String base_table, final String struct_name) {
+
+    /**  
+    * Populate HashMap fields and size by reading definition of struct_name from network tables (populated by struct provider)
+    * 
+    * @param nt_inst Network Tables instance
+    * @param base_table table name where struct data is stored
+    * @param struct_name name of struct being used
+    */
+    public StormStruct(final NetworkTableInstance nt_inst,final String base_table,final String struct_name) {
         this.m_ntinst = nt_inst;
-        m_fields = new HashMap<String,Integer>();
-        m_sizes = new HashMap<String,Integer>();
-        m_struct_size = 0;
+        this.m_fields = new HashMap<String,Integer>();
+        this.m_encodings = new HashMap<String,Integer>();
+        int m_struct_size = 0;  // number of bytes in struct
 
-        NetworkTableEntry names_entry = nt_inst.getTable(base_table + "/structs/" + struct_name).getEntry("name");
-        NetworkTableEntry sizes_entry = nt_inst.getTable(base_table + "/structs/" + struct_name).getEntry("size");
-        NetworkTableEntry type_entry = nt_inst.getTable(base_table + "/structs/" + struct_name).getEntry("type");
-        m_typeid = type_entry.getNumber(-1).intValue();
+        this.m_base_table = nt_inst.getTable(base_table);
 
-        String[] names = names_entry.getStringArray(new String[0]);
-        Number[] sizes = sizes_entry.getNumberArray(new Number[0]);
+//        name_topic = table.getStringArrayTopic("structs/" + type + "/names")
+
+        StringArrayTopic names_topic = m_base_table.getStringArrayTopic("structs/" + struct_name + "/names");
+        IntegerArrayTopic encodings_topic = m_base_table.getIntegerArrayTopic("structs/" + struct_name + "/encodings");
+        IntegerTopic type_topic = m_base_table.getIntegerTopic("structs/" + struct_name + "/type");
+
+        this.m_names_sub = names_topic.subscribe(new String[0]);
+        this.m_encodings_sub = encodings_topic.subscribe(new long[0]);
+        this.m_type_sub = type_topic.subscribe(-1);
+
+        this.m_typeid = (int) this.m_type_sub.get();
+        
+        String[] names = this.m_names_sub.get();
+        long[] encodings = this.m_encodings_sub.get();
 
         m_fieldNames = new String[names.length];
 
         for (int i=0;i<names.length; i++) {
-            m_fields.put(names[i],i);
-            m_sizes.put(names[i],sizes[i].intValue());
-            m_struct_size += Math.abs(sizes[i].intValue());
-            m_fieldNames[i] = names[i];
+            this.m_fields.put(names[i],i);
+            this.m_encodings.put(names[i],(int) encodings[i]);
+            // RESUME HERE - change for new encoding format
+            this.m_struct_size += (encodings[i] & 0x3) + 1;  // bits 1:0 encode the number of bytes (max 4)
+            this.m_fieldNames[i] = names[i];
         }
     }
+
 
     /**
      * Get the data structure size
@@ -58,13 +80,13 @@ public class StormStruct {
         return(m_struct_size);
     }
 
-  /**
-   * Get the field name given the index
-   *
-   * @param index of data item
-   * @return Name of field
-   */
-  public String get_name_by_index(final int index) {
+        /**
+         * Get the field name given the index
+         * 
+         * @param index of data item
+         * @return Name of field
+         */
+    public String get_name_by_index(final int index) {
         for (final String field : m_fields.keySet()) {
             if (m_fields.get(field) == index) {
                 return(field);
@@ -73,51 +95,52 @@ public class StormStruct {
         return("");
     }
 
-  /**
-   * Unpack a binary byte stream using this structure definition
-   *
-   * @param data_stream The binary data
-   * @return Returns a HashMap of field,value pairs
-   */
-  public HashMap<String, Integer> decode_struct(final byte[] data_stream) {
-
+    /**
+         * Unpack a binary byte stream using this structure definition
+         * 
+         * @param data_stream The binary data
+         * @return Returns a HashMap of field,value pairs
+         * 
+    */
+    public HashMap<String, Double> decode_struct(final byte[] data_stream) {
         return(decode_struct(data_stream,0));
     }
 
     /**
      * Unpack an entire binary stream into a list of HashMaps
      * @param data_stream
-     * @return
+     * @return List (vector) of hashmaps.  each hashmap represents a data structure being transferred
      */
-    public Vector<HashMap<String, Integer>> unpack(final byte[] data_stream) {
-        Vector<HashMap<String, Integer>> list;
+    public Vector<HashMap<String, Double>> unpack(final byte[] data_stream) {
+        Vector<HashMap<String, Double>> list;
         if (data_stream.length < 3) {
             //System.out.println("data received from Raspberry Pi is too short. Expect 3 or longer, but received " + data_stream.length + " bytes");
-            return(new Vector<HashMap<String, Integer>>());
+            return(new Vector<HashMap<String, Double>>());
         }
         else {
-            list = new Vector<HashMap<String, Integer>>();
+            list = new Vector<HashMap<String, Double>>();
             byte id = data_stream[0];
             int count = (data_stream[1] << 8) + data_stream[2];
 
             int offset = 3;
             for (int i=0; i< count; i++) {
                 list.add(decode_struct(data_stream,offset));
-                offset += get_size();
+                offset += get_size();  // Move pointer to next Struct
             }
             return(list);
         }
     }
 
-  /**
-   * Unpack a binary byte stream using this structure definition starting at a given offset
-   *
-   * @param data_stream The binary data
-   * @param _offset The offset in the binary data stream to extract from
-   * @return Returns a HashMap of field,value pairs
-   */
-  private HashMap<String, Integer> decode_struct(final byte[] data_stream, final int _offset) {
-        HashMap<String,Integer> ret_map = new HashMap<String,Integer>();
+    /**
+         * Unpack a binary byte stream using this structure definition starting at a given offset
+         * 
+         * @param data_stream The binary data
+         * @param _offset The offset in the binary data stream to extract from
+         * @return Returns a HashMap of field,value pairs, values are always doubles
+         * 
+    */
+    private HashMap<String, Double> decode_struct(final byte[] data_stream,final int _offset) {
+        HashMap<String,Double> ret_map = new HashMap<String,Double>();
         // Data is big endian
         int offset = _offset;
         for (String field : m_fieldNames) {
@@ -127,11 +150,14 @@ public class StormStruct {
             }
             //System.out.println("unpack " + field);
             int data = 0;
-            int size = Math.abs(m_sizes.get(field));
-            boolean signed = (m_sizes.get(field) < 0);
+            int encoding  = this.m_encodings.get(field).intValue();
+            int precision = (encoding & 0x7f) >> 2;
+            int size = (encoding & 0x3) + 1;
+
+            boolean signed = (encoding & 0x80) != 0;
             //System.out.println("unpack " + field + "; size=" + size);
             for (int i = 0; i < size; i++) {
-        data = data << 8;
+                data = data << 8;           
                 data |= data_stream[offset + i] & 0xFF;
             }
 
@@ -141,7 +167,12 @@ public class StormStruct {
                 data = data >> (4 - size);
             }
             offset += size;
-            ret_map.put(field,data);
+
+            double ddata = data * 1.0;
+            if (precision > 0) {
+                ddata = ddata/(precision*10);
+            }
+            ret_map.put(field,ddata);
         }
         return(ret_map);
     }
