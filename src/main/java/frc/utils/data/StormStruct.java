@@ -96,7 +96,7 @@ public class StormStruct {
      * Get specifc data by name from network tables. returns a list of hashmaps.
      * @return Vector<HashMap<String,Double>>
      */
-    Vector<HashMap<String,Double>> get_data(String name) {
+    public Vector<HashMap<String,Double>> get_data(String name) {
         // Create subscriber if it doesn't exist
         RawSubscriber sub;
         Vector<HashMap<String,Double>> data_list;
