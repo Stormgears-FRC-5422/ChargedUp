@@ -8,26 +8,31 @@ import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.RawTopic;
 import edu.wpi.first.networktables.StringArraySubscriber;
 import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.sql.Struct;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.ArrayList;
 
 public class StormStruct {
     // Describes a data structure that has been published and described in network tables
     // Can unpack binary data once intialized
-    private final String[] m_fieldNames;
+    private String[] m_fieldNames;
+    private final String m_struct_name;
     private final HashMap<String, Integer> m_fields; // key is field name, data is position index in binary data
     private final HashMap<String, Integer> m_encodings; // key is field name, data is byte size in binary data
     private int m_struct_size;
-    private final int m_typeid;
+    private int m_typeid;
     private final NetworkTableInstance m_ntinst;
     private final NetworkTable m_base_table;
     private StringArraySubscriber m_names_sub;
     private IntegerArraySubscriber m_encodings_sub;
     private IntegerSubscriber m_type_sub;
+    private HashMap<String,RawSubscriber> m_data_subscribers;
+    private boolean m_initialized;
 
 
     /**  
@@ -41,7 +46,10 @@ public class StormStruct {
         this.m_ntinst = nt_inst;
         this.m_fields = new HashMap<String,Integer>();
         this.m_encodings = new HashMap<String,Integer>();
-        int m_struct_size = 0;  // number of bytes in struct
+        this.m_data_subscribers = new HashMap<String,RawSubscriber>();
+        this.m_struct_name = struct_name;
+        this.m_struct_size = 0;  // number of bytes in struct
+        this.m_initialized = false;
 
         this.m_base_table = nt_inst.getTable(base_table);
 
@@ -55,22 +63,63 @@ public class StormStruct {
         this.m_encodings_sub = encodings_topic.subscribe(new long[0]);
         this.m_type_sub = type_topic.subscribe(-1);
 
-        this.m_typeid = (int) this.m_type_sub.get();
-        
-        String[] names = this.m_names_sub.get();
-        long[] encodings = this.m_encodings_sub.get();
-
-        m_fieldNames = new String[names.length];
-
-        for (int i=0;i<names.length; i++) {
-            this.m_fields.put(names[i],i);
-            this.m_encodings.put(names[i],(int) encodings[i]);
-            // RESUME HERE - change for new encoding format
-            this.m_struct_size += (encodings[i] & 0x3) + 1;  // bits 1:0 encode the number of bytes (max 4)
-            this.m_fieldNames[i] = names[i];
-        }
+        this.intialize();
     }
 
+    /**
+     * Call this when the data structure has been published to network tables
+     */
+    public boolean intialize() {
+        if (!m_initialized) {
+            this.m_typeid = (int) this.m_type_sub.get();
+            if (this.m_typeid != -1) {
+
+                String[] names = this.m_names_sub.get();
+                long[] encodings = this.m_encodings_sub.get();
+
+                this.m_fieldNames = new String[names.length];
+
+                for (int i=0;i<names.length; i++) {
+                    this.m_fields.put(names[i],i);
+                    this.m_encodings.put(names[i],(int) encodings[i]);
+                    // RESUME HERE - change for new encoding format
+                    this.m_struct_size += (encodings[i] & 0x3) + 1;  // bits 1:0 encode the number of bytes (max 4)
+                    this.m_fieldNames[i] = names[i];
+                }
+                m_initialized = true;
+            }
+        }
+        return(m_initialized);
+    }
+
+    /**
+     * Get specifc data by name from network tables. returns a list of hashmaps.
+     * @return Vector<HashMap<String,Double>>
+     */
+    Vector<HashMap<String,Double>> get_data(String name) {
+        // Create subscriber if it doesn't exist
+        RawSubscriber sub;
+        Vector<HashMap<String,Double>> data_list;
+        if (!m_data_subscribers.containsKey(name)) {
+            sub = m_base_table.getRawTopic("binary_data/" + this.m_struct_name + "/" + name).subscribe(this.m_struct_name,new byte[0]);
+        }
+        else {
+            sub = m_data_subscribers.get(name);
+        }
+
+        // Get raw data
+        byte[] raw_data = sub.get();
+        if (raw_data.length > 0) {
+            // Decode raw data into HashMap
+            data_list = this.unpack(raw_data);
+        }
+        else {
+            data_list = new Vector<HashMap<String,Double>>();
+        }
+
+        // Return Data
+        return(data_list);
+    }
 
     /**
      * Get the data structure size
