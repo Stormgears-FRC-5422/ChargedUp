@@ -90,7 +90,7 @@ public final class Constants {
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
-    public static boolean useController = StormProp.getBoolean("useController", true);
+    public static boolean useController = StormProp.getBoolean("useController", false);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
 }
