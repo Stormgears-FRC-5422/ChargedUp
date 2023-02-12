@@ -49,15 +49,19 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
 
-    if (useCompressor) compressor = new Compression();
-
     mainTab = Shuffleboard.getTab("Main");
-
     m_robotState = RobotState.getInstance();
-    m_robotState.setStartPose(new Pose2d());
 
     // Note the pattern of attempting to create the object then disabling it if that creation fails
     if (useDrive) {
+      if (driveType.equals("SwerveDrive")) {
+        m_poseEstimator = new PoseEstimator(
+                m_drivetrain.getSwerveDriveKinematics(),
+                m_drivetrain.getGyroscopeRotation(),
+                m_drivetrain.getSwerveModulePositions());
+        m_robotState.setStartPose(new Pose2d());
+      }
+
       try {
         m_drivetrain = DrivetrainFactory.getInstance(driveType);
       } catch(Exception e) {
@@ -69,11 +73,8 @@ public class RobotContainer {
       System.out.println("NOT using drive");
     }
 
-    if (driveType.equals("SwerveDrive")) {
-      m_poseEstimator = new PoseEstimator(
-              m_drivetrain.getSwerveDriveKinematics(),
-              m_drivetrain.getGyroscopeRotation(),
-              m_drivetrain.getSwerveModulePositions());
+    if (useCompressor) {
+      compressor = new Compression();
     }
 
     // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
@@ -105,13 +106,7 @@ public class RobotContainer {
       SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
       SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
-//      m_drivetrain.setDefaultCommand(new DriveWithJoystick(
-//              m_drivetrain,
-//              () -> forwardInputLimiter.calculate(m_controller.getWpiXAxis()),
-//              () -> sidewaysInputLimiter.calculate(m_controller.getWpiYAxis()),
-//              () -> rotationInputLimiter.calculate(m_controller.getZAxis())
-//      ));
-        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+      DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                 m_drivetrain,
                 () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
                 () -> m_controller.getWpiYAxis() * kDriveSpeedScale,
