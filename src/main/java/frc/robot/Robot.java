@@ -11,7 +11,7 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static frc.robot.Constants.useCompressor;
+import static frc.robot.Constants.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -83,8 +83,11 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     m_state.stopTimer();
-    m_state.resetPose();
-    m_robotContainer.getPoseEstimator().resetEstimator();
+
+    if(useDrive) {
+      m_state.resetPose();
+      m_robotContainer.getPoseEstimator().resetEstimator();
+    }
 
     if(useCompressor) {
       m_robotContainer.compressor.stopCompressor();
@@ -111,8 +114,11 @@ public class Robot extends TimedRobot {
             "Auto Mode Start Time: " + m_state.getTime()
                     + "\n" +
             "*****************");
-    m_state.resetPose();
-    m_robotContainer.getPoseEstimator().resetEstimator();
+
+    if(useDrive) {
+      m_state.resetPose();
+      m_robotContainer.getPoseEstimator().resetEstimator();
+    }
 
     if(useCompressor) {
       m_robotContainer.compressor.setPiston(true);
