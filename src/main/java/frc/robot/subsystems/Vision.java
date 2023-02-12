@@ -35,30 +35,21 @@ public class Vision extends SubsystemBase {
     public Vision() {
         NetworkTableInstance nt_inst = NetworkTableInstance.getDefault();
         storm_struct = new StormStruct(nt_inst, "vision-data", "tag_data");
-        getAprilTagInfo();
     }
 
     @Override
     public void periodic() {
+        storm_struct.intialize();
         // Temporary Testing Code
         Vector<HashMap<String,Double>> info = storm_struct.get_data("april_tag");
         for (int index = 0; index <= info.size() - 1; index++) {
             HashMap<String, Double> april_tag = info.get(index);
             for (String ID : april_tag.keySet()) {
-                SmartDashboard.putString("April Tag ID: ", ID);
-                SmartDashboard.putNumberArray("April Tag Elements: ", new Double[]{april_tag.get(ID)});
+                SmartDashboard.putNumber("AprilTag " + ID,april_tag.get(ID));
             }
         }
     }
 
-    public void getAprilTagInfo() {
-
-        for (int index = 0; index <= info.size() - 1; index++) {
-            System.out.println(info.get(index).toString());
-        }
-        System.out.println(info);
-
-    }
 
     public int[] getVisibleIds() {
         return new int[8];

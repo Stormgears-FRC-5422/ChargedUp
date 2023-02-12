@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.MecanumDrive;
 import frc.robot.subsystems.NeoPixel;
+import frc.robot.subsystems.Vision;
 import frc.utils.joysticks.StormLogitechController;
 import frc.robot.commands.JoystickDrive;
 
@@ -23,6 +24,7 @@ import frc.robot.commands.JoystickDrive;
 public class RobotContainer {
 
   NavX m_gyro;
+  Vision m_vision_ss;
 
   StormLogitechController m_controller = new StormLogitechController(0);
   private final MecanumDrive mecanumdrive = new MecanumDrive();
@@ -36,6 +38,7 @@ public class RobotContainer {
 
 
     m_gyro = new NavX();
+    m_vision_ss = new Vision();
 
     NeoPixel neoPixel = new NeoPixel();
     // Configure the trigger bindings

@@ -87,6 +87,7 @@ public class StormStruct {
                     this.m_fieldNames[i] = names[i];
                 }
                 m_initialized = true;
+                System.out.println("INFO: storm_struct ID" + this.m_typeid + " initialized");
             }
         }
         return(m_initialized);
@@ -102,6 +103,7 @@ public class StormStruct {
         Vector<HashMap<String,Double>> data_list;
         if (!m_data_subscribers.containsKey(name)) {
             sub = m_base_table.getRawTopic("binary_data/" + this.m_struct_name + "/" + name).subscribe(this.m_struct_name,new byte[0]);
+            m_data_subscribers.put(name,sub);
         }
         else {
             sub = m_data_subscribers.get(name);
@@ -204,17 +206,20 @@ public class StormStruct {
             int size = (encoding & 0x3) + 1;
 
             boolean signed = (encoding & 0x80) != 0;
+            // Extend sign on signed int. ints are 4 bytes in java.  
+            if (signed && size < 4) {
+                if ((data_stream[offset] & 0x80) != 0) {  // negative number, big endian
+                    data = 0xFFFFFFFF;  // sign extend, this bits will be shifted up as we grab bytes from the stream
+                }
+            }
+
+
             //System.out.println("unpack " + field + "; size=" + size);
             for (int i = 0; i < size; i++) {
                 data = data << 8;           
                 data |= data_stream[offset + i] & 0xFF;
             }
 
-            // Extend sign on signed int. ints are 4 bytes in java
-            if (signed && size < 4) {
-                data = data << (4 - size);
-                data = data >> (4 - size);
-            }
             offset += size;
 
             double ddata = data * 1.0;
