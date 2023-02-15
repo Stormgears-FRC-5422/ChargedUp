@@ -224,7 +224,7 @@ public class StormStruct {
 
             double ddata = data * 1.0;
             if (precision > 0) {
-                ddata = ddata/(precision*10);
+                ddata = ddata/Math.pow(10,precision);
             }
             ret_map.put(field,ddata);
         }
