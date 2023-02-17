@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -10,25 +11,24 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.drive.PoseEstimator;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 public class RobotState {
     private static RobotState m_instance;
-    private Timer m_timer;
+    private final Timer m_timer;
 
     private TreeMap<Double, DriveData> m_driveDataSet = new TreeMap<>();
-    private TreeMap<Double, VisionData> m_visionDataSet = new TreeMap<>();
+    private TreeMap<Double, Pose2d> m_visionDataSet = new TreeMap<>();
 
     private Pose2d m_currentPose;
     private Pose2d m_startPose;
     private Pose2d m_lastPose;
 
-    private ShuffleboardTab mainTab = Shuffleboard.getTab("MainTab");
+    private final ShuffleboardTab mainTab;
 
-    private Field2d field2d;
+    private final Field2d field2d;
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
 
@@ -40,18 +40,18 @@ public class RobotState {
         m_timer = new Timer();
         m_timer.stop();
 
+        mainTab = Shuffleboard.getTab("MainTab");
         ShuffleboardLayout layout = mainTab.getLayout("State", BuiltInLayouts.kGrid)
                 .withPosition(0, 0)
                 .withSize(4, 4);
         layout.addNumber("pose x", () -> getCurrentPose().getX());
         layout.addNumber("pose y", () -> getCurrentPose().getY());
         layout.addNumber("pose angle", () -> getCurrentPose().getRotation().getDegrees());
-        layout.addNumber("time", this::getTime);
+        layout.addNumber("time", this::getTimeSeconds);
         field2d = new Field2d();
     }
 
     public void startTimer() {
-        if (m_timer.get() > 0) return;
         m_timer.reset();
         m_timer.start();
     }
@@ -61,7 +61,7 @@ public class RobotState {
         m_timer.reset();
     }
 
-    public double getTime() {
+    public double getTimeSeconds() {
         return m_timer.get();
     }
 
@@ -109,7 +109,7 @@ public class RobotState {
             System.out.println("Timer was not set!!!!!!!");
             return;
         }
-        m_driveDataSet.put(m_timer.get(), driveData);
+        m_driveDataSet.put(Timer.getFPGATimestamp() * 1000., driveData);
     }
 
     public Map.Entry<Double, DriveData> getLatestDriveData() {
@@ -120,12 +120,49 @@ public class RobotState {
      * Must provide own timstamp with this function as camera will have delay
      * @param timeStamp
      */
-    public void addVisionData(double timeStamp, VisionData visionData) {
+    public void addVisionData(double timeStamp, Pose2d visionData) {
         m_visionDataSet.put(timeStamp, visionData);
     }
 
-    public Map.Entry<Double, VisionData> getLatestVisionData() {
+    public Map.Entry<Double, Pose2d> getLatestVisionData() {
         return m_visionDataSet.lastEntry();
+    }
+
+    public double getCurrentXVel() {
+        if (m_lastPose == null) return 0;
+        return ((getCurrentPose().getX() - getLastPose().getX())/20.) * 1000;
+    }
+
+    public double getCurrentYVel() {
+        if (m_lastPose == null) return 0;
+        return ((getCurrentPose().getY() - getLastPose().getY())/20.) * 1000;
+    }
+
+    public double getCurrentOmegaVel() {
+        if (m_lastPose == null) return 0;
+        return ((getCurrentPose().getRotation().getDegrees() - getLastPose().getRotation().getDegrees())/20.) * 1000;
+    }
+
+    public double getDeltaDistance() {
+        if (m_lastPose == null) return 0;
+        Translation2d m_lastTranslation = getLastPose().getTranslation();
+        Translation2d m_currentTranslation = getCurrentPose().getTranslation();
+        return m_currentTranslation.getDistance(m_lastTranslation);
+    }
+
+    public double getCurrentLinearVel() {
+        //delta distance / delta time
+        return getDeltaDistance()/0.02;
+    }
+
+    public void onEnable() {
+        startTimer();
+        m_driveDataSet = new TreeMap<Double, DriveData>();
+    }
+
+    public void onDisable() {
+        stopTimer();
+        resetPose();
     }
 
     public void update() {
@@ -159,18 +196,5 @@ public class RobotState {
         public SwerveModulePosition[] getModulePositions() {
             return modulePositions;
         }
-    }
-
-    public static class VisionData {
-        //Change this to more low-level .... distance and angles to april tag
-        private Pose2d robotPoseMeters;
-
-        public VisionData(Pose2d robotPoseMeters) {
-            this.robotPoseMeters = robotPoseMeters;
-        }
-
-       public Pose2d getRobotPoseMeters() {
-            return robotPoseMeters;
-       }
     }
 }

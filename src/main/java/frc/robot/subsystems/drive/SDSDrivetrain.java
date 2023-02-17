@@ -1,6 +1,9 @@
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.sensors.CANCoder;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.revrobotics.CANSparkMax;
 import com.swervedrivespecialties.swervelib.*;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
@@ -55,13 +58,21 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     private RobotState m_robotState;
 
-    HolonomicDriveController m_controller = new HolonomicDriveController(
-            new PIDController(1.0, 0., 0.),
-            new PIDController(1.0, 0., 0.),
-            new ProfiledPIDController(1.0, 0., 0.,
+    //pid gains from trapezoid move forward command
+    //constraints made arbitrary
+    HolonomicDriveController m_holonomicController = new HolonomicDriveController(
+            new PIDController(1.5, 0., 0.),
+            new PIDController(1.5, 0., 0.),
+            new ProfiledPIDController(1.5, 0.3, 0.,
                     new TrapezoidProfile.Constraints(
-                            m_maxVelocityMetersPerSecond,
-                            m_maxAngularVelocityRadiansPerSecond))
+                            6.28,
+                            3.14))
+    );
+
+    PPHolonomicDriveController m_PPholonomicController = new PPHolonomicDriveController(
+            new PIDController(1., 0., 0.),
+            new PIDController(1., 0., 0.),
+            new PIDController(1., 0., 0.)
     );
 
     public SDSDrivetrain() {
@@ -155,10 +166,22 @@ public class SDSDrivetrain extends DrivetrainBase {
                 BACK_RIGHT_MODULE_STEER_OFFSET
         );
 
+        ((CANSparkMax) m_frontLeftModule.getDriveMotor()).setInverted(false);
+        ((CANSparkMax) m_frontRightModule.getDriveMotor()).setInverted(false);
+        ((CANSparkMax) m_backLeftModule.getDriveMotor()).setInverted(false);
+        ((CANSparkMax) m_backRightModule.getDriveMotor()).setInverted(false);
+
         frontLeftModuleLayout.addString("last error", () -> fl.getLastError().toString());
         frontRightModuleLayout.addString("last error", () -> fr.getLastError().toString());
         backLeftModuleLayout.addString("last error", () -> bl.getLastError().toString());
         backRightModuleLayout.addString("last error", () -> br.getLastError().toString());
+
+        frontLeftModuleLayout.addNumber("driveDistance()", m_frontLeftModule::getDriveDistance);
+        frontRightModuleLayout.addNumber("driveDistance()", m_frontRightModule::getDriveDistance);
+        backLeftModuleLayout.addNumber("driveDistance()", m_backLeftModule::getDriveDistance);
+        backRightModuleLayout.addNumber("driveDistance()", m_backRightModule::getDriveDistance);
+
+        resetDriveEncoders();
     }
 
     @Override
@@ -178,26 +201,49 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     @Override
     public void goToTrajectoryState(Trajectory.State goalState) {
-        ChassisSpeeds speeds = m_controller.calculate(
+        ChassisSpeeds speeds = m_holonomicController.calculate(
                 m_robotState.getCurrentPose(), goalState, goalState.poseMeters.getRotation()
         );
         drive(speeds, true);
+    }
+
+    public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
+        var speeds = m_PPholonomicController.calculate(m_robotState.getCurrentPose(), goalState);
+        drive(speeds, true);
+    }
+
+    private void resetDriveEncoders() {
+        ((CANSparkMax) m_frontLeftModule.getDriveMotor()).getEncoder().setPosition(0);
+        ((CANSparkMax) m_frontRightModule.getDriveMotor()).getEncoder().setPosition(0);
+        ((CANSparkMax) m_backLeftModule.getDriveMotor()).getEncoder().setPosition(0);
+        ((CANSparkMax) m_backRightModule.getDriveMotor()).getEncoder().setPosition(0);
     }
 
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);
 
-        m_frontLeftModule.set(-MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
-        m_frontRightModule.set(-MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
-        m_backLeftModule.set(-MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
-        m_backRightModule.set(-MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
+        m_frontLeftModule.set(MAX_VOLTAGE * states[0].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[0].angle.getRadians());
+        m_frontRightModule.set(MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
+        m_backLeftModule.set(MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
+        m_backRightModule.set(MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
 
         RobotState.DriveData currentDriveData = new RobotState.DriveData(
                 getSwerveModulePositions(),
                 getGyroscopeRotation()
         );
         m_robotState.addDriveData(currentDriveData);
+    }
+
+    @Override
+    public void onEnable() {
+        resetDriveEncoders();
+        zeroGyroscope();
+    }
+
+    @Override
+    public void onDisable() {
+
     }
 
     private void initEncoders() {
@@ -207,39 +253,39 @@ public class SDSDrivetrain extends DrivetrainBase {
         br = new CANCoder(BACK_RIGHT_MODULE_STEER_ENCODER);
         CANCoder[] arr = new CANCoder[]{fl, fr, bl, br};
 
-        System.out.println("**********");
-        System.out.println("** FL " + (Math.toDegrees(-FRONT_LEFT_MODULE_STEER_OFFSET)));
-        System.out.println("** FR " + (Math.toDegrees(-FRONT_RIGHT_MODULE_STEER_OFFSET)));
-        System.out.println("** BL " + (Math.toDegrees(-BACK_LEFT_MODULE_STEER_OFFSET)));
-        System.out.println("** BR " + (Math.toDegrees(-BACK_RIGHT_MODULE_STEER_OFFSET)));
-        System.out.println("**********");
+//        System.out.println("**********");
+//        System.out.println("** FL " + (Math.toDegrees(-FRONT_LEFT_MODULE_STEER_OFFSET)));
+//        System.out.println("** FR " + (Math.toDegrees(-FRONT_RIGHT_MODULE_STEER_OFFSET)));
+//        System.out.println("** BL " + (Math.toDegrees(-BACK_LEFT_MODULE_STEER_OFFSET)));
+//        System.out.println("** BR " + (Math.toDegrees(-BACK_RIGHT_MODULE_STEER_OFFSET)));
+//        System.out.println("**********");
 
         for (CANCoder tmp : arr) {
-            System.out.println("**********");
-            System.out.println("** ID  " + tmp.getDeviceID());
-            System.out.println("** Abs " + tmp.getAbsolutePosition());
-            System.out.println("** Pos " + tmp.getPosition());
-            System.out.println("** Off " + tmp.configGetMagnetOffset());
-            System.out.println("**********");
+//            System.out.println("**********");
+//            System.out.println("** ID  " + tmp.getDeviceID());
+//            System.out.println("** Abs " + tmp.getAbsolutePosition());
+//            System.out.println("** Pos " + tmp.getPosition());
+//            System.out.println("** Off " + tmp.configGetMagnetOffset());
+//            System.out.println("**********");
             tmp.configFactoryDefault();
         }
 
-        System.out.println("\n**********");
-        System.out.println("** Setting new offset ");
-        System.out.println("**********\n");
-
+//        System.out.println("\n**********");
+//        System.out.println("** Setting new offset ");
+//        System.out.println("**********\n");
+//
         System.out.println(fl.configMagnetOffset(Math.toDegrees(FRONT_LEFT_MODULE_STEER_OFFSET), 50));
         System.out.println(fr.configMagnetOffset(Math.toDegrees(FRONT_RIGHT_MODULE_STEER_OFFSET), 50));
         System.out.println(bl.configMagnetOffset(Math.toDegrees(BACK_LEFT_MODULE_STEER_OFFSET), 50));
         System.out.println(br.configMagnetOffset(Math.toDegrees(BACK_RIGHT_MODULE_STEER_OFFSET), 50));
 
-        for (CANCoder tmp : arr) {
-            System.out.println("**********");
-            System.out.println("** ID  " + tmp.getDeviceID());
-            System.out.println("** Abs " + tmp.getAbsolutePosition());
-            System.out.println("** Pos " + tmp.getPosition());
-            System.out.println("** Off " + tmp.configGetMagnetOffset());
-            System.out.println("**********");
-        }
+//        for (CANCoder tmp : arr) {
+//            System.out.println("**********");
+//            System.out.println("** ID  " + tmp.getDeviceID());
+//            System.out.println("** Abs " + tmp.getAbsolutePosition());
+//            System.out.println("** Pos " + tmp.getPosition());
+//            System.out.println("** Off " + tmp.configGetMagnetOffset());
+//            System.out.println("**********");
+//        }
     }
 }
