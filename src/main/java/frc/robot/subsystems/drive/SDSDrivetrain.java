@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotState;
 
 import static frc.robot.Constants.*;
@@ -70,9 +71,9 @@ public class SDSDrivetrain extends DrivetrainBase {
     );
 
     PPHolonomicDriveController m_PPholonomicController = new PPHolonomicDriveController(
-            new PIDController(1., 0., 0.),
-            new PIDController(1., 0., 0.),
-            new PIDController(1., 0., 0.)
+            new PIDController(3., 0., 0.),
+            new PIDController(3., 0., 0.),
+            new PIDController(3., 0., 0.)
     );
 
     public SDSDrivetrain() {
@@ -209,7 +210,8 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
         var speeds = m_PPholonomicController.calculate(m_robotState.getCurrentPose(), goalState);
-        drive(speeds, true);
+        System.out.println("Current Chassis Speeds: " + speeds);
+        drive(speeds, false);
     }
 
     private void resetDriveEncoders() {
@@ -232,6 +234,7 @@ public class SDSDrivetrain extends DrivetrainBase {
                 getSwerveModulePositions(),
                 getGyroscopeRotation()
         );
+        SmartDashboard.putNumber("Yaw Inverted*", getGyroscopeRotation().getDegrees());
         m_robotState.addDriveData(currentDriveData);
     }
 

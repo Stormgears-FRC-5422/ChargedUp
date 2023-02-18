@@ -35,7 +35,7 @@ public class PoseEstimator extends SubsystemBase {
     }
 
     public void onEnable() {
-        resetEstimator();
+        resetEstimator(RobotState.getInstance().getStartPose());
     }
 
     public void onDisable() {

@@ -48,7 +48,6 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
     DrivetrainBase() {
         setDriveSpeedScale(kDriveSpeedScale);
-        tab.addDouble("Yaw", () -> getGyroscopeRotation().getDegrees());
     }
 
     protected void setMaxVelocities(double maxVelocityMetersPerSecond, double maxAngularVelocityRadiansPerSecond) {

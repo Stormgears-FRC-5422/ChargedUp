@@ -168,6 +168,10 @@ public class RobotState {
     public void update() {
         field2d.setRobotPose(getCurrentPose());
         SmartDashboard.putData(field2d);
+
+        double currentTimeMs = Timer.getFPGATimestamp();
+        m_driveDataSet.tailMap(currentTimeMs - 2000, true);
+        m_visionDataSet.tailMap(currentTimeMs - 2000, true);
     }
 
     public static class DriveData {
