@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.ErrorCode;
+import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.DriveWithJoystick;
@@ -16,7 +18,6 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.joysticks.StormLogitechController;
 
 import static frc.robot.Constants.*;
@@ -30,17 +31,14 @@ import static frc.robot.Constants.*;
 public class RobotContainer {
   GyroCommand m_gyrocommand;
   DrivetrainBase m_drivetrain;
-  StormNet m_stormNet;
-  Compression m_compression;
+  public Compression compressor;
 
   StormLogitechController m_controller;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() throws IllegalDriveTypeException {
 
-    if (usePneumatics) {
-      m_compression = new Compression();
-    }
+    if (useCompressor) compressor = new Compression();
 
     // Note the pattern of attempting to create the object then disabling it if that creation fails
     if (useDrive) {
@@ -61,11 +59,6 @@ public class RobotContainer {
       System.out.println("using controller");
     } else {
       System.out.println("NOT using controller");
-    }
-
-    if (useStormNet) {
-      StormNet.init();
-      m_stormNet = StormNet.getInstance();
     }
 
     // Configure the trigger bindings
@@ -89,20 +82,26 @@ public class RobotContainer {
       SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
       SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
-      DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+//      m_drivetrain.setDefaultCommand(new DriveWithJoystick(
+//              m_drivetrain,
+//              () -> forwardInputLimiter.calculate(m_controller.getWpiXAxis()),
+//              () -> sidewaysInputLimiter.calculate(m_controller.getWpiYAxis()),
+//              () -> rotationInputLimiter.calculate(m_controller.getZAxis())
+//      ));
+        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                 m_drivetrain,
                 () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
                 () -> m_controller.getWpiYAxis() * kDriveSpeedScale,
                 () -> m_controller.getWpiZAxis() * kDriveSpeedScale,
                 () -> m_controller.getRawButton(2));
 
-      m_drivetrain.setDefaultCommand(driveWithJoystick);
+        m_drivetrain.setDefaultCommand(driveWithJoystick);
 
-      m_gyrocommand = new GyroCommand(m_drivetrain, 180);
+        m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
-      new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(()-> m_drivetrain.zeroGyroscope()));
-      new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(() -> driveWithJoystick.toggleFieldRelative()));
-      new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
+        new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(()-> m_drivetrain.zeroGyroscope()));
+        new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(() -> driveWithJoystick.toggleFieldRelative()));
+        new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
     }
 
   }
