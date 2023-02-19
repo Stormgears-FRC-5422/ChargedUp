@@ -40,6 +40,7 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
+import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.joysticks.StormLogitechController;
 
 import java.nio.file.Path;
@@ -62,7 +63,9 @@ public class RobotContainer {
     DrivetrainBase m_drivetrain;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
     PoseEstimator m_poseEstimator;
-    public Compression compressor;
+    Compression m_compression;
+
+    StormNet m_stormNet;
 
     StormLogitechController m_controller;
 
@@ -73,7 +76,9 @@ public class RobotContainer {
      */
     public RobotContainer() throws IllegalDriveTypeException {
 
-        if (useCompressor) compressor = new Compression();
+        if (usePneumatics) {
+            m_compression = new Compression();
+        }
 
         m_robotState = RobotState.getInstance();
         m_robotState.setStartPose(new Pose2d());
@@ -90,6 +95,7 @@ public class RobotContainer {
         } else {
             System.out.println("NOT using drive");
         }
+
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (useDrive) {
             try {
@@ -120,8 +126,8 @@ public class RobotContainer {
             System.out.println("NOT using drive");
         }
 
-        if (useCompressor) {
-            compressor = new Compression();
+        if (usePneumatics) {
+            m_compression = new Compression();
         }
 
         // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
@@ -130,6 +136,11 @@ public class RobotContainer {
             System.out.println("using controller");
         } else {
             System.out.println("NOT using controller");
+        }
+
+        if (useStormNet) {
+          StormNet.init();
+          m_stormNet = StormNet.getInstance();
         }
 
         // Configure the trigger bindings
@@ -153,20 +164,20 @@ public class RobotContainer {
             SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
             SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
-            DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
                     () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
                     () -> m_controller.getWpiYAxis() * kDriveSpeedScale,
                     () -> m_controller.getWpiZAxis() * kDriveSpeedScale,
                     () -> m_controller.getRawButton(2));
 
-            m_drivetrain.setDefaultCommand(driveWithJoystick);
+    	    m_drivetrain.setDefaultCommand(driveWithJoystick);
 
-            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
+        	m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
-            new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
-            new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
-            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
+        	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
+        	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
+        	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
         }
 

@@ -95,10 +95,10 @@ public class Robot extends TimedRobot {
         enabled = false;
         m_robotContainer.onDisable();
 
-        if(useCompressor) {
-          m_robotContainer.compressor.stopCompressor();
-          m_robotContainer.compressor.setPiston(false);
-        }
+//    if(usePneumatics) {
+//      m_robotContainer.m_compression.stopCompressor();
+//      m_robotContainer.m_compression.setPiston(false);
+//    }
     }
 
     @Override
@@ -120,9 +120,10 @@ public class Robot extends TimedRobot {
                         + "\n" +
                 "*****************");
 
-      if(useCompressor) {
-          m_robotContainer.compressor.setPiston(true);
-        }
+// TODO - this should be managed by a default command.
+//    if(usePneumatics) {
+//      m_robotContainer.m_compression.setPiston(true);
+//    }
     }
 
     /** This function is called periodically during autonomous. */
@@ -145,9 +146,9 @@ public class Robot extends TimedRobot {
                         + "\n" +
                         "*****************");
 
-        if(useCompressor) {
-          m_robotContainer.compressor.startCompressor();
-        }
+//    if(usePneumatics) {
+//      m_robotContainer.m_compression.startCompressor();
+//    }
     }
 
     /** This function is called periodically during operator control. */
