@@ -87,10 +87,15 @@ public final class Constants {
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
     public static final int kSolendoidChannel = StormProp.getInt("SolenoidChannel", -1);
+    public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
+    public static final int armElbowID = StormProp.getInt("armElbowID", -1);
+    
+    public static final String navXConnection = StormProp.getString("navXConnection", "");
+
+
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
-    public static boolean useController = StormProp.getBoolean("useController", true);
-    public static final String navXConnection = StormProp.getString("navXConnection", "");
-
+    public static boolean useController = StormProp.getBoolean("useController", false);
+    public static boolean useArm = StormProp.getBoolean("useArm", false);
 }

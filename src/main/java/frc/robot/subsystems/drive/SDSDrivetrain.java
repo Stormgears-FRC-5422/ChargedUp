@@ -184,6 +184,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         drive(speeds, true);
     }
 
+    @Override
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);

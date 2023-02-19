@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TrapezoidMoveForward;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.Compression;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.commands.GyroCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
@@ -41,6 +42,7 @@ public class RobotContainer {
   PoseEstimator m_poseEstimator;
 
   public Compression compressor;
+  public Arm arm;
 
   StormLogitechController m_controller;
 
@@ -75,6 +77,10 @@ public class RobotContainer {
 
     if (useCompressor) {
       compressor = new Compression();
+    }
+
+    if (useArm) {
+      arm = new Arm();
     }
 
     // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?

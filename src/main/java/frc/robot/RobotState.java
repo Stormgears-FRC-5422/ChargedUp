@@ -173,4 +173,8 @@ public class RobotState {
             return robotPoseMeters;
        }
     }
+
+    public static class ArmData {
+        
+    }
 }
