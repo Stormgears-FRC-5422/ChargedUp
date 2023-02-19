@@ -16,7 +16,9 @@ public class DriveWithJoystick extends CommandBase {
     private final DoubleSupplier tySupplier;
     private final DoubleSupplier rotSupplier;
     private final BooleanSupplier precisionModeSupplier;
+
     private boolean useFieldRelative = false;
+    private double gyroOffset = 0.0;
 
     /**
      * USE WPILIB COORDINATES X DRIVES FORWARDS, Y DRIVES LEFT

@@ -28,7 +28,7 @@ public class RobotState {
 
     private final ShuffleboardTab mainTab;
 
-    private final Field2d field2d;
+    private Field2d field2d;
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
 
@@ -153,6 +153,10 @@ public class RobotState {
     public double getCurrentLinearVel() {
         //delta distance / delta time
         return getDeltaDistance()/0.02;
+    }
+
+    public Field2d getField() {
+        return field2d;
     }
 
     public void onEnable() {

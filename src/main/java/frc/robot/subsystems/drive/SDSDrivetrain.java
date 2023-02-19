@@ -5,13 +5,10 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.revrobotics.CANSparkMax;
 import com.swervedrivespecialties.swervelib.*;
-import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -61,19 +58,10 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     //pid gains from trapezoid move forward command
     //constraints made arbitrary
-    HolonomicDriveController m_holonomicController = new HolonomicDriveController(
-            new PIDController(1.5, 0., 0.),
-            new PIDController(1.5, 0., 0.),
-            new ProfiledPIDController(1.5, 0.3, 0.,
-                    new TrapezoidProfile.Constraints(
-                            6.28,
-                            3.14))
-    );
-
-    PPHolonomicDriveController m_PPholonomicController = new PPHolonomicDriveController(
-            new PIDController(3., 0., 0.),
-            new PIDController(3., 0., 0.),
-            new PIDController(3., 0., 0.)
+    PPHolonomicDriveController m_holonomicController = new PPHolonomicDriveController(
+            new PIDController(driveXkp, driveXki, 0.),
+            new PIDController(driveYkp, driveYki, 0.),
+            new PIDController(turnkp, 0., 0.)
     );
 
     public SDSDrivetrain() {
@@ -83,7 +71,6 @@ public class SDSDrivetrain extends DrivetrainBase {
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
         Mk4iSwerveModuleHelper.GearRatio theGearRatio;
         ModuleConfiguration moduleConfiguration;
-        Mk4ModuleConfiguration modifiedModuleConfiguration;
 
         switch(kMK4iModuleKind) {
             case "L1":
@@ -201,15 +188,10 @@ public class SDSDrivetrain extends DrivetrainBase {
     }
 
     @Override
-    public void goToTrajectoryState(Trajectory.State goalState) {
-        ChassisSpeeds speeds = m_holonomicController.calculate(
-                m_robotState.getCurrentPose(), goalState, goalState.poseMeters.getRotation()
-        );
-        drive(speeds, true);
-    }
+    public void goToTrajectoryState(Trajectory.State goalState) {}
 
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
-        var speeds = m_PPholonomicController.calculate(m_robotState.getCurrentPose(), goalState);
+        var speeds = m_holonomicController.calculate(m_robotState.getCurrentPose(), goalState);
         System.out.println("Current Chassis Speeds: " + speeds);
         drive(speeds, false);
     }

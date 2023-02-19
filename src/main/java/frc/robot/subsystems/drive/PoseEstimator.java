@@ -3,15 +3,10 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
-
-import java.util.Map;
 
 public class PoseEstimator extends SubsystemBase {
 
@@ -30,8 +25,6 @@ public class PoseEstimator extends SubsystemBase {
                 m_robotState.getStartPose());
         m_currentPose = m_robotState.getStartPose();
         m_lastPose = m_currentPose;
-
-        ShuffleboardTab mainTab = Shuffleboard.getTab("MainTab");
     }
 
     public void onEnable() {
