@@ -3,10 +3,13 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
+
+import java.util.Map;
 
 public class PoseEstimator extends SubsystemBase {
 
@@ -27,47 +30,37 @@ public class PoseEstimator extends SubsystemBase {
         m_lastPose = m_currentPose;
     }
 
-    public void onEnable() {
-        resetEstimator(RobotState.getInstance().getStartPose());
-    }
-
-    public void onDisable() {
-    }
-
     @Override
     public void periodic() {
         m_lastPose = m_currentPose;
-        var latestDriveEntry = m_robotState.getLatestDriveData();
+        Map.Entry<Double, RobotState.DriveData> latestDriveEntry = m_robotState.getLatestDriveData();
         //drive data
         if (latestDriveEntry != null) {
             double time = latestDriveEntry.getKey();
-            var data = latestDriveEntry.getValue();
+            RobotState.DriveData data = latestDriveEntry.getValue();
             m_poseEstimator.updateWithTime(time, data.getGyroAngle(), data.getModulePositions());
         }
-
-        //visiondata
-//        var latestVisionEntry = m_robotState.getLatestVisionData();
-//        if (latestVisionEntry != null) {
-//            double time = latestVisionEntry.getKey();
-//            var data = latestVisionEntry.getValue();
-//            m_poseEstimator.addVisionMeasurement(data, time);
-//        }
 
         //set pose in state object
         m_currentPose = m_poseEstimator.getEstimatedPosition();
         m_robotState.setCurrentPose(m_currentPose);
-        m_robotState.setLastPose(m_lastPose);
     }
 
-    private void resetEstimator(RobotState.DriveData data, Pose2d pose) {
+    public void resetEstimator(RobotState.DriveData data, Pose2d pose) {
         m_poseEstimator.resetPosition(data.getGyroAngle(), data.getModulePositions(), pose);
     }
 
-    private void resetEstimator(Pose2d pose) {
+    public void resetEstimator(Pose2d pose) {
         resetEstimator(new RobotState.DriveData(), pose);
     }
 
-    private void resetEstimator() {
+    public void resetEstimator() {
         resetEstimator(new Pose2d());
+    }
+
+    public double getDeltaDistance() {
+        Translation2d currentTranslation = m_currentPose.getTranslation();
+        Translation2d lastTranslation = m_lastPose.getTranslation();
+        return currentTranslation.getDistance(lastTranslation);
     }
 }

@@ -1,7 +1,7 @@
 package frc.robot.subsystems.drive;
 
-import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -47,6 +47,7 @@ public abstract class DrivetrainBase extends SubsystemBase {
     protected ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
     DrivetrainBase() {
         setDriveSpeedScale(kDriveSpeedScale);
+        tab.addDouble("Yaw", () -> getGyroscopeRotation().getDegrees());
     }
 
     protected void setMaxVelocities(double maxVelocityMetersPerSecond, double maxAngularVelocityRadiansPerSecond) {
@@ -90,12 +91,11 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
     public Rotation2d getGyroscopeRotation() {
         if (m_gyro == null) return Rotation2d.fromDegrees(0);
-//
-//        if (m_gyro.isMagnetometerCalibrated()) {
-//            // We will only get valid fused headings if the magnetometer is calibrated
-//            System.out.println("Current heading: " + m_gyro.getFusedHeading());
-//            return Rotation2d.fromDegrees(m_gyro.getFusedHeading());
-//        }
+
+        if (m_gyro.isMagnetometerCalibrated()) {
+            // We will only get valid fused headings if the magnetometer is calibrated
+            return Rotation2d.fromDegrees(m_gyro.getFusedHeading());
+        }
 
         // We have to invert the angle of the NavX so that rotating the robot counter-clockwise makes the angle increase.
         return Rotation2d.fromDegrees(360.0 - m_gyro.getYaw());
@@ -108,7 +108,4 @@ public abstract class DrivetrainBase extends SubsystemBase {
     public abstract SwerveDriveKinematics getSwerveDriveKinematics();
     public abstract SwerveModulePosition[] getSwerveModulePositions();
     public abstract void goToTrajectoryState(Trajectory.State goalState);
-    public abstract void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState);
-    public abstract void onEnable();
-    public abstract void onDisable();
 }

@@ -19,6 +19,7 @@ public final class Constants {
 
     public static final String robotName = StormProp.getString("robotName", "");
 
+    public static final boolean useCompressor = StormProp.getBoolean("useCompressor",true);
 
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
     public static final int kLogitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
@@ -86,22 +87,15 @@ public final class Constants {
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
     public static final int kSolendoidChannel = StormProp.getInt("SolenoidChannel", -1);
-
-    public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
-    public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
-    public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
-
-    public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
-    public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
-
+    public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
+    public static final int armElbowID = StormProp.getInt("armElbowID", -1);
+    
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
+
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
-    // They should default to false for safety reasons
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
     public static boolean useController = StormProp.getBoolean("useController", false);
-    public static boolean usePneumatics = StormProp.getBoolean("usePneumatics",false);
-    public static boolean useStormNet = StormProp.getBoolean("useStormNet",false);
-
+    public static boolean useArm = StormProp.getBoolean("useArm", false);
 }
