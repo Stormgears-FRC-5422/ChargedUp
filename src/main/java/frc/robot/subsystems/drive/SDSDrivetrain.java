@@ -9,10 +9,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotState;
 
@@ -54,10 +51,14 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     //pid gains from trapezoid move forward command
     //constraints made arbitrary
+
+    private PIDController xController = new PIDController(driveXkp, driveXki, 0.);
+    private PIDController yController = new PIDController(driveYkp, driveYki, 0.);
+    private PIDController rotController = new PIDController(turnkp, 0., 0.);
     PPHolonomicDriveController m_holonomicController = new PPHolonomicDriveController(
-            new PIDController(driveXkp, driveXki, 0.),
-            new PIDController(driveYkp, driveYki, 0.),
-            new PIDController(turnkp, 0., 0.)
+            xController,
+            yController,
+            rotController
     );
 
     public SDSDrivetrain() {
@@ -164,6 +165,18 @@ public class SDSDrivetrain extends DrivetrainBase {
         frontRightModuleLayout.addNumber("driveDistance()", m_frontRightModule::getDriveDistance);
         backLeftModuleLayout.addNumber("driveDistance()", m_backLeftModule::getDriveDistance);
         backRightModuleLayout.addNumber("driveDistance()", m_backRightModule::getDriveDistance);
+
+        var pathFollowingTab = Shuffleboard.getTab("Path Following");
+
+        pathFollowingTab.add("X PID Controller", xController)
+                .withWidget(BuiltInWidgets.kPIDController)
+                .withPosition(0, 1);
+        pathFollowingTab.add("Y PID Controller", yController)
+                .withWidget(BuiltInWidgets.kPIDController)
+                .withPosition(1, 1);
+        pathFollowingTab.add("Rotation PID Controller", rotController)
+                .withWidget(BuiltInWidgets.kPIDController)
+                .withPosition(2, 1);
 
         resetDriveEncoders();
     }

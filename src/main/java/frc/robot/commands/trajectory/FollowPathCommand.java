@@ -9,13 +9,15 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 
 public class FollowPathCommand extends CommandBase {
 
+    private final String m_name;
     private final PathPlannerTrajectory m_path;
     private final DrivetrainBase m_drivetrain;
 
     private double startTime, currentTime, endTime;
 
-    public FollowPathCommand(PathPlannerTrajectory path, DrivetrainBase drivetrain) {
-        m_path = path;
+    public FollowPathCommand(Paths.PathWithName path, DrivetrainBase drivetrain) {
+        m_name = path.name;
+        m_path = path.path;
         m_drivetrain = drivetrain;
 
         addRequirements(m_drivetrain);
@@ -25,7 +27,7 @@ public class FollowPathCommand extends CommandBase {
     public void initialize() {
         startTime = RobotState.getInstance().getTimeSeconds();
         endTime = m_path.getTotalTimeSeconds();
-        System.out.println("Path Following Command Starting at: " + startTime);
+        System.out.println("Following " + m_name + " path starting at: " + startTime);
         System.out.println("Pose at start: " + RobotState.getInstance().getCurrentPose());
     }
 
@@ -50,7 +52,7 @@ public class FollowPathCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         System.out.println("Ending with interrupted: " + interrupted);
-        System.out.println("Path Follow Command ended at: " + RobotState.getInstance().getTimeSeconds());
+        System.out.println("Following " + m_name + " path command ended at: " + RobotState.getInstance().getTimeSeconds());
         System.out.println("Pose at End: " + RobotState.getInstance().getCurrentPose());
     }
 

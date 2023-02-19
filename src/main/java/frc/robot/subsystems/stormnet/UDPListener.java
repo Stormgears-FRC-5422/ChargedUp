@@ -9,7 +9,7 @@ import java.util.Map;
 
 // This same pattern could someday be used to implement an I2C listener or something else entirely
 // that's why I didn't subclass EthernetVoice. It is really solving a slightly different problem.
-public class UDPListener extends StormNetVoice implements Runnable{
+public class UDPListener extends StormNetVoice implements Runnable {
     private Map<String, Integer> m_commandMap;
     private byte[] m_receiveBuffer = new byte[0];
     private boolean m_stopNow = false;

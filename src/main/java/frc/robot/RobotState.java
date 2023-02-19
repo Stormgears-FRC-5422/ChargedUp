@@ -38,17 +38,18 @@ public class RobotState {
         m_timer.stop();
 
         mainTab = Shuffleboard.getTab("MainTab");
-        ShuffleboardLayout layout = mainTab.getLayout("State", BuiltInLayouts.kGrid)
+        ShuffleboardLayout layout = mainTab
+                .getLayout("State", BuiltInLayouts.kList)
                 .withPosition(0, 0)
-                .withSize(4, 4);
+                .withSize(2, 4);
         layout.addNumber("pose x", () -> getCurrentPose().getX());
         layout.addNumber("pose y", () -> getCurrentPose().getY());
         layout.addNumber("pose angle", () -> getCurrentPose().getRotation().getDegrees());
         layout.addNumber("time", this::getTimeSeconds);
         field2d = new Field2d();
         mainTab.add(field2d).withWidget(BuiltInWidgets.kField)
-                .withPosition(3, 0)
-                .withSize(2, 1);
+                .withPosition(2, 0)
+                .withSize(4, 3);
     }
 
     public void startTimer() {
