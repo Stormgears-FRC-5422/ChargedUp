@@ -9,11 +9,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 
-import javax.print.attribute.standard.Compression;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static frc.robot.Constants.useCompressor;
+import static frc.robot.Constants.usePneumatics;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -75,10 +74,10 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    if(useCompressor) {
-      m_robotContainer.compressor.stopCompressor();
-      m_robotContainer.compressor.setPiston(false);
-    }
+//    if(usePneumatics) {
+//      m_robotContainer.m_compression.stopCompressor();
+//      m_robotContainer.m_compression.setPiston(false);
+//    }
   }
 
   @Override
@@ -94,9 +93,10 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.schedule();
     }
 
-    if(useCompressor) {
-      m_robotContainer.compressor.setPiston(true);
-    }
+// TODO - this should be managed by a default command.
+//    if(usePneumatics) {
+//      m_robotContainer.m_compression.setPiston(true);
+//    }
   }
 
   /** This function is called periodically during autonomous. */
@@ -113,9 +113,9 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    if(useCompressor) {
-      m_robotContainer.compressor.startCompressor();
-    }
+//    if(usePneumatics) {
+//      m_robotContainer.m_compression.startCompressor();
+//    }
 
   }
 
