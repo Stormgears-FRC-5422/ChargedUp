@@ -86,6 +86,14 @@ public final class Constants {
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
     public static final int kSolendoidChannel = StormProp.getInt("SolenoidChannel", -1);
+
+    public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
+    public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
+    public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
+
+    public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
+    public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
+
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)

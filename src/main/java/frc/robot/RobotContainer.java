@@ -14,12 +14,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.LayoutType;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -29,10 +28,7 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.TrapezoidMoveForward;
 import frc.robot.commands.trajectory.FollowPathCommand;
-import frc.robot.commands.trajectory.FollowTrajectoryCommand;
-import frc.robot.commands.trajectory.Trajectories;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.GyroCommand;
@@ -43,10 +39,7 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.joysticks.StormLogitechController;
 
-import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import static frc.robot.Constants.*;
@@ -69,7 +62,7 @@ public class RobotContainer {
 
     StormLogitechController m_controller;
 
-    private SendableChooser<PathPlannerTrajectory> PathChooser = new SendableChooser<>();
+    private SendableChooser<PathPlannerTrajectory> PathChooser;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -113,6 +106,7 @@ public class RobotContainer {
                         m_drivetrain.getSwerveModulePositions());
 
                 //add paths to chooser
+                PathChooser = new SendableChooser<>();
                 PathChooser.setDefaultOption("Straight Path", Paths.straight180Path);
                 PathChooser.addOption("Straight 180 Path", Paths.straight180Path);
                 PathChooser.addOption("Diagonal Path", Paths.diagonalPath);
@@ -160,9 +154,9 @@ public class RobotContainer {
 
         if (useDrive && useController) {
             // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
-            SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
-            SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
-            SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
+            // SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
+            // SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
+            // SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
 	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
@@ -198,44 +192,44 @@ public class RobotContainer {
 
 
             var commandPlayer = Shuffleboard.getTab("Path Following Commands");
+//
+//            var PPSwerveCommandPlayer = commandPlayer.
+//                    getLayout("PP Swerve Commands", BuiltInLayouts.kGrid)
+//                    .withPosition(0, 0)
+//                    .withSize(4, 4);
+//            PPSwerveCommandPlayer.add("Straight Path",
+//                    getPathFollowCommand("Straight Path", Paths.straightPath));
+//            PPSwerveCommandPlayer.add("180 while going forward path",
+//                    getPathFollowCommand("Straight Path With 180", Paths.straight180Path));
+//            PPSwerveCommandPlayer.add("Circular path",
+//                    getPathFollowCommand("Circular Path", Paths.circularPath));
+//            PPSwerveCommandPlayer.add("Auto1 Path (have more space!)",
+//                    getPathFollowCommand("Auto1 Path", Paths.Auto1));
+//            PPSwerveCommandPlayer.add("Test Path (have space!)",
+//                    getPathFollowCommand("Test Path", Paths.testPath));
+//            PPSwerveCommandPlayer.add("TPath",
+//                    getPathFollowCommand("T Path", Paths.tPath));
+//            PPSwerveCommandPlayer.add("Diagonal Path",
+//                    getPathFollowCommand(Paths.diagonalPath));
 
-            var PPSwerveCommandPlayer = commandPlayer.
-                    getLayout("PP Swerve Commands", BuiltInLayouts.kGrid)
-                    .withPosition(0, 0)
-                    .withSize(4, 4);
-            PPSwerveCommandPlayer.add("Straight Path",
-                    getPathFollowCommand("Straight Path", Paths.straightPath));
-            PPSwerveCommandPlayer.add("180 while going forward path",
-                    getPathFollowCommand("Straight Path With 180", Paths.straight180Path));
-            PPSwerveCommandPlayer.add("Circular path",
-                    getPathFollowCommand("Circular Path", Paths.circularPath));
-            PPSwerveCommandPlayer.add("Auto1 Path (have more space!)",
-                    getPathFollowCommand("Auto1 Path", Paths.Auto1));
-            PPSwerveCommandPlayer.add("Test Path (have space!)",
-                    getPathFollowCommand("Test Path", Paths.testPath));
-            PPSwerveCommandPlayer.add("TPath",
-                    getPathFollowCommand("T Path", Paths.tPath));
-            PPSwerveCommandPlayer.add("Diagonal Path",
-                    getPathFollowCommand(Paths.diagonalPath));
-
-            var FollowPathCommandPlayer = commandPlayer.
-                    getLayout("Follow Path Commands", BuiltInLayouts.kGrid)
-                    .withPosition(4, 0)
-                    .withSize(4, 4);
-            FollowPathCommandPlayer.add("Straight our command",
-                    new FollowPathCommand(Paths.straightPath, m_drivetrain));
-            FollowPathCommandPlayer.add("180 while going forward our command",
-                    new FollowPathCommand(Paths.straight180Path, m_drivetrain));
-            FollowPathCommandPlayer.add("Circular our command",
-                    new FollowPathCommand(Paths.circularPath, m_drivetrain));
-            FollowPathCommandPlayer.add("Auto1 (have more space!) our command",
-                    new FollowPathCommand(Paths.Auto1, m_drivetrain));
-            FollowPathCommandPlayer.add("Test (have space!) our command",
-                    new FollowPathCommand(Paths.testPath, m_drivetrain));
-            FollowPathCommandPlayer.add("T our command",
-                    new FollowPathCommand(Paths.tPath, m_drivetrain));
-            FollowPathCommandPlayer.add("Diagonal Path with our command",
-                    new FollowPathCommand(Paths.diagonalPath, m_drivetrain));
+//            var FollowPathCommandPlayer = commandPlayer.
+//                    getLayout("Follow Path Commands", BuiltInLayouts.kGrid)
+//                    .withPosition(4, 0)
+//                    .withSize(4, 4);
+//            FollowPathCommandPlayer.add("Straight our command",
+//                    new FollowPathCommand(Paths.straightPath, m_drivetrain));
+//            FollowPathCommandPlayer.add("180 while going forward our command",
+//                    new FollowPathCommand(Paths.straight180Path, m_drivetrain));
+//            FollowPathCommandPlayer.add("Circular our command",
+//                    new FollowPathCommand(Paths.circularPath, m_drivetrain));
+//            FollowPathCommandPlayer.add("Auto1 (have more space!) our command",
+//                    new FollowPathCommand(Paths.Auto1, m_drivetrain));
+//            FollowPathCommandPlayer.add("Test (have space!) our command",
+//                    new FollowPathCommand(Paths.testPath, m_drivetrain));
+//            FollowPathCommandPlayer.add("T our command",
+//                    new FollowPathCommand(Paths.tPath, m_drivetrain));
+//            FollowPathCommandPlayer.add("Diagonal Path with our command",
+//                    new FollowPathCommand(Paths.diagonalPath, m_drivetrain));
 
             HashMap<String, Command> commandHashMap = new HashMap<>();
             commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
@@ -244,8 +238,27 @@ public class RobotContainer {
                     Paths.straightPath.getMarkers(),
                     commandHashMap
             );
-            commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
+//            commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
 
+            SendableChooser<PathPlannerTrajectory> paths = new SendableChooser<>();
+            paths.setDefaultOption("Straight", Paths.straightPath);
+            paths.addOption("Straight 180", Paths.straight180Path);
+            paths.addOption("T", Paths.tPath);
+            paths.addOption("Test (Caution!)", Paths.testPath);
+            paths.addOption("Circular", Paths.circularPath);
+            paths.addOption("Straight 180 from pose",
+                    Paths.getPathToPose(
+                            new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(90)),
+                            3,4
+                    ));
+            //log chooser
+            commandPlayer.add("Paths", paths)
+                    .withWidget(BuiltInWidgets.kComboBoxChooser)
+                    .withPosition(0, 0);
+            commandPlayer.add("Run Path Following Command",
+                    new FollowPathCommand(paths.getSelected(), m_drivetrain))
+                    .withWidget(BuiltInWidgets.kCommand)
+                    .withPosition(2, 0);
         }
     }
 
@@ -270,10 +283,6 @@ public class RobotContainer {
                 ).andThen(
                 new PrintCommand("Pose at End: " + m_robotState.getCurrentPose())).andThen(
                 new PrintCommand("Time at End: " + m_robotState.getTimeSeconds()));
-    }
-
-    private SequentialCommandGroup getPathFollowCommand(PathPlannerTrajectory path) {
-        return getPathFollowCommand("no name", path);
     }
 
     /**
@@ -314,8 +323,20 @@ public class RobotContainer {
         public static PathPlannerTrajectory diagonalPath = PathPlanner.generatePath(
                 new PathConstraints(1, 0.7),
                 new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-                new PathPoint(new Translation2d(3.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(180))// position, heading(direction of travel), holonomic rotation
+                new PathPoint(new Translation2d(3.0, 1.5), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(180))// position, heading(direction of travel), holonomic rotation
         );
+
+        public static PathPlannerTrajectory getPathToPose(Pose2d startPose, Pose2d endPose, double maxVel, double maxAcc) {
+            return PathPlanner.generatePath(
+                    new PathConstraints(maxVel, maxAcc),
+                    new PathPoint(startPose.getTranslation(), new Rotation2d(), startPose.getRotation()),
+                    new PathPoint(endPose.getTranslation(), new Rotation2d(), endPose.getRotation())
+            );
+        }
+
+        public static PathPlannerTrajectory getPathToPose(Pose2d endPose, double maxVel, double maxAcc) {
+            return getPathToPose(new Pose2d(), endPose, maxVel, maxAcc);
+        }
     }
 }
 

@@ -2,7 +2,7 @@ package frc.robot.commands.trajectory;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -39,14 +39,10 @@ public class FollowPathCommand extends CommandBase {
                 goalState.poseMeters.getX(),
                 goalState.poseMeters.getY(),
                 goalState.holonomicRotation);
+        RobotState.getInstance().getField().getObject("Goal Position").setPose(goalPose);
 
-        System.out.println("Goal Pose: " + goalPose);
-        System.out.println("Current Pose: " + currentPose);
-
-        System.out.println("Distance to goal translation: " +
-                currentPose.getTranslation().getDistance(goalPose.getTranslation()));
-        System.out.println("Degrees to holonomic rotation: " +
-                (currentPose.getRotation().getDegrees() - goalPose.getRotation().getDegrees()));
+        SmartDashboard.putNumber("dTranslation", currentPose.getTranslation().getDistance(goalPose.getTranslation()));
+        SmartDashboard.putNumber("dRot", (currentPose.getRotation().getDegrees() - goalPose.getRotation().getDegrees()));
 
         m_drivetrain.goToPPTrajectoryState(goalState);
     }
