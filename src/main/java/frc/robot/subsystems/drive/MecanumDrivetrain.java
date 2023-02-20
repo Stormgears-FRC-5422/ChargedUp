@@ -1,6 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
@@ -66,6 +67,20 @@ public class MecanumDrivetrain extends DrivetrainBase {
 
     @Override
     public void goToTrajectoryState(Trajectory.State goalState) {
+
+    }
+
+    @Override
+    public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
+
+    }
+
+    @Override
+    public void onEnable() {
+
+    }
+    @Override
+    public void onDisable() {
 
     }
 

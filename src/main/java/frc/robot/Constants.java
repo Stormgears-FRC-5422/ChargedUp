@@ -97,5 +97,7 @@ public final class Constants {
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
     public static boolean useController = StormProp.getBoolean("useController", false);
-    public static boolean useArm = StormProp.getBoolean("useArm", false);
+    public static boolean usePneumatics = StormProp.getBoolean("usePneumatics",false);
+    public static boolean useStormNet = StormProp.getBoolean("useStormNet",false);
+	public static boolean useArm = StormProp.getBoolean("useArm", false);
 }

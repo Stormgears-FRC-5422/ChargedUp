@@ -4,12 +4,21 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.LayoutType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,8 +29,10 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.TrapezoidMoveForward;
 import frc.robot.commands.trajectory.FollowPathCommand;
-import frc.robot.commands.trajectory.Paths;
+import frc.robot.commands.trajectory.FollowTrajectoryCommand;
+import frc.robot.commands.trajectory.Trajectories;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.GyroCommand;
@@ -32,7 +43,11 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.joysticks.StormLogitechController;
 
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import static frc.robot.Constants.*;
 
@@ -54,7 +69,7 @@ public class RobotContainer {
 
     StormLogitechController m_controller;
 
-    private SendableChooser<Paths.AutoPath> autoPathChooser;
+    private SendableChooser<PathPlannerTrajectory> PathChooser = new SendableChooser<>();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -98,14 +113,14 @@ public class RobotContainer {
                         m_drivetrain.getSwerveModulePositions());
 
                 //add paths to chooser
-                autoPathChooser = new SendableChooser<>();
-                autoPathChooser.setDefaultOption(Paths.straightPath.name,
-                        new Paths.AutoPath(Paths.straightPath.name, Paths.straight180Path.path));
-                for (Paths.PathWithName path: Paths.listOfPaths) {
-                    var autoPath = new Paths.AutoPath(path.name, path.path);
-                    autoPathChooser.addOption(path.name, autoPath);
-                }
-                SmartDashboard.putData("Auto Paths", autoPathChooser);
+                PathChooser.setDefaultOption("Straight Path", Paths.straight180Path);
+                PathChooser.addOption("Straight 180 Path", Paths.straight180Path);
+                PathChooser.addOption("Diagonal Path", Paths.diagonalPath);
+                PathChooser.addOption("Circular Path", Paths.circularPath);
+                PathChooser.addOption("T Path", Paths.tPath);
+                PathChooser.addOption("Test Path (caution!)", Paths.testPath);
+                PathChooser.addOption("Auto1 Path (caution!)", Paths.Auto1);
+                SmartDashboard.putData("Auto Paths", PathChooser);
             }
         } else {
             System.out.println("NOT using drive");
@@ -145,9 +160,9 @@ public class RobotContainer {
 
         if (useDrive && useController) {
             // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
-            // SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
-            // SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
-            // SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
+            SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
+            SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
+            SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
 	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
@@ -167,32 +182,70 @@ public class RobotContainer {
         }
 
         if (useDrive && driveType.equals("SwerveDrive") && useDrive) {
-            var commandPlayer = Shuffleboard.getTab("Path Following");
+//            SmartDashboard.putData("Trapezoid Move Forward Command",
+//                    new TrapezoidMoveForward(m_drivetrain, 5, 1, 0.5));
+//
+//            Supplier<Trajectory> straightTrajectorySupplier = () -> Trajectories.
+//                    straightLineNoTurn(1, 0.2, m_drivetrain.getSwerveDriveKinematics());
+//            var straightLineTrajectoryCommand = new FollowTrajectoryCommand(straightTrajectorySupplier, m_drivetrain);
+//            SmartDashboard.putData("Straight Line Trajectory", straightLineTrajectoryCommand);
+//
+//            Supplier<Trajectory> turningTrajectorySupplier = () -> Trajectories.
+//                    straightLineWhileTurn(45, 1, 0.2, m_drivetrain.getSwerveDriveKinematics());
+//            var turningTrajectoryCommand = new FollowTrajectoryCommand(turningTrajectorySupplier, m_drivetrain);
+//            SmartDashboard.putData("Turning in line Trajectory", turningTrajectoryCommand);
+
+
+
+            var commandPlayer = Shuffleboard.getTab("Path Following Commands");
+
+            var PPSwerveCommandPlayer = commandPlayer.
+                    getLayout("PP Swerve Commands", BuiltInLayouts.kGrid)
+                    .withPosition(0, 0)
+                    .withSize(4, 4);
+            PPSwerveCommandPlayer.add("Straight Path",
+                    getPathFollowCommand("Straight Path", Paths.straightPath));
+            PPSwerveCommandPlayer.add("180 while going forward path",
+                    getPathFollowCommand("Straight Path With 180", Paths.straight180Path));
+            PPSwerveCommandPlayer.add("Circular path",
+                    getPathFollowCommand("Circular Path", Paths.circularPath));
+            PPSwerveCommandPlayer.add("Auto1 Path (have more space!)",
+                    getPathFollowCommand("Auto1 Path", Paths.Auto1));
+            PPSwerveCommandPlayer.add("Test Path (have space!)",
+                    getPathFollowCommand("Test Path", Paths.testPath));
+            PPSwerveCommandPlayer.add("TPath",
+                    getPathFollowCommand("T Path", Paths.tPath));
+            PPSwerveCommandPlayer.add("Diagonal Path",
+                    getPathFollowCommand(Paths.diagonalPath));
+
+            var FollowPathCommandPlayer = commandPlayer.
+                    getLayout("Follow Path Commands", BuiltInLayouts.kGrid)
+                    .withPosition(4, 0)
+                    .withSize(4, 4);
+            FollowPathCommandPlayer.add("Straight our command",
+                    new FollowPathCommand(Paths.straightPath, m_drivetrain));
+            FollowPathCommandPlayer.add("180 while going forward our command",
+                    new FollowPathCommand(Paths.straight180Path, m_drivetrain));
+            FollowPathCommandPlayer.add("Circular our command",
+                    new FollowPathCommand(Paths.circularPath, m_drivetrain));
+            FollowPathCommandPlayer.add("Auto1 (have more space!) our command",
+                    new FollowPathCommand(Paths.Auto1, m_drivetrain));
+            FollowPathCommandPlayer.add("Test (have space!) our command",
+                    new FollowPathCommand(Paths.testPath, m_drivetrain));
+            FollowPathCommandPlayer.add("T our command",
+                    new FollowPathCommand(Paths.tPath, m_drivetrain));
+            FollowPathCommandPlayer.add("Diagonal Path with our command",
+                    new FollowPathCommand(Paths.diagonalPath, m_drivetrain));
 
             HashMap<String, Command> commandHashMap = new HashMap<>();
             commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
             FollowPathWithEvents pathWithEvents = new FollowPathWithEvents(
                     new FollowPathCommand(Paths.straightPath, m_drivetrain),
-                    Paths.straightPath.path.getMarkers(),
+                    Paths.straightPath.getMarkers(),
                     commandHashMap
             );
+            commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
 
-            SendableChooser<Paths.PathWithName> pathChooser = new SendableChooser<>();
-            pathChooser.setDefaultOption(Paths.straightPath.name, Paths.straightPath);
-            for (Paths.PathWithName path : Paths.listOfPaths) {
-                pathChooser.addOption(path.name, path);
-            }
-
-            //log chooser
-            commandPlayer.add("Paths", pathChooser)
-                    .withWidget(BuiltInWidgets.kComboBoxChooser)
-                    .withPosition(0, 0)
-                    .withSize(2, 1);
-            commandPlayer.add("Run Path Following Command",
-                    new FollowPathCommand(pathChooser.getSelected(), m_drivetrain))
-                    .withWidget(BuiltInWidgets.kCommand)
-                    .withPosition(2, 0)
-                    .withSize(2, 1);
         }
     }
 
@@ -219,6 +272,10 @@ public class RobotContainer {
                 new PrintCommand("Time at End: " + m_robotState.getTimeSeconds()));
     }
 
+    private SequentialCommandGroup getPathFollowCommand(PathPlannerTrajectory path) {
+        return getPathFollowCommand("no name", path);
+    }
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -226,8 +283,8 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         if (useDrive && driveType.equals("SwerveDrive")) {
-            var selectedPath = autoPathChooser.getSelected();
-            m_robotState.setStartPose(selectedPath.startPose);
+            var selectedPath = PathChooser.getSelected();
+            m_robotState.setStartPose(selectedPath.getInitialPose());
             return new FollowPathCommand(selectedPath, m_drivetrain);
         }
         return new PrintCommand("Autonomous! -----");
@@ -244,6 +301,21 @@ public class RobotContainer {
         m_robotState.onDisable();
         m_poseEstimator.onDisable();
         System.out.println("-----------disabled------------");
+    }
+
+    private static final class Paths {
+        public static PathPlannerTrajectory straightPath = PathPlanner.loadPath("Straight Path", 1, 0.5);
+        public static PathPlannerTrajectory straight180Path = PathPlanner.loadPath("180 while forward", 1, 0.5);
+        public static PathPlannerTrajectory tPath = PathPlanner.loadPath("TPath", 3, 1);
+        public static PathPlannerTrajectory circularPath = PathPlanner.loadPath("Circular", 1, 0.5);
+        public static PathPlannerTrajectory Auto1 = PathPlanner.loadPath("Auto1", 1, 0.5);
+        public static PathPlannerTrajectory testPath = PathPlanner.loadPath("Test", 1, 0.5);
+
+        public static PathPlannerTrajectory diagonalPath = PathPlanner.generatePath(
+                new PathConstraints(1, 0.7),
+                new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
+                new PathPoint(new Translation2d(3.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(180))// position, heading(direction of travel), holonomic rotation
+        );
     }
 }
 

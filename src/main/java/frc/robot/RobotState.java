@@ -5,7 +5,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.*;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -25,7 +28,7 @@ public class RobotState {
 
     private final ShuffleboardTab mainTab;
 
-    private Field2d field2d;
+    private final Field2d field2d;
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
 
@@ -38,18 +41,14 @@ public class RobotState {
         m_timer.stop();
 
         mainTab = Shuffleboard.getTab("MainTab");
-        ShuffleboardLayout layout = mainTab
-                .getLayout("State", BuiltInLayouts.kList)
+        ShuffleboardLayout layout = mainTab.getLayout("State", BuiltInLayouts.kGrid)
                 .withPosition(0, 0)
-                .withSize(2, 4);
+                .withSize(4, 4);
         layout.addNumber("pose x", () -> getCurrentPose().getX());
         layout.addNumber("pose y", () -> getCurrentPose().getY());
         layout.addNumber("pose angle", () -> getCurrentPose().getRotation().getDegrees());
         layout.addNumber("time", this::getTimeSeconds);
         field2d = new Field2d();
-        mainTab.add(field2d).withWidget(BuiltInWidgets.kField)
-                .withPosition(2, 0)
-                .withSize(4, 3);
     }
 
     public void startTimer() {
@@ -156,10 +155,6 @@ public class RobotState {
         return getDeltaDistance()/0.02;
     }
 
-    public Field2d getField() {
-        return field2d;
-    }
-
     public void onEnable() {
         startTimer();
         m_driveDataSet = new TreeMap<Double, DriveData>();
@@ -172,6 +167,7 @@ public class RobotState {
 
     public void update() {
         field2d.setRobotPose(getCurrentPose());
+        SmartDashboard.putData(field2d);
 
         double currentTimeMs = Timer.getFPGATimestamp();
         m_driveDataSet.tailMap(currentTimeMs - 2000, true);

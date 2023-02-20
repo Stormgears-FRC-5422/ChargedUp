@@ -5,11 +5,17 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.revrobotics.CANSparkMax;
 import com.swervedrivespecialties.swervelib.*;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.shuffleboard.*;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotState;
 
@@ -39,26 +45,35 @@ public class SDSDrivetrain extends DrivetrainBase {
             new Translation2d(-DRIVETRAIN_WHEELBASE_METERS / 2.0, -DRIVETRAIN_TRACKWIDTH_METERS / 2.0)
     );
 
-    private CANCoder fl, fr, bl, br;
+    private CANCoder fl;
+    private CANCoder fr;
+    private CANCoder bl;
+    private CANCoder br;
 
     // These are our modules. We initialize them in the constructor.
     // TODO use StormSparks with voltage and current safeties
-    private final SwerveModule
-            m_frontLeftModule, m_frontRightModule,
-            m_backLeftModule, m_backRightModule;
+    private final SwerveModule m_frontLeftModule;
+    private final SwerveModule m_frontRightModule;
+    private final SwerveModule m_backLeftModule;
+    private final SwerveModule m_backRightModule;
 
     private RobotState m_robotState;
 
     //pid gains from trapezoid move forward command
     //constraints made arbitrary
+    HolonomicDriveController m_holonomicController = new HolonomicDriveController(
+            new PIDController(1.5, 0., 0.),
+            new PIDController(1.5, 0., 0.),
+            new ProfiledPIDController(1.5, 0.3, 0.,
+                    new TrapezoidProfile.Constraints(
+                            6.28,
+                            3.14))
+    );
 
-    private PIDController xController = new PIDController(driveXkp, driveXki, 0.);
-    private PIDController yController = new PIDController(driveYkp, driveYki, 0.);
-    private PIDController rotController = new PIDController(turnkp, 0., 0.);
-    PPHolonomicDriveController m_holonomicController = new PPHolonomicDriveController(
-            xController,
-            yController,
-            rotController
+    PPHolonomicDriveController m_PPholonomicController = new PPHolonomicDriveController(
+            new PIDController(3., 0., 0.),
+            new PIDController(3., 0., 0.),
+            new PIDController(3., 0., 0.)
     );
 
     public SDSDrivetrain() {
@@ -68,6 +83,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
         Mk4iSwerveModuleHelper.GearRatio theGearRatio;
         ModuleConfiguration moduleConfiguration;
+        Mk4ModuleConfiguration modifiedModuleConfiguration;
 
         switch(kMK4iModuleKind) {
             case "L1":
@@ -166,18 +182,6 @@ public class SDSDrivetrain extends DrivetrainBase {
         backLeftModuleLayout.addNumber("driveDistance()", m_backLeftModule::getDriveDistance);
         backRightModuleLayout.addNumber("driveDistance()", m_backRightModule::getDriveDistance);
 
-        var pathFollowingTab = Shuffleboard.getTab("Path Following");
-
-        pathFollowingTab.add("X PID Controller", xController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(0, 1);
-        pathFollowingTab.add("Y PID Controller", yController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(1, 1);
-        pathFollowingTab.add("Rotation PID Controller", rotController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(2, 1);
-
         resetDriveEncoders();
     }
 
@@ -197,10 +201,15 @@ public class SDSDrivetrain extends DrivetrainBase {
     }
 
     @Override
-    public void goToTrajectoryState(Trajectory.State goalState) {}
+    public void goToTrajectoryState(Trajectory.State goalState) {
+        ChassisSpeeds speeds = m_holonomicController.calculate(
+                m_robotState.getCurrentPose(), goalState, goalState.poseMeters.getRotation()
+        );
+        drive(speeds, true);
+    }
 
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
-        var speeds = m_holonomicController.calculate(m_robotState.getCurrentPose(), goalState);
+        var speeds = m_PPholonomicController.calculate(m_robotState.getCurrentPose(), goalState);
         System.out.println("Current Chassis Speeds: " + speeds);
         drive(speeds, false);
     }

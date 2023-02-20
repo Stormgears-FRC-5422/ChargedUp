@@ -2,22 +2,20 @@ package frc.robot.commands.trajectory;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 public class FollowPathCommand extends CommandBase {
 
-    private final String m_name;
     private final PathPlannerTrajectory m_path;
     private final DrivetrainBase m_drivetrain;
 
     private double startTime, currentTime, endTime;
 
-    public FollowPathCommand(Paths.PathWithName path, DrivetrainBase drivetrain) {
-        m_name = path.name;
-        m_path = path.path;
+    public FollowPathCommand(PathPlannerTrajectory path, DrivetrainBase drivetrain) {
+        m_path = path;
         m_drivetrain = drivetrain;
 
         addRequirements(m_drivetrain);
@@ -27,7 +25,7 @@ public class FollowPathCommand extends CommandBase {
     public void initialize() {
         startTime = RobotState.getInstance().getTimeSeconds();
         endTime = m_path.getTotalTimeSeconds();
-        System.out.println("Following " + m_name + " path starting at: " + startTime);
+        System.out.println("Path Following Command Starting at: " + startTime);
         System.out.println("Pose at start: " + RobotState.getInstance().getCurrentPose());
     }
 
@@ -41,10 +39,14 @@ public class FollowPathCommand extends CommandBase {
                 goalState.poseMeters.getX(),
                 goalState.poseMeters.getY(),
                 goalState.holonomicRotation);
-        RobotState.getInstance().getField().getObject("Goal Position").setPose(goalPose);
 
-        SmartDashboard.putNumber("dTranslation", currentPose.getTranslation().getDistance(goalPose.getTranslation()));
-        SmartDashboard.putNumber("dRot", (currentPose.getRotation().getDegrees() - goalPose.getRotation().getDegrees()));
+        System.out.println("Goal Pose: " + goalPose);
+        System.out.println("Current Pose: " + currentPose);
+
+        System.out.println("Distance to goal translation: " +
+                currentPose.getTranslation().getDistance(goalPose.getTranslation()));
+        System.out.println("Degrees to holonomic rotation: " +
+                (currentPose.getRotation().getDegrees() - goalPose.getRotation().getDegrees()));
 
         m_drivetrain.goToPPTrajectoryState(goalState);
     }
@@ -52,7 +54,7 @@ public class FollowPathCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         System.out.println("Ending with interrupted: " + interrupted);
-        System.out.println("Following " + m_name + " path command ended at: " + RobotState.getInstance().getTimeSeconds());
+        System.out.println("Path Follow Command ended at: " + RobotState.getInstance().getTimeSeconds());
         System.out.println("Pose at End: " + RobotState.getInstance().getCurrentPose());
     }
 
