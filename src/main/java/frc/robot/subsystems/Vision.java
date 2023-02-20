@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FieldConstants;
 import frc.utils.data.StormStruct;
 
 import java.util.Arrays;
@@ -11,18 +14,16 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.Vector;
 
-import static frc.robot.FieldConstants.APRILTAG_FIELD_LAYOUT;
-
 public class Vision extends SubsystemBase {
     private final StormStruct storm_struct;
     private final Vector<HashMap<String, Double>> all_april_tags = new Vector<>();
-    private Vector<HashMap<String, Double>> info;
-
     public Pose3d robot_position = new Pose3d(0, 0, 0, new Rotation3d(0, 0, 0));
+    private Vector<HashMap<String, Double>> info;
 
     public Vision() {
         NetworkTableInstance nt_inst = NetworkTableInstance.getDefault();
         storm_struct = new StormStruct(nt_inst, "vision-data", "tag_data");
+
     }
 
     private void initializeAprilTags() {
@@ -38,7 +39,7 @@ public class Vision extends SubsystemBase {
         }
     }
 
-    private void updateAprilTagMap() {
+    private void updateAprilTagHashMap() {
         for (HashMap<String, Double> present_april_tag : info) {
             for (HashMap<String, Double> april_tag : all_april_tags) {
                 if (present_april_tag.get("id").equals(april_tag.get("id"))) {
@@ -65,47 +66,62 @@ public class Vision extends SubsystemBase {
         initializeAprilTags();
         // Temporary Testing Code
         info = storm_struct.get_data("april_tag");
-        updateAprilTagMap();
+//        updateAprilTagHashMap();
         SmartDashboard.putString("Info: ", info.toString());
+        System.out.println("Info: " + info.toString());
+//        System.out.println("All April Tags: " + all_april_tags.toString());
 
         displayAprilTagInfo();
-
         double[] position_array = new double[8];
         if (info.size() >= 2) {
             double[] closestAprilTags = getClosestAprilTags();
+            System.out.println("Closest April Tags: " + Arrays.toString(closestAprilTags));
             position_array = triangulatePosition(closestAprilTags[0], closestAprilTags[1]);
             displayPosition(position_array);
+            System.out.println("Position Array: " + Arrays.toString(position_array));
+
         }
 
         updateRobotPosition(position_array);
     }
 
     public double[] triangulatePosition(double id1, double id2) {
+        System.out.println(id1 + " " + id2);
         double dist1, dist2;
         double dist_between_markers;
         try {
             dist1 = getAprilTagInfo("id", id1, "distance");
             dist2 = getAprilTagInfo("id", id2, "distance");
             dist_between_markers = getDistBetweenMarkers(id1, id2);
+            System.out.println("Dist1: " + dist1);
+            System.out.println("Dist2: " + dist2);
+            System.out.println("Dist between markers: " + dist_between_markers);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(e.toString());
         }
         // double tag1_angle = Math.toDegrees(Math.acos((Math.pow(dist_between_markers, 2) + Math.pow(dist1, 2) - Math.pow(dist2, 2)) / (2 * dist_between_markers * dist1)));
         double tag1_angle = getAngle(dist2, dist_between_markers, dist1);
+        System.out.println("Tag1 Angle: " + tag1_angle);
         double x_tag1 = Math.cos(Math.toRadians(tag1_angle)) * dist1;
+        System.out.println("Tag1 X: " + x_tag1);
         double y_tag1 = Math.sin(Math.toRadians(tag1_angle)) * dist1;
+        System.out.println("Tag1 Y: " + y_tag1);
+
 
         // double tag2_angle = Math.toDegrees(Math.acos((Math.pow(dist_between_markers, 2) + Math.pow(dist2, 2) - Math.pow(dist1, 2)) / (2 * dist_between_markers * dist2)));
         double tag2_angle = getAngle(dist1, dist_between_markers, dist2);
+        System.out.println("Tag2 Angle: " + tag2_angle);
         double x_tag2 = Math.cos(Math.toRadians(tag2_angle)) * dist2;
+        System.out.println("Tag2 X: " + x_tag2);
         double y_tag2 = Math.sin(Math.toRadians(tag2_angle)) * dist2;
+        System.out.println("Tag2 Y: " + y_tag2);
 
         return new double[]{id1, tag1_angle, x_tag1, y_tag1, id2, tag2_angle, x_tag2, y_tag2};
     }
 
     public void updateRobotPosition(double[] position_array) {
         Translation3d robot_translation = new Translation3d();
-        Optional<Pose3d> april_tag = APRILTAG_FIELD_LAYOUT.getTagPose((int)position_array[0]);
+        Optional<Pose3d> april_tag = FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) position_array[0]);
         if (april_tag.isPresent()) {
             robot_translation = new Translation3d(april_tag.get().getX() + position_array[2], april_tag.get().getY() + position_array[3], april_tag.get().getZ());
         }
@@ -133,19 +149,21 @@ public class Vision extends SubsystemBase {
     }
 
     private double getDistBetweenMarkers(double id1, double id2) throws IllegalArgumentException {
-        if (APRILTAG_FIELD_LAYOUT.getTagPose((int) id1).isPresent() && APRILTAG_FIELD_LAYOUT.getTagPose((int) id2).isPresent()) {
-            return Math.abs(APRILTAG_FIELD_LAYOUT.getTagPose((int) id1).get().getX() - APRILTAG_FIELD_LAYOUT.getTagPose((int) id2).get().getX());
+        if (FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) id1).isPresent() && FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) id2).isPresent()) {
+            return Math.abs(FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) id1).get().getY() - FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) id2).get().getY());
         }
         throw new IllegalArgumentException("One/both of the IDs provided do not exist.");
     }
 
     private double getAngle(double a, double b, double c) {
+        System.out.println("Angle: " + Math.acos((Math.pow(b, 2) + Math.pow(c, 2) - Math.pow(a, 2)) / (2 * b * c)));
         return Math.toDegrees(Math.acos((Math.pow(b, 2) + Math.pow(c, 2) - Math.pow(a, 2)) / (2 * b * c)));
     }
 
     private double getAprilTagInfo(String query_key, double query_value, String return_key) throws IllegalArgumentException {
-        for (HashMap<String, Double> present_april_tag : all_april_tags) {
+        for (HashMap<String, Double> present_april_tag : info) {
             if (present_april_tag.containsKey(query_key) && present_april_tag.get(query_key) == query_value) {
+                System.out.println("Returning: " + present_april_tag.get(return_key));
                 return present_april_tag.get(return_key);
             }
         }

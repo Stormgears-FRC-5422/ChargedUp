@@ -10,14 +10,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import java.io.IOException;
-import java.sql.Driver;
 import java.util.List;
-import java.util.Optional;
 
-public class FieldConstants {
+
+public final class FieldConstants {
     public static double FIELD_WIDTH = Units.feetToMeters(54) + Units.inchesToMeters(3.25);
     public static double FIELD_LENGTH = Units.feetToMeters(26) + Units.inchesToMeters(3.5);
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     public static AprilTagFieldLayout APRILTAG_FIELD_LAYOUT;
     static {
