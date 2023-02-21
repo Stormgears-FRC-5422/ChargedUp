@@ -19,8 +19,6 @@ public final class Constants {
 
     public static final String robotName = StormProp.getString("robotName", "");
 
-    public static final boolean useCompressor = StormProp.getBoolean("useCompressor",true);
-
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
     public static final int kLogitechControllerPort = StormProp.getInt("LogitechControllerPort", -1);
     public static final double kTemperatureRampThreshold = StormProp.getNumber("SparkMaxTemperatureRampThreshold", 45.0);
@@ -31,6 +29,7 @@ public final class Constants {
     public static final double kSparkMaxFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
     public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
     public static final double kPrecisionSpeedScale = StormProp.getNumber("precisionSpeedScale", 0.0);
+    public static final double kArmSpeedScale = StormProp.getNumber("armSpeedScale", 0.0);
 
     public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
     public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);
@@ -89,15 +88,25 @@ public final class Constants {
     public static final int kSolendoidChannel = StormProp.getInt("SolenoidChannel", -1);
     public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
     public static final int armElbowID = StormProp.getInt("armElbowID", -1);
-    
+    public static final int armShoulderEncoderID = StormProp.getInt("armShoulderEncoderID", -1);
+    public static final int armElbowEncoderID = StormProp.getInt("armElbowEncoderID", -1);
+    public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
+    public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
+    public static final int magEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
+
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
 
+    // **********
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
+    // **********
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
     public static boolean useController = StormProp.getBoolean("useController", false);
     public static boolean usePneumatics = StormProp.getBoolean("usePneumatics",false);
     public static boolean useStormNet = StormProp.getBoolean("useStormNet",false);
 	public static boolean useArm = StormProp.getBoolean("useArm", false);
+    // **********
+    // Don't put other variables after the usage members
+    // **********
 }

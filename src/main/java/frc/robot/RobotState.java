@@ -201,4 +201,8 @@ public class RobotState {
             return modulePositions;
         }
     }
+
+    public static class ArmData {
+
+    }
 }

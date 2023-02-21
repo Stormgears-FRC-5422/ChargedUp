@@ -33,14 +33,15 @@ import frc.robot.commands.TrapezoidMoveForward;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.commands.trajectory.FollowTrajectoryCommand;
 import frc.robot.commands.trajectory.Trajectories;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.GyroCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.joysticks.StormLogitechController;
 
 import java.nio.file.Path;
@@ -64,7 +65,7 @@ public class RobotContainer {
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
     PoseEstimator m_poseEstimator;
     Compression m_compression;
-
+    Arm m_arm;
     StormNet m_stormNet;
 
     StormLogitechController m_controller;
@@ -75,10 +76,6 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() throws IllegalDriveTypeException {
-
-        if (usePneumatics) {
-            m_compression = new Compression();
-        }
 
         m_robotState = RobotState.getInstance();
         m_robotState.setStartPose(new Pose2d());
@@ -124,6 +121,10 @@ public class RobotContainer {
             }
         } else {
             System.out.println("NOT using drive");
+        }
+
+        if (useArm) {
+            m_arm = new Arm();
         }
 
         if (usePneumatics) {

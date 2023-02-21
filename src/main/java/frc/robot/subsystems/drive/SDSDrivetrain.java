@@ -221,6 +221,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         ((CANSparkMax) m_backRightModule.getDriveMotor()).getEncoder().setPosition(0);
     }
 
+    @Override
     public void periodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);

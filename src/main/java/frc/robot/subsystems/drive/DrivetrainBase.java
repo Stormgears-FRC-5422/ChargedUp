@@ -106,6 +106,8 @@ public abstract class DrivetrainBase extends SubsystemBase {
         return m_chassisSpeeds;
     }
 
+    // TOOD - these shouldn't be part of the generic parent class. If you know you have a swerve drive in certain places
+    // e.g. auto driving... then you can cast to that type there.
     public abstract SwerveDriveKinematics getSwerveDriveKinematics();
     public abstract SwerveModulePosition[] getSwerveModulePositions();
     public abstract void goToTrajectoryState(Trajectory.State goalState);
