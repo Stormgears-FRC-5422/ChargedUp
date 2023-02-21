@@ -5,12 +5,13 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
 
 import static frc.robot.Constants.*;
 
-public class Arm {
+public class Arm extends SubsystemBase {
     private boolean running;
     
     public StormSpark shoulder;
@@ -52,16 +53,16 @@ public class Arm {
    
     }
 
-    public void setEncoderOffsetTicks(StormTalon talon, int offset) {
+    private void setEncoderOffsetTicks(StormTalon talon, int offset) {
         talon.setOffsetRadians(2. * Math.PI * offset / magEncoderTicksPerRotation);
     }
 
     // TODO - what are the best natural units for this? ticks, radians, degrees?
-    public double getEncoderAbsolutePositionDegrees(StormTalon talon) {
+    private double getEncoderAbsolutePositionDegrees(StormTalon talon) {
         return 360. * talon.getPositionTicks() / magEncoderTicksPerRotation;
     }
 
-    protected void setMaxVelocities(double maxShoulderOmegaRadiansPerSecond, double maxElbowOmegaRadiansPerSecond) {
+    private void setMaxVelocities(double maxShoulderOmegaRadiansPerSecond, double maxElbowOmegaRadiansPerSecond) {
         this.m_maxShoulderOmegaRadiansPerSecond = maxShoulderOmegaRadiansPerSecond;
         this.m_maxElbowOmegaRadiansPerSecond = maxElbowOmegaRadiansPerSecond;
     }

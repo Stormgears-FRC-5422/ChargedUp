@@ -1,7 +1,7 @@
 package frc.robot.subsystems.stormnet;
 
 public class BasicLidar extends StormNetSensor {
-	private short[] sensorDetails;
+	private final short[] sensorDetails;
 
 
 	public BasicLidar(StormNetVoice voice) {

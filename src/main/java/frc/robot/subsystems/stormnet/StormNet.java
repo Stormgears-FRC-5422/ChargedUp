@@ -14,7 +14,7 @@ public class StormNet {
 	private StormNetSensor m_testSensor;
 	private BasicLidar m_lidar;
 
-	private Map<String, Integer> m_commandMap;
+	private final Map<String, Integer> m_commandMap;
 	private int m_commandSize = -1;
 
 	private StormNet() {
@@ -66,7 +66,7 @@ public class StormNet {
 		}
 
 		m_testSensor.setDebug(true);
-		System.out.println("core test " + new String(m_testSensor.test() ? "passed" : "failed"));
+		System.out.println("core test " + (m_testSensor.test() ? "passed" : "failed"));
 //		System.out.println("about to test lidar");
 //		m_lidar.test();
 		m_testSensor.setDebug(false);

@@ -23,7 +23,7 @@ public class StormNetSensor {
 	private boolean m_simulation = false;
 	int m_numSensors = -1;
 	String m_deviceString;
-	private StormNetVoice m_voice;  // Handles the underlying communication channel
+	private final StormNetVoice m_voice;  // Handles the underlying communication channel
 	byte[] m_command;
 
 	// I don't understand why these are backwards, but there you have it.
@@ -69,7 +69,7 @@ public class StormNetSensor {
 
 		try {
 			// some basic tests - should really aggregate results to indicate success or failure overall.
-			log("Ping test returned " + Byte.toString(ping()));
+			log("Ping test returned " + ping());
 			TimeUnit.SECONDS.sleep(sleep);
 			log("Fast test returned " + (fast() ? "true" : "false"));
 			TimeUnit.SECONDS.sleep(sleep);
