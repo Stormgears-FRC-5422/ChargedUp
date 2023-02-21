@@ -85,7 +85,8 @@ public final class Constants {
     public static final String driveType = StormProp.getString("driveType", "");
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
-    public static final int kSolendoidChannel = StormProp.getInt("SolenoidChannel", -1);
+    public static final int onOffSolenoidChannel = StormProp.getInt("onOffSolenoidChannel", -1);
+    public static final int cubeConeSolenoidChannel = StormProp.getInt("cubeConeSolenoidChannel", -1);
     public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
     public static final int armElbowID = StormProp.getInt("armElbowID", -1);
     public static final int armShoulderEncoderID = StormProp.getInt("armShoulderEncoderID", -1);

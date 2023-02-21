@@ -19,19 +19,25 @@ import static frc.robot.Constants.*;
 
 public class Compression extends SubsystemBase {
     private boolean running;
-    private boolean solenoidSet;
+    private boolean onOffSolenoidSet;
+    private boolean cubeConeSolenoidSet;
     private Compressor mainCompressor;
-    private Solenoid solenoid;
+    private Solenoid onOffSolenoid;
+    private Solenoid cubeConeSolenoid;
 
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
         mainCompressor.disable();
 
-        solenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, kSolendoidChannel);
-        solenoid.set(false);
+        onOffSolenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, onOffSolenoidChannel);
+        onOffSolenoid.set(false);
+
+        cubeConeSolenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, cubeConeSolenoidChannel);
+        cubeConeSolenoid.set(false);
 
         running = false;
-        solenoidSet = false;
+        onOffSolenoidSet = false;
+        cubeConeSolenoidSet = false;
         printStatus();
     }
 
@@ -47,16 +53,31 @@ public class Compression extends SubsystemBase {
         printStatus();
     }
 
-    public void setPiston(boolean isOn) {
-        solenoid.set(isOn);
-        solenoidSet = isOn;
+    // public void setPiston(boolean isOn) {
+    //     solenoid.set(isOn);
+    //     solenoidSet = isOn;
+    // }
+
+    private void grabCube(){
+        cubeConeSolenoid.set(true);
+        onOffSolenoid.set(true);
+
+    }
+    private void grabCone(){
+        cubeConeSolenoid.set(false);
+        onOffSolenoid.set(true);
+
+    }
+    private void release(){
+        cubeConeSolenoid.set(false);
+        onOffSolenoid.set(false);
     }
 
     private void printStatus() {
         System.out.println("\n\nShould be running: " + running);
-        System.out.println("Solenoid should be enabled(): " + solenoidSet);
+        System.out.println("Solenoid should be enabled(): " + onOffSolenoidSet);
         System.out.println("Compressor isEnabled: " + mainCompressor.isEnabled());
         System.out.println("Compressor getPressureSwitchValve: " + mainCompressor.getPressureSwitchValue());
-        System.out.println("Solenoid isEnabled(): " + !solenoid.isDisabled());
+        System.out.println("Solenoid isEnabled(): " + !onOffSolenoid.isDisabled());
     }
 }
