@@ -2,7 +2,9 @@ package frc.robot.subsystems.arm;
 
 import com.revrobotics.CANSparkMaxLowLevel;
 
+import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -25,6 +27,7 @@ public class Arm extends SubsystemBase {
     // The arm Joint speeds will always be scaled by this factor. It defaults to kArmSpeedScale, but can be reset
     // (say by using the slider on the joystick)
     protected double m_armSpeedScale = 0;
+    private int count = 0;
 
     protected ArmJointSpeeds m_jointSpeeds = new ArmJointSpeeds(0.0, 0.0);
 
@@ -36,11 +39,21 @@ public class Arm extends SubsystemBase {
         setMaxAngularVelocities(maxShoulderOmegaRadiansPerSecond, maxElbowOmegaRadiansPerSecond);
 
         shoulder = new StormSpark(armShoulderID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
+        shoulder.setInverted(false);
+        shoulder.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
+        shoulder.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
+
         elbow = new StormSpark(armElbowID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
+        elbow.setInverted(true);
+        elbow.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
+        elbow.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
 
         shoulderEncoder = new StormTalon(armShoulderEncoderID);
-        elbowEncoder = new StormTalon(armElbowEncoderID);
+        shoulderEncoder.setSensorPhase(true);
         setEncoderOffsetTicks(shoulderEncoder, armShoulderEncoderOffsetTicks);
+
+        elbowEncoder = new StormTalon(armElbowEncoderID);
+        elbowEncoder.setSensorPhase(false);
         setEncoderOffsetTicks(elbowEncoder, armElbowEncoderOffsetTicks);
     }
 
@@ -48,8 +61,18 @@ public class Arm extends SubsystemBase {
     public void periodic() {
         double MAX_VOLTAGE = 12.0;
 
-        shoulder.setVoltage(MAX_VOLTAGE * m_jointSpeeds.shoulderOmegaRadiansPerSecond / m_maxShoulderOmegaRadiansPerSecond);
-        elbow.setVoltage(MAX_VOLTAGE * m_jointSpeeds.elbowOmegaRadiansPerSecond / m_maxElbowOmegaRadiansPerSecond);
+        double s = MAX_VOLTAGE * m_jointSpeeds.shoulderOmegaRadiansPerSecond / m_maxShoulderOmegaRadiansPerSecond;
+        double e = MAX_VOLTAGE * m_jointSpeeds.elbowOmegaRadiansPerSecond / m_maxElbowOmegaRadiansPerSecond;
+
+        int ps = shoulderEncoder.getPositionTicks();
+        int pe = elbowEncoder.getPositionTicks();
+
+        shoulder.setVoltage(s);
+        elbow.setVoltage(e);
+
+        if (count++ % 25 == 0) {
+            System.out.println("Shoulder v: " + s + " , p: " + ps + " ; Elbow v: " + e + " , p: " + pe);
+        }
     }
 
     public void moveArm(ArmJointSpeeds speeds) {

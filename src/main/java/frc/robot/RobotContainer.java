@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TrapezoidMoveForward;
+import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.commands.trajectory.FollowTrajectoryCommand;
 import frc.robot.commands.trajectory.Trajectories;
@@ -43,6 +45,7 @@ import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.StormLogitechController;
+import frc.utils.joysticks.StormXboxController;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -59,14 +62,27 @@ import static frc.robot.Constants.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    RobotState m_robotState;
-    GyroCommand m_gyrocommand;
+
+    // **********
+    // SUBSYSTEMS
+    // **********
     DrivetrainBase m_drivetrain;
-    //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
-    PoseEstimator m_poseEstimator;
     Compression m_compression;
     Arm m_arm;
     StormNet m_stormNet;
+
+    // **********
+    // COMMANDS
+    // **********
+    GyroCommand m_gyrocommand;
+    BasicArm m_basicArm;
+    //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
+
+    // **********
+    // Other
+    // **********
+    RobotState m_robotState;
+    PoseEstimator m_poseEstimator;
 
     StormLogitechController m_controller;
 
@@ -86,20 +102,7 @@ public class RobotContainer {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
             } catch (Exception e) {
                 e.printStackTrace();
-                useDrive = false;
-                System.out.println("NOT using drive - caught exception!");
-            }
-        } else {
-            System.out.println("NOT using drive");
-        }
-
-        // Note the pattern of attempting to create the object then disabling it if that creation fails
-        if (useDrive) {
-            try {
-                m_drivetrain = DrivetrainFactory.getInstance(driveType);
-            } catch (Exception e) {
-                e.printStackTrace();
-                useDrive = false;
+                 useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
 
@@ -125,6 +128,8 @@ public class RobotContainer {
 
         if (useArm) {
             m_arm = new Arm();
+        } else {
+            System.out.println("NOT using arm");
         }
 
         if (usePneumatics) {
@@ -158,6 +163,13 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
+        if (useArm && useController) {
+            StormXboxController xboxController = new StormXboxController(1);
+            m_basicArm = new BasicArm(m_arm,
+                    ()->xboxController.getLeftJoystickY(),
+                    ()->xboxController.getRightJoystickY());
+            m_arm.setDefaultCommand(m_basicArm);
+        }
 
         if (useDrive && useController) {
             // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
@@ -182,7 +194,7 @@ public class RobotContainer {
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
         }
 
-        if (useDrive && driveType.equals("SwerveDrive") && useDrive) {
+        if (useDrive && driveType.equals("SwerveDrive")) {
 //            SmartDashboard.putData("Trapezoid Move Forward Command",
 //                    new TrapezoidMoveForward(m_drivetrain, 5, 1, 0.5));
 //
@@ -291,16 +303,26 @@ public class RobotContainer {
         return new PrintCommand("Autonomous! -----");
     }
 
+
     void onEnable() {
         m_robotState.onEnable();
-        m_drivetrain.onEnable();
-        m_poseEstimator.onEnable();
+        if (useDrive) {
+            m_drivetrain.onEnable();
+            if (driveType.equals("SwerveDrive")) {
+                m_poseEstimator.onEnable();
+            }
+        }
         System.out.println("-------------enabled-------------");
     }
 
     void onDisable() {
         m_robotState.onDisable();
-        m_poseEstimator.onDisable();
+        if (useDrive) {
+            m_drivetrain.onDisable();
+            if (driveType.equals("SwerveDrive")) {
+                m_poseEstimator.onDisable();
+            }
+        }
         System.out.println("-----------disabled------------");
     }
 
