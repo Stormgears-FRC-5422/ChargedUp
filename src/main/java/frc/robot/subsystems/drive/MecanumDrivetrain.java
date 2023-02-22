@@ -2,11 +2,9 @@ package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.pathplanner.lib.PathPlannerTrajectory;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 import static frc.robot.Constants.*;
 
@@ -48,7 +46,7 @@ public class MecanumDrivetrain extends DrivetrainBase {
         m_frontRightTalon.setInverted(true);
         m_backRightTalon.setInverted(true);
 
-        double maxVelocityMetersPerSecond = 2 * Math.PI * kWheelRadiumMeters * kWheelMaxRPM / 60.0;
+        double maxVelocityMetersPerSecond = 2 * Math.PI * kWheelRadiusMeters * kWheelMaxRPM / 60.0;
         double maxAngularVelocityRadiansPerSecond = maxVelocityMetersPerSecond /
                 Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
 

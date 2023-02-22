@@ -26,7 +26,7 @@ public final class Constants {
     public static final double kSparkMaxCurrentLimit = StormProp.getNumber("SparkMaxCurrentLimit", 35.0);
     public static final double kSparkMaxCurrentLimit550 = StormProp.getNumber("SparkMax550CurrentLimit", 25.0);
 
-    public static final double kSparkMaxFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
+    public static final double kNeoFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
     public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
     public static final double kPrecisionSpeedScale = StormProp.getNumber("precisionSpeedScale", 0.0);
     public static final double kArmSpeedScale = StormProp.getNumber("armSpeedScale", 0.0);
@@ -57,7 +57,7 @@ public final class Constants {
     public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
 
     // <mecanum> Not needed for swerve, just mecanum
-    public static final double kWheelRadiumMeters = StormProp.getNumber("wheelRadiusMeters", 0.);
+    public static final double kWheelRadiusMeters = StormProp.getNumber("wheelRadiusMeters", 0.);
     public static final double kWheelMaxRPM = StormProp.getNumber("wheelMaxRPM", 0.);
     // </mecanum>
 
@@ -94,6 +94,8 @@ public final class Constants {
     public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
     public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
     public static final int magEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
+    public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
+    public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
 
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 

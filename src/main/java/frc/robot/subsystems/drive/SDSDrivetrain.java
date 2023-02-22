@@ -110,7 +110,7 @@ public class SDSDrivetrain extends DrivetrainBase {
 //        usedModuleConfiguration = moduleConfiguration;
 
         // Derived from module details above
-        double maxVelocityMetersPerSecond = kSparkMaxFreeSpeedRPM / 60.0 *
+        double maxVelocityMetersPerSecond = kNeoFreeSpeedRPM / 60.0 *
                                             moduleConfiguration.getDriveReduction() *
                                             moduleConfiguration.getWheelDiameter() * Math.PI;
         double maxAngularVelocityRadiansPerSecond = maxVelocityMetersPerSecond /
