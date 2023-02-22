@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.FieldConstants;
@@ -70,19 +73,20 @@ public class Vision extends SubsystemBase {
         SmartDashboard.putString("Info: ", info.toString());
         System.out.println("Info: " + info.toString());
 //        System.out.println("All April Tags: " + all_april_tags.toString());
-
         displayAprilTagInfo();
-        double[] position_array = new double[8];
+        for (int i = 1; i <= 8; i++) {
+            System.out.println("April Tag " + i + ": " + FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose(i));
+        }
+        double[] position_array;
         if (info.size() >= 2) {
             double[] closestAprilTags = getClosestAprilTags();
             System.out.println("Closest April Tags: " + Arrays.toString(closestAprilTags));
             position_array = triangulatePosition(closestAprilTags[0], closestAprilTags[1]);
             displayPosition(position_array);
             System.out.println("Position Array: " + Arrays.toString(position_array));
-
+            updateRobotPosition(position_array);
         }
 
-        updateRobotPosition(position_array);
     }
 
     public double[] triangulatePosition(double id1, double id2) {
@@ -120,14 +124,27 @@ public class Vision extends SubsystemBase {
     }
 
     public void updateRobotPosition(double[] position_array) {
-        Translation3d robot_translation = new Translation3d();
-        Optional<Pose3d> april_tag = FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) position_array[0]);
+        double[] closest_april_tag;
+//        if (getAprilTagInfo("id", position_array[0], "distance") >= getAprilTagInfo("id", position_array[4], "distance")) {
+        if (position_array[1] <= position_array[5]) {
+            closest_april_tag = new double[]{position_array[0], position_array[1], position_array[2], position_array[3]};
+        } else {closest_april_tag = new double[]{position_array[4], position_array[5], position_array[6], position_array[7]};}
+        Translation3d robot_translation;
+
+        Optional<Pose3d> april_tag = FieldConstants.APRILTAG_FIELD_LAYOUT.getTagPose((int) closest_april_tag[0]);
         if (april_tag.isPresent()) {
-            robot_translation = new Translation3d(april_tag.get().getX() + position_array[2], april_tag.get().getY() + position_array[3], april_tag.get().getZ());
+//            robot_translation = new Translation3d(april_tag.get().getX() + position_array[2], april_tag.get().getY() + position_array[3], april_tag.get().getZ());
+            robot_translation = new Translation3d(closest_april_tag[3], closest_april_tag[2], april_tag.get().getZ());
+            SmartDashboard.putString("Robot Translation: ", robot_translation.toString());
+            Rotation3d robot_rotation = new Rotation3d(0.0, 0.0, closest_april_tag[1]); // TODO: Need to implement NavX and off-center angle
+            SmartDashboard.putString("Robot Rotation: ", robot_rotation.toString());
+//        robot_position = robot_position.relativeTo(new Pose3d(robot_translation, robot_rotation));
+            robot_position = april_tag.get().plus(new Transform3d(robot_translation, robot_rotation));
+            SmartDashboard.putString("April Tag Position: ", "" + april_tag.get().getTranslation());
+            System.out.println("April Tag " +  closest_april_tag[0] + " Position: " + april_tag.get().getTranslation());
+            SmartDashboard.putString("Robot Position: ", robot_position.toString());
+            System.out.println("Robot Position: " + robot_position.toString());
         }
-        Rotation3d robot_rotation = new Rotation3d(0.0, 0.0, position_array[1]); // TODO: Need to implement NavX and off-center angle
-        robot_position = robot_position.relativeTo(new Pose3d(robot_translation, robot_rotation));
-        SmartDashboard.putString("Robot Position: ", robot_position.toString());
     }
 
     private double[] getClosestAprilTags() {
@@ -156,14 +173,12 @@ public class Vision extends SubsystemBase {
     }
 
     private double getAngle(double a, double b, double c) {
-        System.out.println("Angle: " + Math.acos((Math.pow(b, 2) + Math.pow(c, 2) - Math.pow(a, 2)) / (2 * b * c)));
         return Math.toDegrees(Math.acos((Math.pow(b, 2) + Math.pow(c, 2) - Math.pow(a, 2)) / (2 * b * c)));
     }
 
     private double getAprilTagInfo(String query_key, double query_value, String return_key) throws IllegalArgumentException {
         for (HashMap<String, Double> present_april_tag : info) {
             if (present_april_tag.containsKey(query_key) && present_april_tag.get(query_key) == query_value) {
-                System.out.println("Returning: " + present_april_tag.get(return_key));
                 return present_april_tag.get(return_key);
             }
         }
