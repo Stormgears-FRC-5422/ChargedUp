@@ -146,9 +146,9 @@ public class Robot extends TimedRobot {
                         + "\n" +
                         "*****************");
 
-//    if(usePneumatics) {
-//      m_robotContainer.m_compression.startCompressor();
-//    }
+        if (usePneumatics) {
+          m_robotContainer.m_compression.startCompressor();
+        }
     }
 
     /** This function is called periodically during operator control. */

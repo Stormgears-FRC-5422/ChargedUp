@@ -58,17 +58,17 @@ public class Compression extends SubsystemBase {
     //     solenoidSet = isOn;
     // }
 
-    private void grabCube(){
+    public void grabCube(){
         cubeConeSolenoid.set(true);
         onOffSolenoid.set(true);
 
     }
-    private void grabCone(){
+    public void grabCone(){
         cubeConeSolenoid.set(false);
         onOffSolenoid.set(true);
 
     }
-    private void release(){
+    public void release(){
         cubeConeSolenoid.set(false);
         onOffSolenoid.set(false);
     }
