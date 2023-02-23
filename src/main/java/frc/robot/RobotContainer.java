@@ -152,7 +152,6 @@ public class RobotContainer {
         // Configure the trigger bindings
         configureBindings();
     }
-
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
      * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -163,12 +162,21 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
+        StormXboxController xboxController = new StormXboxController(1);
+
         if (useArm && useController) {
-            StormXboxController xboxController = new StormXboxController(1);
             m_basicArm = new BasicArm(m_arm,
                     ()->xboxController.getLeftJoystickY(),
                     ()->xboxController.getRightJoystickY());
             m_arm.setDefaultCommand(m_basicArm);
+        }
+
+        if (usePneumatics && useController) {
+            new Trigger(() -> xboxController.getYButtonIsHeld()).onTrue(new InstantCommand(m_compression::grabCone));
+            new Trigger(() -> xboxController.getXButtonIsHeld()).onTrue(new InstantCommand(m_compression::grabCube));
+            new Trigger(() -> xboxController.getBButtonIsHeld()).onTrue(new InstantCommand(m_compression::release));
+        } else {
+            System.out.println("Pneumatics or controller not operational");
         }
 
         if (useDrive && useController) {
@@ -192,7 +200,8 @@ public class RobotContainer {
         	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
         	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
-        }
+    }
+
 
         if (useDrive && driveType.equals("SwerveDrive")) {
 //            SmartDashboard.putData("Trapezoid Move Forward Command",
