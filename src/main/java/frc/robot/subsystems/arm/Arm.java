@@ -70,9 +70,9 @@ public class Arm extends SubsystemBase {
         shoulder.setVoltage(s);
         elbow.setVoltage(e);
 
-        if (count++ % 25 == 0) {
-            System.out.println("Shoulder v: " + s + " , p: " + ps + " ; Elbow v: " + e + " , p: " + pe);
-        }
+//        if (count++ % 100 == 0) {
+//            System.out.println("Shoulder v: " + s + " , p: " + ps + " ; Elbow v: " + e + " , p: " + pe);
+//        }
     }
 
     public void moveArm(ArmJointSpeeds speeds) {
