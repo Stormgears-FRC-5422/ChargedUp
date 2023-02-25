@@ -26,6 +26,8 @@ public class RobotState {
     private Pose2d m_startPose;
     private Pose2d m_lastPose;
 
+    private Rotation2d m_currentGyroRotation;
+
     private final ShuffleboardTab mainTab;
 
     private final Field2d field2d;
@@ -73,6 +75,13 @@ public class RobotState {
         resetPose(new Pose2d());
     }
 
+    public void setCurrentGyroRotation(Rotation2d rotation) {
+        this.m_currentGyroRotation = rotation;
+    }
+
+    public Rotation2d getCurrentGyroRotation() {
+        return this.m_currentGyroRotation;
+    }
 
     public Pose2d getCurrentPose() {
         if (m_currentPose == null) return getStartPose();

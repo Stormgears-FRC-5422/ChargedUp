@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -35,6 +36,7 @@ import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.commands.trajectory.FollowTrajectoryCommand;
 import frc.robot.commands.trajectory.Trajectories;
+import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
@@ -70,10 +72,13 @@ public class RobotContainer {
     Compression m_compression;
     Arm m_arm;
     StormNet m_stormNet;
+    NavX m_NavX;
 
     // **********
     // COMMANDS
     // **********
+    BalanceCommand m_balancecommand;
+
     GyroCommand m_gyrocommand;
     BasicArm m_basicArm;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
@@ -122,9 +127,15 @@ public class RobotContainer {
                 PathChooser.addOption("Auto1 Path (caution!)", Paths.Auto1);
                 SmartDashboard.putData("Auto Paths", PathChooser);
             }
+            System.out.println("Using Drive");
         } else {
             System.out.println("NOT using drive");
         }
+
+        if (useNavX) {
+            m_NavX = new NavX();
+        } else
+            System.out.println("NOT using NavX");
 
         if (useArm) {
             m_arm = new Arm();
@@ -199,8 +210,11 @@ public class RobotContainer {
         	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
         	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
         	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-            new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
-    }
+          new Trigger(() -> m_controller.getRawButton(6)).whileTrue(new BalanceCommand(
+                                                                        ()-> m_NavX.getPitch(),
+                                                                        ()-> m_NavX.getRoll(),
+                                                                        m_drivetrain));
+        }
 
 
         if (useDrive && driveType.equals("SwerveDrive")) {
@@ -287,7 +301,7 @@ public class RobotContainer {
                     new PIDController(3.0, 0, 0),
                     new PIDController(1.0, 0, 0),
                     speeds -> m_drivetrain.drive(speeds, true),
-                    false,
+                        false,
                     m_drivetrain)
                 ).andThen(
                 new PrintCommand("Pose at End: " + m_robotState.getCurrentPose())).andThen(

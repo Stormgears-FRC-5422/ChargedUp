@@ -11,6 +11,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotState;
 import frc.robot.subsystems.NavX;
 
 import static frc.robot.Constants.*;
@@ -18,7 +19,7 @@ import static frc.robot.Constants.*;
 public abstract class DrivetrainBase extends SubsystemBase {
     // TODO - The important thing about how you configure your gyroscope is that rotating the robot counter-clockwise should
     // cause the angle reading to increase until it wraps back over to zero.
-    protected NavX m_gyro = new NavX();
+//    protected NavX m_gyro;
 
     // FIXME Measure the drivetrain's maximum velocity or calculate the theoretical.
     //  The formula for calculating the theoretical maximum velocity is:
@@ -86,20 +87,10 @@ public abstract class DrivetrainBase extends SubsystemBase {
     }
 
     public void zeroGyroscope() {
-        if (m_gyro == null) return;
-        m_gyro.zeroYaw();
+
     }
     public Rotation2d getGyroscopeRotation() {
-        if (m_gyro == null) return Rotation2d.fromDegrees(0);
-//
-//        if (m_gyro.isMagnetometerCalibrated()) {
-//            // We will only get valid fused headings if the magnetometer is calibrated
-//            System.out.println("Current heading: " + m_gyro.getFusedHeading());
-//            return Rotation2d.fromDegrees(m_gyro.getFusedHeading());
-//        }
-
-        // We have to invert the angle of the NavX so that rotating the robot counter-clockwise makes the angle increase.
-        return Rotation2d.fromDegrees(360.0 - m_gyro.getYaw());
+        return RobotState.getInstance().getCurrentGyroRotation();
     }
 
     public ChassisSpeeds getCurrentChassisSpeeds() {
