@@ -1,11 +1,14 @@
 package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotState;
+
 import static frc.robot.Constants.*;
 
 public class NavX extends SubsystemBase {
@@ -17,6 +20,7 @@ public class NavX extends SubsystemBase {
         switch (navXConnection) {
             case "SPI":
                 m_gyro = new AHRS(SPI.Port.kMXP);
+                System.out.println("SPI");
                 break;
             case "USB":
                 m_gyro = new AHRS(SerialPort.Port.kUSB);
@@ -57,5 +61,10 @@ public class NavX extends SubsystemBase {
 
     public double getFusedHeading() {
         return m_gyro.getFusedHeading();
+    }
+
+    @Override
+    public void periodic() {
+        RobotState.getInstance().setCurrentGyroRotation(Rotation2d.fromDegrees(360.0 - getYaw()));
     }
 }
