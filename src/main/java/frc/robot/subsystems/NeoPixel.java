@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.lights.AddressableLEDBufferRGBW;
@@ -21,14 +22,12 @@ public class NeoPixel extends SubsystemBase {
         lightStrip.setData(buffer);
         lightStrip.start();
         fullColor = new Color8Bit(153, 51, 255); //purple
-        blankColor = new Color8Bit(0, 0, 0); //blank or off
-
+        blankColor = new Color8Bit(0, 0, 0);
     }
     public void blink(){
         countLED++;
         if (countLED % 50 > 25) {
             setAll(blankColor);
-            System.out.println("should be off");
         };
         if (countLED % 50 < 25){
             setAll(fullColor);
@@ -41,10 +40,13 @@ public class NeoPixel extends SubsystemBase {
     @Override
     public void periodic() {
         lightStrip.setData(buffer);
-        //rainbow(); - rainbow light called
-        blink(); //toggles between colors, currently full and blank
-        System.out.println(countLED);
+//        rainbow(); - rainbow light called
+//        blink(); //toggles between colors, currently full and blank
+//        setONE(fullColor);
+//        setTWO(secondColor);
+        setAll(fullColor);
     }
+
     private void setAll(Color8Bit color) {
         if (color != null) {
             for (int i = 0; i < buffer.getLength(); i++) {
@@ -52,6 +54,28 @@ public class NeoPixel extends SubsystemBase {
             }
         }
     }
+
+
+    private void setONE (Color8Bit color) {
+        buffer.setLED(0, color);
+        buffer.setLED(1, color);
+        buffer.setLED(2, color);
+    };
+    private void setTWO (Color8Bit color) {
+        buffer.setLED(3, color);
+        buffer.setLED(4, color);
+        buffer.setLED(5, color);
+    };
+    private void setTHREE (Color8Bit color) {
+        buffer.setLED(6, color);
+        buffer.setLED(7, color);
+        buffer.setLED(8, color);
+    };
+    private void setFOUR (Color8Bit color) {
+        buffer.setLED(9, color);
+        buffer.setLED(10, color);
+        buffer.setLED(11, color);
+    };
     private void rainbow() {
         for (int i = 0; i < buffer.getLength(); i++) {
             final int hue = (rainbowHue + (i * 180 / buffer.getLength())) % 180;
@@ -60,4 +84,6 @@ public class NeoPixel extends SubsystemBase {
         rainbowHue += 3;
         rainbowHue %= 180;
     }
+
 }
+

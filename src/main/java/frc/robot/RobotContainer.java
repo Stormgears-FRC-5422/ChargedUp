@@ -25,13 +25,13 @@ public class RobotContainer {
 
   NavX m_gyro;
   Vision m_vision_ss;
-
-  StormLogitechController m_controller = new StormLogitechController(0);
-  private final MecanumDrive mecanumdrive = new MecanumDrive();
-  Trigger zeroGyroTrigger = new Trigger(() -> m_controller.getRawButton(1));
-
-  private final JoystickDrive joystickDrive = new JoystickDrive(mecanumdrive, m_controller::getYAxis,
-          m_controller::getXAxis, m_controller::getZAxis, m_controller::getSliderAxis);
+//
+//  StormLogitechController m_controller = new StormLogitechController(0);
+//  private final MecanumDrive mecanumdrive = new MecanumDrive();
+//  Trigger zeroGyroTrigger = new Trigger(() -> m_controller.getRawButton(1));
+//
+//  private final JoystickDrive joystickDrive = new JoystickDrive(mecanumdrive, m_controller::getYAxis,
+//          m_controller::getXAxis, m_controller::getZAxis, m_controller::getSliderAxis);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -42,9 +42,9 @@ public class RobotContainer {
 
     NeoPixel neoPixel = new NeoPixel();
     // Configure the trigger bindings
-    configureBindings();
-
-    mecanumdrive.setDefaultCommand(joystickDrive);
+//    configureBindings();
+//
+//    mecanumdrive.setDefaultCommand(joystickDrive);
   }
 
   /**
@@ -57,7 +57,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    zeroGyroTrigger.onTrue(new InstantCommand(() -> m_gyro.zeroYaw()));
+//    zeroGyroTrigger.onTrue(new InstantCommand(() -> m_gyro.zeroYaw()));
   }
 
   /**
