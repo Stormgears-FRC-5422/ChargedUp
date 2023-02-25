@@ -9,10 +9,11 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static frc.robot.Constants.*;
+import static frc.robot.Constants.usePneumatics;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -24,8 +25,7 @@ public class Robot extends TimedRobot {
     public static boolean debug;
     private Command m_autonomousCommand;
 
-    boolean lastEnabled = false;
-    boolean enabled = false;
+    private boolean autoRan = false;
 
     private RobotContainer m_robotContainer;
     private RobotState m_state;
@@ -65,6 +65,8 @@ public class Robot extends TimedRobot {
                         "\n *********************** \n");
 
         PathPlannerServer.startServer(5811);
+
+        autoRan = false;
     }
 
     /**
@@ -76,23 +78,17 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
-        if (enabled && !lastEnabled) {
-            m_robotContainer.onEnable();
-        }
         // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
         // commands, running already-scheduled commands, removing finished or interrupted commands,
         // and running subsystem periodic() methods.  This must be called from the robot's periodic
         // block in order for anything in the Command-based framework to work.
         CommandScheduler.getInstance().run();
         m_state.update();
-        lastEnabled = enabled;
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-        lastEnabled = false;
-        enabled = false;
         m_robotContainer.onDisable();
 
 //    if(usePneumatics) {
@@ -107,7 +103,7 @@ public class Robot extends TimedRobot {
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
     public void autonomousInit() {
-      enabled = true;
+      autoRan = true;
       // schedule the autonomous command (example)
       m_autonomousCommand = m_robotContainer.getAutonomousCommand();
       if (m_autonomousCommand != null) {
@@ -124,6 +120,7 @@ public class Robot extends TimedRobot {
 //    if(usePneumatics) {
 //      m_robotContainer.m_compression.setPiston(true);
 //    }
+      m_robotContainer.onEnable();
     }
 
     /** This function is called periodically during autonomous. */
@@ -132,7 +129,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-         enabled = true;
+         if (!autoRan) m_robotContainer.onEnable();
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -146,7 +143,7 @@ public class Robot extends TimedRobot {
                         + "\n" +
                         "*****************");
 
-        if (usePneumatics) {
+        if(usePneumatics) {
           m_robotContainer.m_compression.startCompressor();
         }
     }

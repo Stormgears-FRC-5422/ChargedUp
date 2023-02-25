@@ -51,10 +51,10 @@ public class TrapezoidMoveForward extends CommandBase {
 
     @Override
     public void execute() {
-        m_totalDistance += RobotState.getInstance().getDeltaDistance();
+        m_totalDistance += RobotState.getInstance().getDeltaDistanceMeters();
         m_profileCommand.execute();
         SmartDashboard.putNumber("totalDistance", m_totalDistance);
-        SmartDashboard.putNumber("current vel", (RobotState.getInstance().getDeltaDistance()/20.) * 1000);
+        SmartDashboard.putNumber("current vel", (RobotState.getInstance().getDeltaDistanceMeters()/20.) * 1000);
     }
 
     private void goToState(TrapezoidProfile.State state) {

@@ -10,12 +10,13 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.IEnabledDisabled;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
 
 import static frc.robot.Constants.*;
 
-public class Arm extends SubsystemBase {
+public class Arm extends SubsystemBase implements IEnabledDisabled {
     public StormSpark shoulder;
     public StormSpark elbow;
     public StormTalon shoulderEncoder;

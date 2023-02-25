@@ -41,7 +41,9 @@
       "isLocked": false,
       "isStopPoint": true,
       "stopEvent": {
-        "names": [],
+        "names": [
+          "PickUpFromGround"
+        ],
         "executionBehavior": "sequential",
         "waitBehavior": "none",
         "waitTime": 0
@@ -66,7 +68,9 @@
       "isLocked": false,
       "isStopPoint": true,
       "stopEvent": {
-        "names": [],
+        "names": [
+          "PlaceGamePiece"
+        ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
@@ -88,30 +92,48 @@
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
-        "names": [],
+        "names": [
+          "Balance"
+        ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
       }
     }
   ],
+  "maxVelocity": 2.0,
+  "maxAcceleration": 2.0,
+  "isReversed": null,
   "markers": [
     {
-      "position": 0.6181818181817844,
+      "position": 0.35,
       "names": [
-        "adjustArm"
+        "StowArm"
       ]
     },
     {
-      "position": 2.2363636363636745,
+      "position": 1.15,
       "names": [
-        "stowArm"
+        "StowArm"
       ]
     },
     {
-      "position": 1.6,
+      "position": 0.0,
       "names": [
-        "armUp"
+        "LiftArm",
+        "PlaceGamePiece"
+      ]
+    },
+    {
+      "position": 1.45454545454559,
+      "names": [
+        "LiftArm"
+      ]
+    },
+    {
+      "position": 2.45,
+      "names": [
+        "StowArm"
       ]
     }
   ]

@@ -5,30 +5,26 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.IEnabledDisabled;
 
 import java.util.Map;
 import java.util.TreeMap;
 
-public class RobotState {
+public class RobotState implements IEnabledDisabled {
     private static RobotState m_instance;
     private final Timer m_timer;
 
     private TreeMap<Double, DriveData> m_driveDataSet = new TreeMap<>();
     private TreeMap<Double, Pose2d> m_visionDataSet = new TreeMap<>();
 
-    private Pose2d m_currentPose;
-    private Pose2d m_startPose;
-    private Pose2d m_lastPose;
+    private Pose2d currentPose, startPose, lastPose;
+    private Rotation2d currentRotation, lastRotation;
 
-    private final ShuffleboardTab mainTab;
+    private final ShuffleboardTab tab;
+    private Field2d field2d;
 
-    private final Field2d field2d;
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
 
@@ -40,15 +36,21 @@ public class RobotState {
         m_timer = new Timer();
         m_timer.stop();
 
-        mainTab = Shuffleboard.getTab("MainTab");
-        ShuffleboardLayout layout = mainTab.getLayout("State", BuiltInLayouts.kGrid)
+        tab = Shuffleboard.getTab("Robot State");
+        ShuffleboardLayout layout = tab
+                .getLayout("State", BuiltInLayouts.kList)
                 .withPosition(0, 0)
-                .withSize(4, 4);
+                .withSize(2, 4);
         layout.addNumber("pose x", () -> getCurrentPose().getX());
         layout.addNumber("pose y", () -> getCurrentPose().getY());
         layout.addNumber("pose angle", () -> getCurrentPose().getRotation().getDegrees());
         layout.addNumber("time", this::getTimeSeconds);
+        layout.addNumber("linear velocity", this::getCurrentLinearVel);
+        layout.addNumber("rotational velocity", this::getCurrentRotationalVel);
         field2d = new Field2d();
+        tab.add(field2d).withWidget(BuiltInWidgets.kField)
+                .withPosition(2, 0)
+                .withSize(4, 3);
     }
 
     public void startTimer() {
@@ -66,42 +68,59 @@ public class RobotState {
     }
 
     public void resetPose(Pose2d pose) {
-        m_currentPose = pose;
+        currentPose = pose;
     }
 
     public void resetPose() {
         resetPose(new Pose2d());
     }
 
-
     public Pose2d getCurrentPose() {
-        if (m_currentPose == null) return getStartPose();
-        return m_currentPose;
+        if (currentPose == null) return getStartPose();
+        return currentPose;
     }
 
     public void setCurrentPose(Pose2d pose) {
-        m_currentPose = pose;
+        currentPose = pose;
     }
 
     public Pose2d getStartPose() {
-        if (m_startPose == null) {
+        if (startPose == null) {
             System.out.println("********* Starting position was not set! *********");
             return new Pose2d();
         }
-        return m_startPose;
+        return startPose;
     }
 
     public void setStartPose(Pose2d pose) {
-        m_startPose = pose;
+        startPose = pose;
     }
 
     public Pose2d getLastPose() {
-        if (m_lastPose == null) return getCurrentPose();
-        return m_lastPose;
+        if (lastPose == null) return getCurrentPose();
+        return lastPose;
     }
 
-    public void setLastPose(Pose2d m_lastPose) {
-        this.m_lastPose = m_lastPose;
+    public void setLastPose(Pose2d lastPose) {
+        this.lastPose = lastPose;
+    }
+
+    public Rotation2d getCurrentGyroRotation() {
+        if (currentRotation == null) return Rotation2d.fromDegrees(0);
+        return currentRotation;
+    }
+
+    public void setCurrentGyroRotation(Rotation2d currentRotation) {
+        this.currentRotation = currentRotation;
+    }
+
+    public Rotation2d getLastGyroRotation() {
+        if (lastRotation == null) return getCurrentGyroRotation();
+        return lastRotation;
+    }
+
+    public void setLastGyroRotation(Rotation2d lastRotation) {
+        this.lastRotation = lastRotation;
     }
 
     public void addDriveData(DriveData driveData) {
@@ -128,36 +147,28 @@ public class RobotState {
         return m_visionDataSet.lastEntry();
     }
 
-    public double getCurrentXVel() {
-        if (m_lastPose == null) return 0;
-        return ((getCurrentPose().getX() - getLastPose().getX())/20.) * 1000;
-    }
-
-    public double getCurrentYVel() {
-        if (m_lastPose == null) return 0;
-        return ((getCurrentPose().getY() - getLastPose().getY())/20.) * 1000;
-    }
-
-    public double getCurrentOmegaVel() {
-        if (m_lastPose == null) return 0;
-        return ((getCurrentPose().getRotation().getDegrees() - getLastPose().getRotation().getDegrees())/20.) * 1000;
-    }
-
-    public double getDeltaDistance() {
-        if (m_lastPose == null) return 0;
+    public double getDeltaDistanceMeters() {
         Translation2d m_lastTranslation = getLastPose().getTranslation();
         Translation2d m_currentTranslation = getCurrentPose().getTranslation();
         return m_currentTranslation.getDistance(m_lastTranslation);
     }
 
     public double getCurrentLinearVel() {
-        //delta distance / delta time
-        return getDeltaDistance()/0.02;
+        return getDeltaDistanceMeters() / 0.02;
+    }
+
+    public double getDeltaDegrees() {
+        return Math.abs(getCurrentGyroRotation().getDegrees() - getLastGyroRotation().getDegrees());
+    }
+
+    public double getCurrentRotationalVel() {
+        return getDeltaDegrees() / 0.02;
     }
 
     public void onEnable() {
         startTimer();
         m_driveDataSet = new TreeMap<Double, DriveData>();
+        m_visionDataSet = new TreeMap<Double, Pose2d>();
     }
 
     public void onDisable() {
@@ -167,7 +178,6 @@ public class RobotState {
 
     public void update() {
         field2d.setRobotPose(getCurrentPose());
-        SmartDashboard.putData(field2d);
 
         double currentTimeMs = Timer.getFPGATimestamp();
         m_driveDataSet.tailMap(currentTimeMs - 2000, true);
@@ -201,7 +211,6 @@ public class RobotState {
             return modulePositions;
         }
     }
-
     public static class ArmData {
 
     }

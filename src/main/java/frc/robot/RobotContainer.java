@@ -4,22 +4,12 @@
 
 package frc.robot;
 
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
-import com.pathplanner.lib.PathConstraints;
-import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
-import com.pathplanner.lib.commands.PPSwerveControllerCommand;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.LayoutType;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,13 +20,13 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.TrapezoidMoveForward;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
-import frc.robot.commands.trajectory.FollowTrajectoryCommand;
-import frc.robot.commands.trajectory.Trajectories;
+import frc.robot.commands.trajectory.Paths;
+import frc.robot.subsystems.IEnabledDisabled;
+import frc.robot.subsystems.NavX;
+import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.GyroCommand;
@@ -47,11 +37,9 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static frc.robot.Constants.*;
 
@@ -70,6 +58,10 @@ public class RobotContainer {
     Compression m_compression;
     Arm m_arm;
     StormNet m_stormNet;
+    NavX m_navX;
+
+    //List of subsystems to be enabled and disabled
+    List<IEnabledDisabled> m_enabledAndDisabledSystems;
 
     // **********
     // COMMANDS
@@ -86,7 +78,8 @@ public class RobotContainer {
 
     StormLogitechController m_controller;
 
-    private SendableChooser<PathPlannerTrajectory> PathChooser = new SendableChooser<>();
+    private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
+    private final Map<String, Command> autoEventMap = new HashMap<>();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -94,12 +87,19 @@ public class RobotContainer {
     public RobotContainer() throws IllegalDriveTypeException {
 
         m_robotState = RobotState.getInstance();
-        m_robotState.setStartPose(new Pose2d());
+        m_enabledAndDisabledSystems.add(m_robotState);
+
+        if (useNavX) {
+            m_navX = new NavX();
+            m_enabledAndDisabledSystems.add(m_navX);
+        } else
+            System.out.println("NOT using navX");
 
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (useDrive) {
             try {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
+                m_enabledAndDisabledSystems.add(m_drivetrain);
             } catch (Exception e) {
                 e.printStackTrace();
                  useDrive = false;
@@ -109,18 +109,20 @@ public class RobotContainer {
             if (driveType.equals("SwerveDrive")) {
                 m_poseEstimator = new PoseEstimator(
                         m_drivetrain.getSwerveDriveKinematics(),
-                        m_drivetrain.getGyroscopeRotation(),
-                        m_drivetrain.getSwerveModulePositions());
+                        m_drivetrain::getSwerveModulePositions);
+                m_enabledAndDisabledSystems.add(m_poseEstimator);
+
+                autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
+                autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
+                autoEventMap.put("LiftArm", new PrintCommand("Lifting the arm!"));
+                autoEventMap.put("PlaceGamePiece", new PrintCommand("Placing the game piece!"));
+                autoEventMap.put("Balance", new PrintCommand("Balancing on charging station!"));
 
                 //add paths to chooser
-                PathChooser.setDefaultOption("Straight Path", Paths.straight180Path);
-                PathChooser.addOption("Straight 180 Path", Paths.straight180Path);
-                PathChooser.addOption("Diagonal Path", Paths.diagonalPath);
-                PathChooser.addOption("Circular Path", Paths.circularPath);
-                PathChooser.addOption("T Path", Paths.tPath);
-                PathChooser.addOption("Test Path (caution!)", Paths.testPath);
-                PathChooser.addOption("Auto1 Path (caution!)", Paths.Auto1);
-                SmartDashboard.putData("Auto Paths", PathChooser);
+                for (var pathWithName : Paths.listOfPaths) {
+                    autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
+                }
+                SmartDashboard.putData("Auto Paths", autoPathChooser);
             }
         } else {
             System.out.println("NOT using drive");
@@ -128,13 +130,15 @@ public class RobotContainer {
 
         if (useArm) {
             m_arm = new Arm();
+            m_enabledAndDisabledSystems.add(m_arm);
         } else {
             System.out.println("NOT using arm");
         }
 
         if (usePneumatics) {
             m_compression = new Compression();
-        }
+        } else
+            System.out.println("NOT using pneumatics");
 
         // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
         if (useController) {
@@ -147,7 +151,8 @@ public class RobotContainer {
         if (useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
-        }
+        } else
+            System.out.println("NOT using stormnet");
 
         // Configure the trigger bindings
         configureBindings();
@@ -166,15 +171,15 @@ public class RobotContainer {
 
         if (useArm && useController) {
             m_basicArm = new BasicArm(m_arm,
-                    ()->xboxController.getLeftJoystickY(),
-                    ()->xboxController.getRightJoystickY());
+                    xboxController::getLeftJoystickY,
+                    xboxController::getRightJoystickY);
             m_arm.setDefaultCommand(m_basicArm);
         }
 
         if (usePneumatics && useController) {
-            new Trigger(() -> xboxController.getYButtonIsHeld()).onTrue(new InstantCommand(m_compression::grabCone));
-            new Trigger(() -> xboxController.getXButtonIsHeld()).onTrue(new InstantCommand(m_compression::grabCube));
-            new Trigger(() -> xboxController.getBButtonIsHeld()).onTrue(new InstantCommand(m_compression::release));
+            new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCone));
+            new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCube));
+            new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
         } else {
             System.out.println("Pneumatics or controller not operational");
         }
@@ -187,115 +192,73 @@ public class RobotContainer {
 
 	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
-                    () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
-                    () -> m_controller.getWpiYAxis() * kDriveSpeedScale,
-                    () -> m_controller.getWpiZAxis() * kDriveSpeedScale,
+                    m_controller::getWpiXAxis,
+                    m_controller::getWpiYAxis,
+                    m_controller::getWpiZAxis,
                     () -> m_controller.getRawButton(2));
 
     	    m_drivetrain.setDefaultCommand(driveWithJoystick);
 
         	m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
-        	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
+        	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_navX::zeroYaw));
         	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
         	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-            new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
+            new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
+                m_drivetrain.getCurrentCommand().cancel();
+                driveWithJoystick.schedule();
+            }));
     }
 
 
         if (useDrive && driveType.equals("SwerveDrive")) {
-//            SmartDashboard.putData("Trapezoid Move Forward Command",
-//                    new TrapezoidMoveForward(m_drivetrain, 5, 1, 0.5));
-//
-//            Supplier<Trajectory> straightTrajectorySupplier = () -> Trajectories.
-//                    straightLineNoTurn(1, 0.2, m_drivetrain.getSwerveDriveKinematics());
-//            var straightLineTrajectoryCommand = new FollowTrajectoryCommand(straightTrajectorySupplier, m_drivetrain);
-//            SmartDashboard.putData("Straight Line Trajectory", straightLineTrajectoryCommand);
-//
-//            Supplier<Trajectory> turningTrajectorySupplier = () -> Trajectories.
-//                    straightLineWhileTurn(45, 1, 0.2, m_drivetrain.getSwerveDriveKinematics());
-//            var turningTrajectoryCommand = new FollowTrajectoryCommand(turningTrajectorySupplier, m_drivetrain);
-//            SmartDashboard.putData("Turning in line Trajectory", turningTrajectoryCommand);
-
-
 
             var commandPlayer = Shuffleboard.getTab("Path Following Commands");
 
-            var PPSwerveCommandPlayer = commandPlayer.
-                    getLayout("PP Swerve Commands", BuiltInLayouts.kGrid)
-                    .withPosition(0, 0)
-                    .withSize(4, 4);
-            PPSwerveCommandPlayer.add("Straight Path",
-                    getPathFollowCommand("Straight Path", Paths.straightPath));
-            PPSwerveCommandPlayer.add("180 while going forward path",
-                    getPathFollowCommand("Straight Path With 180", Paths.straight180Path));
-            PPSwerveCommandPlayer.add("Circular path",
-                    getPathFollowCommand("Circular Path", Paths.circularPath));
-            PPSwerveCommandPlayer.add("Auto1 Path (have more space!)",
-                    getPathFollowCommand("Auto1 Path", Paths.Auto1));
-            PPSwerveCommandPlayer.add("Test Path (have space!)",
-                    getPathFollowCommand("Test Path", Paths.testPath));
-            PPSwerveCommandPlayer.add("TPath",
-                    getPathFollowCommand("T Path", Paths.tPath));
-            PPSwerveCommandPlayer.add("Diagonal Path",
-                    getPathFollowCommand(Paths.diagonalPath));
+            SendableChooser<Command> pathCommandChooser = new SendableChooser<>();
 
-            var FollowPathCommandPlayer = commandPlayer.
-                    getLayout("Follow Path Commands", BuiltInLayouts.kGrid)
-                    .withPosition(4, 0)
-                    .withSize(4, 4);
-            FollowPathCommandPlayer.add("Straight our command",
-                    new FollowPathCommand(Paths.straightPath, m_drivetrain));
-            FollowPathCommandPlayer.add("180 while going forward our command",
-                    new FollowPathCommand(Paths.straight180Path, m_drivetrain));
-            FollowPathCommandPlayer.add("Circular our command",
-                    new FollowPathCommand(Paths.circularPath, m_drivetrain));
-            FollowPathCommandPlayer.add("Auto1 (have more space!) our command",
-                    new FollowPathCommand(Paths.Auto1, m_drivetrain));
-            FollowPathCommandPlayer.add("Test (have space!) our command",
-                    new FollowPathCommand(Paths.testPath, m_drivetrain));
-            FollowPathCommandPlayer.add("T our command",
-                    new FollowPathCommand(Paths.tPath, m_drivetrain));
-            FollowPathCommandPlayer.add("Diagonal Path with our command",
-                    new FollowPathCommand(Paths.diagonalPath, m_drivetrain));
+            for (var path : Paths.listOfPaths) {
+                pathCommandChooser.addOption(path.name, getPathFollowCommand(path.name, path.path));
+            }
 
             HashMap<String, Command> commandHashMap = new HashMap<>();
             commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
             FollowPathWithEvents pathWithEvents = new FollowPathWithEvents(
-                    new FollowPathCommand(Paths.straightPath, m_drivetrain),
+                    getPathFollowCommand("Straight Path with markers", Paths.straightPath),
                     Paths.straightPath.getMarkers(),
                     commandHashMap
             );
-            commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
 
+            pathCommandChooser.addOption("Straight with events", pathWithEvents);
+            pathCommandChooser.addOption("Team Number", Paths.getTeamNumberPathCommand(m_drivetrain));
+
+            pathCommandChooser.addOption("Straight Path from robot",
+                    getPathFollowCommand("Straight path from robot",
+                            Paths.getPathFromRobotPose(
+                                    new Pose2d(2, 0, Rotation2d.fromDegrees(0)),
+                                    2, 3)));
+
+            commandPlayer
+                    .add("Path Chooser", pathCommandChooser)
+                    .withWidget(BuiltInWidgets.kComboBoxChooser)
+                    .withSize(2, 1).withPosition(0, 0);
+
+            commandPlayer
+                    .add("Run Selected Command", pathCommandChooser.getSelected())
+                    .withWidget(BuiltInWidgets.kCommand)
+                    .withSize(2, 1).withPosition(2, 0);
         }
     }
 
-    private SequentialCommandGroup getPathFollowCommand(String pathName, PathPlannerTrajectory path) {
-        return
-                new PrintCommand("Path Name: " + pathName).andThen(
-                new PrintCommand("States: " + path)).andThen(
-                new PrintCommand("Start State: " + path.getInitialState())).andThen(
-                new PrintCommand("Middle State: " + path.getState(path.getStates().size()/2))).andThen(
-                new PrintCommand("End State: " + path.getEndState())).andThen(
-                new PrintCommand("Pose at Start: " + m_robotState.getCurrentPose())).andThen(
-                new PrintCommand("Time at Start: " + m_robotState.getTimeSeconds())).andThen(
-                new PPSwerveControllerCommand(
-                    path,
-                    m_robotState::getCurrentPose,
-                    new PIDController(3.0, 0, 0),
-                    new PIDController(3.0, 0, 0),
-                    new PIDController(1.0, 0, 0),
-                    speeds -> m_drivetrain.drive(speeds, true),
-                    false,
-                    m_drivetrain)
-                ).andThen(
-                new PrintCommand("Pose at End: " + m_robotState.getCurrentPose())).andThen(
-                new PrintCommand("Time at End: " + m_robotState.getTimeSeconds()));
+    private Command getPathFollowCommand(String message, PathPlannerTrajectory path) {
+        return new SequentialCommandGroup(
+                new PrintCommand(message),
+                new FollowPathCommand(path, m_drivetrain)
+        );
     }
 
-    private SequentialCommandGroup getPathFollowCommand(PathPlannerTrajectory path) {
-        return getPathFollowCommand("no name", path);
+    private Command getPathFollowCommand(PathPlannerTrajectory path) {
+        return getPathFollowCommand("No message", path);
     }
 
     /**
@@ -305,49 +268,31 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         if (useDrive && driveType.equals("SwerveDrive")) {
-            var selectedPath = PathChooser.getSelected();
-            m_robotState.setStartPose(selectedPath.getInitialPose());
-            return new FollowPathCommand(selectedPath, m_drivetrain);
+            var selectedPath = autoPathChooser.getSelected();
+            m_robotState.setStartPose(selectedPath.startPose);
+            m_navX.configureYawOffset(selectedPath.startPose.getRotation().getDegrees());
+            return new FollowPathWithEvents(
+                    getPathFollowCommand("Auto path starting " + selectedPath.name, selectedPath.path),
+                    selectedPath.path.getMarkers(),
+                    autoEventMap
+            );
         }
         return new PrintCommand("Autonomous! -----");
     }
 
 
     void onEnable() {
-        m_robotState.onEnable();
-        if (useDrive) {
-            m_drivetrain.onEnable();
-            if (driveType.equals("SwerveDrive")) {
-                m_poseEstimator.onEnable();
-            }
+        for (var system : m_enabledAndDisabledSystems) {
+            system.onEnable();
         }
         System.out.println("-------------enabled-------------");
     }
 
     void onDisable() {
-        m_robotState.onDisable();
-        if (useDrive) {
-            m_drivetrain.onDisable();
-            if (driveType.equals("SwerveDrive")) {
-                m_poseEstimator.onDisable();
-            }
+        for (var system : m_enabledAndDisabledSystems) {
+            system.onDisable();
         }
         System.out.println("-----------disabled------------");
-    }
-
-    private static final class Paths {
-        public static PathPlannerTrajectory straightPath = PathPlanner.loadPath("Straight Path", 1, 0.5);
-        public static PathPlannerTrajectory straight180Path = PathPlanner.loadPath("180 while forward", 1, 0.5);
-        public static PathPlannerTrajectory tPath = PathPlanner.loadPath("TPath", 3, 1);
-        public static PathPlannerTrajectory circularPath = PathPlanner.loadPath("Circular", 1, 0.5);
-        public static PathPlannerTrajectory Auto1 = PathPlanner.loadPath("Auto1", 1, 0.5);
-        public static PathPlannerTrajectory testPath = PathPlanner.loadPath("Test", 1, 0.5);
-
-        public static PathPlannerTrajectory diagonalPath = PathPlanner.generatePath(
-                new PathConstraints(1, 0.7),
-                new PathPoint(new Translation2d(0.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)), // position, heading(direction of travel), holonomic rotation
-                new PathPoint(new Translation2d(3.0, 0.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(180))// position, heading(direction of travel), holonomic rotation
-        );
     }
 }
 

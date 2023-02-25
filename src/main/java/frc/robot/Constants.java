@@ -7,14 +7,14 @@ package frc.robot;
 import frc.utils.configfile.StormProp;
 
 
-  /**
-   * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
-   * constants. This class should not be used for any other purpose. All constants should be declared
-   * globally (i.e. public static). Do not put anything functional in this class.
-   *
-   * <p>It is advised to statically import this class (or one of its inner classes) wherever the
-   * constants are needed, to reduce verbosity.
-   */
+/**
+ * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants should be declared
+ * globally (i.e. public static). Do not put anything functional in this class.
+ *
+ * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * constants are needed, to reduce verbosity.
+ */
 public final class Constants {
 
     public static final String robotName = StormProp.getString("robotName", "");
@@ -99,6 +99,13 @@ public final class Constants {
 
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
+    public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
+    public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
+    public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
+
+    public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
+    public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
+
 
     // **********
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
@@ -106,9 +113,9 @@ public final class Constants {
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
     public static boolean useController = StormProp.getBoolean("useController", false);
-    public static boolean usePneumatics = StormProp.getBoolean("usePneumatics",false);
-    public static boolean useStormNet = StormProp.getBoolean("useStormNet",false);
-	public static boolean useArm = StormProp.getBoolean("useArm", false);
+    public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
+    public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
+    public static boolean useArm = StormProp.getBoolean("useArm", false);
     // **********
     // Don't put other variables after the usage members
     // **********

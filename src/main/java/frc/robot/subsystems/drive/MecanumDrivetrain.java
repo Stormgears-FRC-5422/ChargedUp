@@ -1,10 +1,9 @@
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 
 import static frc.robot.Constants.*;
 
@@ -51,35 +50,6 @@ public class MecanumDrivetrain extends DrivetrainBase {
                 Math.hypot(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0);
 
         super.setMaxVelocities(maxVelocityMetersPerSecond, maxAngularVelocityRadiansPerSecond);
-    }
-
-    @Override
-    public SwerveDriveKinematics getSwerveDriveKinematics() {
-        return null;
-    }
-
-    @Override
-    public SwerveModulePosition[] getSwerveModulePositions() {
-        return new SwerveModulePosition[0];
-    }
-
-    @Override
-    public void goToTrajectoryState(Trajectory.State goalState) {
-
-    }
-
-    @Override
-    public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
-
-    }
-
-    @Override
-    public void onEnable() {
-
-    }
-    @Override
-    public void onDisable() {
-
     }
 
     @Override
