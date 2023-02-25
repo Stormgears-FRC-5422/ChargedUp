@@ -28,7 +28,7 @@ public class FollowPathCommand extends CommandBase {
     public FollowPathCommand(PathPlannerTrajectory path, DrivetrainBase drivetrain) {
         m_path = path;
         m_drivetrain = drivetrain;
-
+        //logging bits
         ShuffleboardTab pathFollowTab = Shuffleboard.getTab("Path Following");
         dTranslationEntry = pathFollowTab.add("dTranslation", 0.0).getEntry();
         dRotationEntry = pathFollowTab.add("dRotation", 0.0).getEntry();

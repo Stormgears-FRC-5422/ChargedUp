@@ -92,5 +92,12 @@ public class NavX extends SubsystemBase implements IEnabledDisabled {
     @Override
     public void onEnable() {
         zeroYaw();
+        var startPose = RobotState.getInstance().getStartPose();
+        configureYawOffset(startPose.getRotation().getDegrees());
+    }
+
+    @Override
+    public void onDisable() {
+        configureYawOffset(0);
     }
 }

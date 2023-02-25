@@ -116,6 +116,8 @@ public final class Constants {
     public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
     public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
     public static boolean useArm = StormProp.getBoolean("useArm", false);
+    public static boolean useVision = StormProp.getBoolean("useVision", false);
+    public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
     // **********
     // Don't put other variables after the usage members
     // **********

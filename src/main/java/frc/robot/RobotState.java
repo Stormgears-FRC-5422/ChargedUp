@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import frc.robot.subsystems.IEnabledDisabled;
 
 import java.util.Map;
@@ -22,8 +23,8 @@ public class RobotState implements IEnabledDisabled {
     private Pose2d currentPose, startPose, lastPose;
     private Rotation2d currentRotation, lastRotation;
 
-    private final ShuffleboardTab tab;
-    private Field2d field2d;
+    private final Field2d field2d;
+    private final FieldObject2d visionPoseFieldObject2d;
 
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
@@ -36,31 +37,22 @@ public class RobotState implements IEnabledDisabled {
         m_timer = new Timer();
         m_timer.stop();
 
-        tab = Shuffleboard.getTab("Robot State");
+        ShuffleboardTab tab = Shuffleboard.getTab("Robot State");
         ShuffleboardLayout layout = tab
                 .getLayout("State", BuiltInLayouts.kList)
                 .withPosition(0, 0)
                 .withSize(2, 4);
-        layout.addNumber("pose x", () -> getCurrentPose().getX());
-        layout.addNumber("pose y", () -> getCurrentPose().getY());
-        layout.addNumber("pose angle", () -> getCurrentPose().getRotation().getDegrees());
-        layout.addNumber("time", this::getTimeSeconds);
-        layout.addNumber("linear velocity", this::getCurrentLinearVel);
-        layout.addNumber("rotational velocity", this::getCurrentRotationalVel);
+        layout.addNumber("Pose X", () -> getCurrentPose().getX());
+        layout.addNumber("Pose Y", () -> getCurrentPose().getY());
+        layout.addNumber("Pose Angle", () -> getCurrentPose().getRotation().getDegrees());
+        layout.addNumber("Robot Time", this::getTimeSeconds);
+        layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
+        layout.addNumber("Rotational Velocity", this::getCurrentRotationalVel);
         field2d = new Field2d();
         tab.add(field2d).withWidget(BuiltInWidgets.kField)
                 .withPosition(2, 0)
                 .withSize(4, 3);
-    }
-
-    public void startTimer() {
-        m_timer.reset();
-        m_timer.start();
-    }
-
-    public void stopTimer() {
-        m_timer.stop();
-        m_timer.reset();
+        visionPoseFieldObject2d = field2d.getObject("Estimated Vision Pose");
     }
 
     public double getTimeSeconds() {
@@ -166,18 +158,20 @@ public class RobotState implements IEnabledDisabled {
     }
 
     public void onEnable() {
-        startTimer();
+        m_timer.reset();
+        m_timer.start();
         m_driveDataSet = new TreeMap<Double, DriveData>();
         m_visionDataSet = new TreeMap<Double, Pose2d>();
     }
 
     public void onDisable() {
-        stopTimer();
+        m_timer.stop();
         resetPose();
     }
 
     public void update() {
         field2d.setRobotPose(getCurrentPose());
+        visionPoseFieldObject2d.setPose(getLatestVisionData().getValue());
 
         double currentTimeMs = Timer.getFPGATimestamp();
         m_driveDataSet.tailMap(currentTimeMs - 2000, true);
@@ -185,8 +179,8 @@ public class RobotState implements IEnabledDisabled {
     }
 
     public static class DriveData {
-        private SwerveModulePosition[] modulePositions;
-        private Rotation2d gyroAngle;
+        private final SwerveModulePosition[] modulePositions;
+        private final Rotation2d gyroAngle;
 
         public DriveData(SwerveModulePosition[] modulePositions, Rotation2d gyroAngle) {
             this.modulePositions = modulePositions;

@@ -4,11 +4,6 @@ import com.revrobotics.CANSparkMaxLowLevel;
 
 import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.IEnabledDisabled;
 import frc.utils.motorcontrol.StormSpark;
@@ -108,11 +103,9 @@ public class Arm extends SubsystemBase implements IEnabledDisabled {
         this.m_maxElbowOmegaRadiansPerSecond = maxElbowOmegaRadiansPerSecond;
     }
 
-
     public void setSpeedScale(double scale) {
         m_armSpeedScale = MathUtil.clamp(scale, 0, kArmSpeedScale);
     }
-
 
 /*
     public ChassisSpeeds getCurrentChassisSpeeds() {

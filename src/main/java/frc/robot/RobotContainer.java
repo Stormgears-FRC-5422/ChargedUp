@@ -270,7 +270,6 @@ public class RobotContainer {
         if (useDrive && driveType.equals("SwerveDrive")) {
             var selectedPath = autoPathChooser.getSelected();
             m_robotState.setStartPose(selectedPath.startPose);
-            m_navX.configureYawOffset(selectedPath.startPose.getRotation().getDegrees());
             return new FollowPathWithEvents(
                     getPathFollowCommand("Auto path starting " + selectedPath.name, selectedPath.path),
                     selectedPath.path.getMarkers(),

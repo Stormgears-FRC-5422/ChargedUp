@@ -13,10 +13,11 @@ import java.util.function.Supplier;
 public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
 
     private SwerveDrivePoseEstimator m_poseEstimator;
-    private SwerveDriveKinematics m_driveKinematics;
-    private Supplier<SwerveModulePosition[]> m_modulePositionSupplier;
+    private final SwerveDriveKinematics m_driveKinematics;
+    private final Supplier<SwerveModulePosition[]> m_modulePositionSupplier;
 
-    private Pose2d m_startPose, m_currentPose, m_lastPose;
+    private Pose2d m_currentPose;
+    private Pose2d m_lastPose;
 
     public PoseEstimator(SwerveDriveKinematics kinematics,
                          Supplier<SwerveModulePosition[]> modulePositionSupplier) {
@@ -26,9 +27,9 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
     }
 
     public void onEnable() {
-        m_startPose = RobotState.getInstance().getStartPose();
-        m_lastPose = RobotState.getInstance().getLastPose();
+        Pose2d m_startPose = RobotState.getInstance().getStartPose();
         m_currentPose = RobotState.getInstance().getCurrentPose();
+        m_lastPose = RobotState.getInstance().getLastPose();
 
         m_poseEstimator = new SwerveDrivePoseEstimator(
                 m_driveKinematics,
@@ -52,7 +53,7 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
         }
 
         var latestVisionEntry = RobotState.getInstance().getLatestVisionData();
-
+        //add the vision entry to estimator
         if (latestVisionEntry != null) {
             double time = latestVisionEntry.getKey();
             Pose2d visionPose = latestVisionEntry.getValue();
