@@ -110,7 +110,6 @@ public class RobotContainer {
                  useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
-
             if (driveType.equals("SwerveDrive")) {
                 m_poseEstimator = new PoseEstimator(
                         m_drivetrain.getSwerveDriveKinematics(),
@@ -158,6 +157,7 @@ public class RobotContainer {
         if (useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
+          m_stormNet.getLidarDistance();
         }
 
         // Configure the trigger bindings
@@ -210,10 +210,13 @@ public class RobotContainer {
         	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
         	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
         	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-          new Trigger(() -> m_controller.getRawButton(6)).whileTrue(new BalanceCommand(
-                                                                        ()-> m_NavX.getPitch(),
-                                                                        ()-> m_NavX.getRoll(),
-                                                                        m_drivetrain));
+          new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
+          new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
+          new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
+                    ()-> m_NavX.getPitch(),
+                    ()-> m_NavX.getRoll(),
+                    m_drivetrain));
+        }
         }
 
 
