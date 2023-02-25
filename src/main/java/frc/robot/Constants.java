@@ -93,7 +93,7 @@ public final class Constants {
     public static final int armElbowEncoderID = StormProp.getInt("armElbowEncoderID", -1);
     public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
     public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
-    public static final int magEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
+    public static final int kMagEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
     public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
     public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
 
