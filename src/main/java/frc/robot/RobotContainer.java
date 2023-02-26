@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -18,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
@@ -43,12 +41,7 @@ import java.util.Map;
 
 import static frc.robot.Constants.*;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
+
 public class RobotContainer {
 
     // **********
@@ -68,7 +61,6 @@ public class RobotContainer {
     // **********
     GyroCommand m_gyrocommand;
     BasicArm m_basicArm;
-    //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
     // Other
@@ -81,9 +73,7 @@ public class RobotContainer {
     private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
     private final Map<String, Command> autoEventMap = new HashMap<>();
 
-    /**
-     * The container for the robot. Contains subsystems, OI devices, and commands.
-     */
+
     public RobotContainer() throws IllegalDriveTypeException {
 
         m_robotState = RobotState.getInstance();
@@ -109,7 +99,8 @@ public class RobotContainer {
             if (driveType.equals("SwerveDrive")) {
                 m_poseEstimator = new PoseEstimator(
                         m_drivetrain.getSwerveDriveKinematics(),
-                        m_drivetrain::getSwerveModulePositions);
+                        m_drivetrain::getSwerveModulePositions
+                );
                 m_enabledAndDisabledSystems.add(m_poseEstimator);
 
                 autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
@@ -157,15 +148,7 @@ public class RobotContainer {
         // Configure the trigger bindings
         configureBindings();
     }
-    /**
-     * Use this method to define your trigger->command mappings. Triggers can be created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-     * predicate, or via the named factories in {@link
-     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-     * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-     * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-     * joysticks}.
-     */
+
     private void configureBindings() {
         StormXboxController xboxController = new StormXboxController(1);
 
@@ -185,10 +168,6 @@ public class RobotContainer {
         }
 
         if (useDrive && useController) {
-            // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
-            SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
-            SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
-            SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
 	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
@@ -231,7 +210,6 @@ public class RobotContainer {
 
             pathCommandChooser.addOption("Straight with events", pathWithEvents);
             pathCommandChooser.addOption("Team Number", Paths.getTeamNumberPathCommand(m_drivetrain));
-
             pathCommandChooser.addOption("Straight Path from robot",
                     getPathFollowCommand("Straight path from robot",
                             Paths.getPathFromRobotPose(
@@ -261,11 +239,6 @@ public class RobotContainer {
         return getPathFollowCommand("No message", path);
     }
 
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
     public Command getAutonomousCommand() {
         if (useDrive && driveType.equals("SwerveDrive")) {
             var selectedPath = autoPathChooser.getSelected();
@@ -291,7 +264,7 @@ public class RobotContainer {
         for (var system : m_enabledAndDisabledSystems) {
             system.onDisable();
         }
-        System.out.println("-----------disabled------------");
+        System.out.println("-------------disabled-------------");
     }
 }
 

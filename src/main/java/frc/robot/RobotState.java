@@ -7,7 +7,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import frc.robot.subsystems.IEnabledDisabled;
 
 import java.util.Map;
@@ -21,10 +20,9 @@ public class RobotState implements IEnabledDisabled {
     private TreeMap<Double, Pose2d> m_visionDataSet = new TreeMap<>();
 
     private Pose2d currentPose, startPose, lastPose;
-    private Rotation2d currentRotation, lastRotation;
+    private Rotation2d currentGyroRotation, lastGyroRotation;
 
-    private final Field2d field2d;
-    private final FieldObject2d visionPoseFieldObject2d;
+    private final Field2d fieldSim;
 
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
@@ -48,11 +46,10 @@ public class RobotState implements IEnabledDisabled {
         layout.addNumber("Robot Time", this::getTimeSeconds);
         layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
         layout.addNumber("Rotational Velocity", this::getCurrentRotationalVel);
-        field2d = new Field2d();
-        tab.add(field2d).withWidget(BuiltInWidgets.kField)
+        fieldSim = new Field2d();
+        tab.add(fieldSim).withWidget(BuiltInWidgets.kField)
                 .withPosition(2, 0)
                 .withSize(4, 3);
-        visionPoseFieldObject2d = field2d.getObject("Estimated Vision Pose");
     }
 
     public double getTimeSeconds() {
@@ -98,21 +95,21 @@ public class RobotState implements IEnabledDisabled {
     }
 
     public Rotation2d getCurrentGyroRotation() {
-        if (currentRotation == null) return Rotation2d.fromDegrees(0);
-        return currentRotation;
+        if (currentGyroRotation == null) return Rotation2d.fromDegrees(0);
+        return currentGyroRotation;
     }
 
     public void setCurrentGyroRotation(Rotation2d currentRotation) {
-        this.currentRotation = currentRotation;
+        this.currentGyroRotation = currentRotation;
     }
 
     public Rotation2d getLastGyroRotation() {
-        if (lastRotation == null) return getCurrentGyroRotation();
-        return lastRotation;
+        if (lastGyroRotation == null) return getCurrentGyroRotation();
+        return lastGyroRotation;
     }
 
     public void setLastGyroRotation(Rotation2d lastRotation) {
-        this.lastRotation = lastRotation;
+        this.lastGyroRotation = lastRotation;
     }
 
     public void addDriveData(DriveData driveData) {
@@ -170,8 +167,7 @@ public class RobotState implements IEnabledDisabled {
     }
 
     public void update() {
-        field2d.setRobotPose(getCurrentPose());
-        visionPoseFieldObject2d.setPose(getLatestVisionData().getValue());
+        fieldSim.setRobotPose(getCurrentPose());
 
         double currentTimeMs = Timer.getFPGATimestamp();
         m_driveDataSet.tailMap(currentTimeMs - 2000, true);
