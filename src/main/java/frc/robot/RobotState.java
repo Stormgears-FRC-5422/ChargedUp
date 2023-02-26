@@ -117,7 +117,7 @@ public class RobotState implements IEnabledDisabled {
             System.out.println("Timer was not set!!!!!!!");
             return;
         }
-        m_driveDataSet.put(Timer.getFPGATimestamp() * 1000., driveData);
+        m_driveDataSet.put(Timer.getFPGATimestamp(), driveData);
     }
 
     public Map.Entry<Double, DriveData> getLatestDriveData() {
