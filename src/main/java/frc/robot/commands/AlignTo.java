@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.RobotState;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 import java.util.function.DoubleSupplier;
@@ -17,6 +18,7 @@ public class AlignTo extends CommandBase {
     private final DrivetrainBase m_drivetrain;
     private final DoubleSupplier m_errorSupplier;
 
+    //error -> pout drive
     private final PIDController controller = new PIDController(0.1, 0, 0);
     //output can't change by more than 20% in one second 20%/s is max change in velocity (acceleration)
     private final SlewRateLimiter velLimiter = new SlewRateLimiter(0.2);
@@ -38,6 +40,7 @@ public class AlignTo extends CommandBase {
 
     @Override
     public void initialize() {
+        System.out.println("Starting align command at: " + RobotState.getInstance().getTimeSeconds());
         velLimiter.reset(0);
     }
 
@@ -63,6 +66,8 @@ public class AlignTo extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        System.out.println("Align command ended with interrupted: " + interrupted);
+        m_drivetrain.stopDrive();
+        System.out.println("Align command ended at: " + RobotState.getInstance().getTimeSeconds()
+                + " with interrupted: " + interrupted);
     }
 }
