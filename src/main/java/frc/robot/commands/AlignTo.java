@@ -34,6 +34,7 @@ public class AlignTo extends CommandBase {
         //FIXME: should be based on error supplier
         controller.setTolerance(5, 10);
         tab.addBoolean("Are we there?", controller::atSetpoint);
+        tab.add("Controller", controller).withWidget(BuiltInWidgets.kPIDController);
 
         addRequirements(drivetrain);
     }
@@ -41,6 +42,7 @@ public class AlignTo extends CommandBase {
     @Override
     public void initialize() {
         System.out.println("Starting align command at: " + RobotState.getInstance().getTimeSeconds());
+        m_drivetrain.stopDrive();
         velLimiter.reset(0);
     }
 
