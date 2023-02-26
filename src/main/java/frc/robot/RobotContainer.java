@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
@@ -15,11 +14,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.LayoutType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,11 +27,8 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.TrapezoidMoveForward;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
-import frc.robot.commands.trajectory.FollowTrajectoryCommand;
-import frc.robot.commands.trajectory.Trajectories;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.*;
@@ -49,11 +42,7 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
-import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 import static frc.robot.Constants.*;
 
@@ -107,7 +96,7 @@ public class RobotContainer {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
             } catch (Exception e) {
                 e.printStackTrace();
-                 useDrive = false;
+                useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
             if (driveType.equals("SwerveDrive")) {
@@ -155,14 +144,15 @@ public class RobotContainer {
         }
 
         if (useStormNet) {
-          StormNet.init();
-          m_stormNet = StormNet.getInstance();
-          m_stormNet.getLidarDistance();
+            StormNet.init();
+            m_stormNet = StormNet.getInstance();
+            m_stormNet.getLidarDistance();
         }
 
         // Configure the trigger bindings
         configureBindings();
     }
+
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
      * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -177,50 +167,47 @@ public class RobotContainer {
 
         if (useArm && useController) {
             m_basicArm = new BasicArm(m_arm,
-                    ()->xboxController.getLeftJoystickY(),
-                    ()->xboxController.getRightJoystickY());
+                    xboxController::getLeftJoystickY,
+                    xboxController::getRightJoystickY);
             m_arm.setDefaultCommand(m_basicArm);
         }
 
         if (usePneumatics && useController) {
-            new Trigger(() -> xboxController.getYButtonIsHeld()).onTrue(new InstantCommand(m_compression::grabCone));
-            new Trigger(() -> xboxController.getXButtonIsHeld()).onTrue(new InstantCommand(m_compression::grabCube));
-            new Trigger(() -> xboxController.getBButtonIsHeld()).onTrue(new InstantCommand(m_compression::release));
+            new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCone));
+            new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCube));
+            new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
         } else {
             System.out.println("Pneumatics or controller not operational");
         }
 
         if (useDrive && useController) {
             // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
-            SlewRateLimiter forwardInputLimiter = new SlewRateLimiter(1);
-            SlewRateLimiter sidewaysInputLimiter = new SlewRateLimiter(1);
-            SlewRateLimiter rotationInputLimiter = new SlewRateLimiter(1);
 
-	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+            DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
                     () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
                     () -> m_controller.getWpiYAxis() * kDriveSpeedScale,
                     () -> m_controller.getWpiZAxis() * kDriveSpeedScale,
                     () -> m_controller.getRawButton(2));
 
-    	    m_drivetrain.setDefaultCommand(driveWithJoystick);
+            m_drivetrain.setDefaultCommand(driveWithJoystick);
 
-        	m_gyrocommand = new GyroCommand(m_drivetrain, 180);
+            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
-        	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
-        	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
-        	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-          new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
-          new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
-          new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
-                    ()-> m_NavX.getPitch(),
-                    ()-> m_NavX.getRoll(),
+            new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
+            new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
+            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
+            new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
+            new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
+            new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
+                    () -> m_NavX.getPitch(),
+                    () -> m_NavX.getRoll(),
                     m_drivetrain));
         }
-        }
 
 
-        if (useDrive && driveType.equals("SwerveDrive")) {
+
+        if(useDrive &&driveType.equals("SwerveDrive")) {
 //            SmartDashboard.putData("Trapezoid Move Forward Command",
 //                    new TrapezoidMoveForward(m_drivetrain, 5, 1, 0.5));
 //
@@ -235,57 +222,56 @@ public class RobotContainer {
 //            SmartDashboard.putData("Turning in line Trajectory", turningTrajectoryCommand);
 
 
+        var commandPlayer = Shuffleboard.getTab("Path Following Commands");
 
-            var commandPlayer = Shuffleboard.getTab("Path Following Commands");
+        var PPSwerveCommandPlayer = commandPlayer.
+                getLayout("PP Swerve Commands", BuiltInLayouts.kGrid)
+                .withPosition(0, 0)
+                .withSize(4, 4);
+        PPSwerveCommandPlayer.add("Straight Path",
+                getPathFollowCommand("Straight Path", Paths.straightPath));
+        PPSwerveCommandPlayer.add("180 while going forward path",
+                getPathFollowCommand("Straight Path With 180", Paths.straight180Path));
+        PPSwerveCommandPlayer.add("Circular path",
+                getPathFollowCommand("Circular Path", Paths.circularPath));
+        PPSwerveCommandPlayer.add("Auto1 Path (have more space!)",
+                getPathFollowCommand("Auto1 Path", Paths.Auto1));
+        PPSwerveCommandPlayer.add("Test Path (have space!)",
+                getPathFollowCommand("Test Path", Paths.testPath));
+        PPSwerveCommandPlayer.add("TPath",
+                getPathFollowCommand("T Path", Paths.tPath));
+        PPSwerveCommandPlayer.add("Diagonal Path",
+                getPathFollowCommand(Paths.diagonalPath));
 
-            var PPSwerveCommandPlayer = commandPlayer.
-                    getLayout("PP Swerve Commands", BuiltInLayouts.kGrid)
-                    .withPosition(0, 0)
-                    .withSize(4, 4);
-            PPSwerveCommandPlayer.add("Straight Path",
-                    getPathFollowCommand("Straight Path", Paths.straightPath));
-            PPSwerveCommandPlayer.add("180 while going forward path",
-                    getPathFollowCommand("Straight Path With 180", Paths.straight180Path));
-            PPSwerveCommandPlayer.add("Circular path",
-                    getPathFollowCommand("Circular Path", Paths.circularPath));
-            PPSwerveCommandPlayer.add("Auto1 Path (have more space!)",
-                    getPathFollowCommand("Auto1 Path", Paths.Auto1));
-            PPSwerveCommandPlayer.add("Test Path (have space!)",
-                    getPathFollowCommand("Test Path", Paths.testPath));
-            PPSwerveCommandPlayer.add("TPath",
-                    getPathFollowCommand("T Path", Paths.tPath));
-            PPSwerveCommandPlayer.add("Diagonal Path",
-                    getPathFollowCommand(Paths.diagonalPath));
+        var FollowPathCommandPlayer = commandPlayer.
+                getLayout("Follow Path Commands", BuiltInLayouts.kGrid)
+                .withPosition(4, 0)
+                .withSize(4, 4);
+        FollowPathCommandPlayer.add("Straight our command",
+                new FollowPathCommand(Paths.straightPath, m_drivetrain));
+        FollowPathCommandPlayer.add("180 while going forward our command",
+                new FollowPathCommand(Paths.straight180Path, m_drivetrain));
+        FollowPathCommandPlayer.add("Circular our command",
+                new FollowPathCommand(Paths.circularPath, m_drivetrain));
+        FollowPathCommandPlayer.add("Auto1 (have more space!) our command",
+                new FollowPathCommand(Paths.Auto1, m_drivetrain));
+        FollowPathCommandPlayer.add("Test (have space!) our command",
+                new FollowPathCommand(Paths.testPath, m_drivetrain));
+        FollowPathCommandPlayer.add("T our command",
+                new FollowPathCommand(Paths.tPath, m_drivetrain));
+        FollowPathCommandPlayer.add("Diagonal Path with our command",
+                new FollowPathCommand(Paths.diagonalPath, m_drivetrain));
 
-            var FollowPathCommandPlayer = commandPlayer.
-                    getLayout("Follow Path Commands", BuiltInLayouts.kGrid)
-                    .withPosition(4, 0)
-                    .withSize(4, 4);
-            FollowPathCommandPlayer.add("Straight our command",
-                    new FollowPathCommand(Paths.straightPath, m_drivetrain));
-            FollowPathCommandPlayer.add("180 while going forward our command",
-                    new FollowPathCommand(Paths.straight180Path, m_drivetrain));
-            FollowPathCommandPlayer.add("Circular our command",
-                    new FollowPathCommand(Paths.circularPath, m_drivetrain));
-            FollowPathCommandPlayer.add("Auto1 (have more space!) our command",
-                    new FollowPathCommand(Paths.Auto1, m_drivetrain));
-            FollowPathCommandPlayer.add("Test (have space!) our command",
-                    new FollowPathCommand(Paths.testPath, m_drivetrain));
-            FollowPathCommandPlayer.add("T our command",
-                    new FollowPathCommand(Paths.tPath, m_drivetrain));
-            FollowPathCommandPlayer.add("Diagonal Path with our command",
-                    new FollowPathCommand(Paths.diagonalPath, m_drivetrain));
+        HashMap<String, Command> commandHashMap = new HashMap<>();
+        commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
+        FollowPathWithEvents pathWithEvents = new FollowPathWithEvents(
+                new FollowPathCommand(Paths.straightPath, m_drivetrain),
+                Paths.straightPath.getMarkers(),
+                commandHashMap
+        );
+        commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
+    }
 
-            HashMap<String, Command> commandHashMap = new HashMap<>();
-            commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
-            FollowPathWithEvents pathWithEvents = new FollowPathWithEvents(
-                    new FollowPathCommand(Paths.straightPath, m_drivetrain),
-                    Paths.straightPath.getMarkers(),
-                    commandHashMap
-            );
-            commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
-
-        }
     }
 
     private SequentialCommandGroup getPathFollowCommand(String pathName, PathPlannerTrajectory path) {
