@@ -9,7 +9,6 @@ import com.pathplanner.lib.commands.FollowPathWithEvents;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -21,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.commands.trajectory.Paths;
+import frc.robot.constants.FieldConstants;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.IEnabledDisabled;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
@@ -35,11 +36,11 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 
 
 public class RobotContainer {
@@ -54,7 +55,7 @@ public class RobotContainer {
     NavX m_navX;
 
     //List of subsystems to be enabled and disabled
-    List<IEnabledDisabled> m_enabledAndDisabledSystems;
+    final ArrayList<IEnabledDisabled> m_enabledAndDisabledSystems = new ArrayList<>();
 
     // **********
     // COMMANDS
@@ -65,7 +66,7 @@ public class RobotContainer {
     // **********
     // Other
     // **********
-    RobotState m_robotState;
+    final RobotState m_robotState;
     PoseEstimator m_poseEstimator;
 
     StormLogitechController m_controller;
@@ -187,15 +188,12 @@ public class RobotContainer {
                 m_drivetrain.getCurrentCommand().cancel();
                 driveWithJoystick.schedule();
             }));
-    }
+        }
 
 
         if (useDrive && driveType.equals("SwerveDrive")) {
 
-            var commandPlayer = Shuffleboard.getTab("Path Following Commands");
-
             SendableChooser<Command> pathCommandChooser = new SendableChooser<>();
-
             for (var path : Paths.listOfPaths) {
                 pathCommandChooser.addOption(path.name, getPathFollowCommand(path.name, path.path));
             }
@@ -212,19 +210,17 @@ public class RobotContainer {
             pathCommandChooser.addOption("Team Number", Paths.getTeamNumberPathCommand(m_drivetrain));
             pathCommandChooser.addOption("Straight Path from robot",
                     getPathFollowCommand("Straight path from robot",
-                            Paths.getPathFromRobotPose(
+                            Paths.getPathRelativeToCurrentPose(
                                     new Pose2d(2, 0, Rotation2d.fromDegrees(0)),
                                     2, 3)));
 
-            commandPlayer
-                    .add("Path Chooser", pathCommandChooser)
-                    .withWidget(BuiltInWidgets.kComboBoxChooser)
-                    .withSize(2, 1).withPosition(0, 0);
+            ShuffleboardConstants.getInstance().pathFollowingList
+                    .add("Path Command", pathCommandChooser)
+                    .withWidget(BuiltInWidgets.kComboBoxChooser);
 
-            commandPlayer
+            ShuffleboardConstants.getInstance().pathFollowingList
                     .add("Run Selected Command", pathCommandChooser.getSelected())
-                    .withWidget(BuiltInWidgets.kCommand)
-                    .withSize(2, 1).withPosition(2, 0);
+                    .withWidget(BuiltInWidgets.kCommand);
         }
     }
 
@@ -233,10 +229,6 @@ public class RobotContainer {
                 new PrintCommand(message),
                 new FollowPathCommand(path, m_drivetrain)
         );
-    }
-
-    private Command getPathFollowCommand(PathPlannerTrajectory path) {
-        return getPathFollowCommand("No message", path);
     }
 
     public Command getAutonomousCommand() {

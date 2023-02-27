@@ -9,7 +9,7 @@ import frc.robot.subsystems.IEnabledDisabled;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 
 public class Arm extends SubsystemBase implements IEnabledDisabled {
     public StormSpark shoulder;

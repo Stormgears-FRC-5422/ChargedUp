@@ -3,7 +3,7 @@ package frc.utils.joysticks;
 
 import edu.wpi.first.wpilibj.Joystick;
 
-import static frc.robot.Constants.kStickNullSize;
+import static frc.robot.constants.Constants.kStickNullSize;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 

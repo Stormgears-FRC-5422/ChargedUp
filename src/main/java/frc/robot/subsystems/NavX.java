@@ -5,12 +5,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.Constants;
 import frc.robot.RobotState;
+import frc.robot.constants.ShuffleboardConstants;
 
-import static frc.robot.Constants.navXConnection;
+import static frc.robot.constants.Constants.navXConnection;
 
 public class NavX extends SubsystemBase implements IEnabledDisabled {
 
@@ -32,14 +33,18 @@ public class NavX extends SubsystemBase implements IEnabledDisabled {
                 break;
         }
 
-        ShuffleboardTab navXtab = Shuffleboard.getTab("NavX");
-        navXtab.addNumber("yaw", this::getYaw).withWidget(BuiltInWidgets.kGyro);
-        navXtab.addNumber("pitch", this::getPitch).withWidget(BuiltInWidgets.kGyro);
-        navXtab.addNumber("roll", this::getRoll).withWidget(BuiltInWidgets.kGyro);
-        navXtab.addBoolean("isMagnetometerCalibrated", this::isMagnetometerCalibrated)
+        ShuffleboardTab tab = ShuffleboardConstants.getInstance().navXTab;
+        tab.addNumber("yaw", this::getYaw)
+                .withWidget(BuiltInWidgets.kGyro);
+        tab.addNumber("pitch", this::getPitch)
+                .withWidget(BuiltInWidgets.kGyro);
+        tab.addNumber("roll", this::getRoll)
+                .withWidget(BuiltInWidgets.kGyro);
+        tab.addBoolean("isMagnetometerCalibrated", this::isMagnetometerCalibrated)
                 .withWidget(BuiltInWidgets.kBooleanBox);
-        navXtab.addNumber("fusedHeading", this::getFusedHeading).withWidget(BuiltInWidgets.kGyro);
-        navXtab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees())
+        tab.addNumber("fusedHeading", this::getFusedHeading)
+                .withWidget(BuiltInWidgets.kGyro);
+        tab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees())
                 .withWidget(BuiltInWidgets.kGyro);
     }
 

@@ -6,13 +6,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.Constants;
 import frc.robot.RobotState;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.IEnabledDisabled;
 
-import static frc.robot.Constants.kDriveSpeedScale;
+import static frc.robot.constants.Constants.kDriveSpeedScale;
 
 public abstract class DrivetrainBase extends SubsystemBase implements IEnabledDisabled {
 
@@ -21,7 +22,7 @@ public abstract class DrivetrainBase extends SubsystemBase implements IEnabledDi
     protected double m_driveSpeedScale = 0;
 
     protected ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-    protected ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
+    protected final ShuffleboardTab tab = ShuffleboardConstants.getInstance().drivetrainTab;
     DrivetrainBase() {
         setDriveSpeedScale(kDriveSpeedScale);
     }

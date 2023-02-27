@@ -3,7 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants;
+import frc.robot.constants.Constants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 import java.util.function.BooleanSupplier;
@@ -48,10 +48,6 @@ public class DriveWithJoystick extends CommandBase {
     }
     @Override
     public void execute() {
-//        SmartDashboard.putNumber("wpi X:", txSupplier.getAsDouble());
-//        SmartDashboard.putNumber("wpi y:", tySupplier.getAsDouble());
-//        SmartDashboard.putNumber("wpi z:", rotSupplier.getAsDouble());
-//        SmartDashboard.putBoolean("fieldOriented", useFieldRelative);
         if (precisionModeSupplier.getAsBoolean() == true) {
             m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
         } else {

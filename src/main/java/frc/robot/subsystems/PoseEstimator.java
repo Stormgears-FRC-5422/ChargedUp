@@ -10,12 +10,13 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.Constants;
 import frc.robot.RobotState;
+import frc.robot.constants.ShuffleboardConstants;
 
 import java.util.function.Supplier;
 
@@ -25,11 +26,12 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
     private final SwerveDriveKinematics m_driveKinematics;
     private final Supplier<SwerveModulePosition[]> m_modulePositionSupplier;
 
-    private Pose2d m_currentPose, m_lastPose;
+    private Pose2d m_currentPose;
 
-    private final ShuffleboardTab tab = Shuffleboard.getTab("Pose Estimation");
-    private final Field2d fieldSim;
-    private final FieldObject2d odometryPoseSim, visionPoseSim, estimatedPoseSim;
+    private final Field2d fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
+    private final FieldObject2d odometryPoseSim = fieldSim.getObject("Odometry Pose");
+    private final FieldObject2d visionPoseSim = fieldSim.getObject("Vision Pose");
+    private final FieldObject2d estimatedPoseSim = fieldSim.getRobotObject();
 
     // These standard deviations determine how much the pose estimation trusts itself (state)
     // and how much it trusts the vision measurements in (x, y, radians)
@@ -43,27 +45,17 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
 
         m_driveKinematics = kinematics;
         m_modulePositionSupplier = modulePositionSupplier;
-
-        fieldSim = new Field2d();
-        tab.add("Field", fieldSim)
-                .withWidget(BuiltInWidgets.kField)
-                .withSize(5, 4).withPosition(0, 0);
-        odometryPoseSim = fieldSim.getObject("Odometry Pose");
-        visionPoseSim = fieldSim.getObject("Vision Pose");
-        estimatedPoseSim = fieldSim.getRobotObject();
     }
 
     @Override
     public void onEnable() {
-        Pose2d m_startPose = RobotState.getInstance().getStartPose();
-        m_currentPose = RobotState.getInstance().getCurrentPose();
-        m_lastPose = RobotState.getInstance().getLastPose();
+        Pose2d startPose = RobotState.getInstance().getStartPose();
 
         m_poseEstimator = new SwerveDrivePoseEstimator(
                 m_driveKinematics,
                 RobotState.getInstance().getCurrentGyroRotation(),
                 m_modulePositionSupplier.get(),
-                m_startPose,
+                startPose,
                 stateStdDevs,
                 visionMeasurementStdDevs
         );
@@ -72,7 +64,7 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
     @Override
     public void periodic() {
         //set last pose to uncalculated current pose
-        m_lastPose = m_currentPose;
+        Pose2d lastPose = m_currentPose;
 
         var latestDriveEntry = RobotState.getInstance().getLatestDriveData();
         //drive data
@@ -96,7 +88,7 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
         m_currentPose = m_poseEstimator.getEstimatedPosition();
         estimatedPoseSim.setPose(m_currentPose);
         RobotState.getInstance().setCurrentPose(m_currentPose);
-        RobotState.getInstance().setLastPose(m_lastPose);
+        RobotState.getInstance().setLastPose(lastPose);
     }
 
     private void resetEstimator(Rotation2d angle, SwerveModulePosition[] modulePositions, Pose2d pose) {

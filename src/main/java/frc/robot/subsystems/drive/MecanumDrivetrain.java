@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 
 public class MecanumDrivetrain extends DrivetrainBase {
     /**

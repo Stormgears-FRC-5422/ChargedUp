@@ -5,7 +5,7 @@ import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmJointSpeeds;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 
 public class BasicArm extends CommandBase {
     Arm arm;

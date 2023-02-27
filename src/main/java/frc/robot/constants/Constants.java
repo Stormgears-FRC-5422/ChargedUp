@@ -2,8 +2,11 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.constants;
 
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.*;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.utils.configfile.StormProp;
 
 
@@ -105,7 +108,6 @@ public final class Constants {
 
     public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
     public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
-
 
     // **********
     // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)

@@ -5,7 +5,7 @@ import com.revrobotics.REVLibError;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 

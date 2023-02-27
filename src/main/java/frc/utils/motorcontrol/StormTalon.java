@@ -3,8 +3,7 @@ package frc.utils.motorcontrol;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.math.MathUtil;
 
-import static frc.robot.Constants.*;
-import static frc.robot.Constants.kSwivelEncoderTicksPerRotation;
+import static frc.robot.constants.Constants.kSwivelEncoderTicksPerRotation;
 
 public class StormTalon extends WPI_TalonSRX {
   private double scale = 1.0;

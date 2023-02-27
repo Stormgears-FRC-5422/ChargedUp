@@ -16,7 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import frc.robot.RobotState;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 
 public class SDSDrivetrain extends DrivetrainBase {
     /**
@@ -25,12 +25,6 @@ public class SDSDrivetrain extends DrivetrainBase {
      * This can be reduced to cap the robot's maximum speed. Typically, this is useful during initial testing of the robot.
      */
     public static final double MAX_VOLTAGE = 12.0;
-    // TODO (Darren). From the WPI docs,
-    //    The locations for the modules must be relative to the center of the robot.
-    //    Positive x values represent moving toward the front of the robot whereas
-    //    positive y values represent moving toward the left of the robot.
-    // OK. So doesn't that mean the X value should be related to the length, not the width, of the robot?
-    // of course that doesn't matter for a square robot...
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
             // Front left
             new Translation2d(DRIVETRAIN_WHEELBASE_METERS / 2.0, DRIVETRAIN_TRACKWIDTH_METERS / 2.0),
@@ -54,10 +48,10 @@ public class SDSDrivetrain extends DrivetrainBase {
     //pid gains from trapezoid move forward command
     //constraints made arbitrary
 
-    private PIDController xController = new PIDController(driveXkp, driveXki, 0.);
-    private PIDController yController = new PIDController(driveYkp, driveYki, 0.);
-    private PIDController rotController = new PIDController(turnkp, 0., 0.);
-    PPHolonomicDriveController m_holonomicController = new PPHolonomicDriveController(
+    private final PIDController xController = new PIDController(driveXkp, driveXki, 0.);
+    private final PIDController yController = new PIDController(driveYkp, driveYki, 0.);
+    private final PIDController rotController = new PIDController(turnkp, 0., 0.);
+    final PPHolonomicDriveController m_holonomicController = new PPHolonomicDriveController(
             xController,
             yController,
             rotController

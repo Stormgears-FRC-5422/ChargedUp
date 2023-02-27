@@ -7,6 +7,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.constants.Constants;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.IEnabledDisabled;
 
 import java.util.Map;
@@ -35,7 +37,7 @@ public class RobotState implements IEnabledDisabled {
         m_timer = new Timer();
         m_timer.stop();
 
-        ShuffleboardTab tab = Shuffleboard.getTab("Robot State");
+        ShuffleboardTab tab = ShuffleboardConstants.getInstance().robotStateTab;
         ShuffleboardLayout layout = tab
                 .getLayout("State", BuiltInLayouts.kList)
                 .withPosition(0, 0)
@@ -49,7 +51,7 @@ public class RobotState implements IEnabledDisabled {
         fieldSim = new Field2d();
         tab.add(fieldSim).withWidget(BuiltInWidgets.kField)
                 .withPosition(2, 0)
-                .withSize(4, 3);
+                .withSize(5, 4);
     }
 
     public double getTimeSeconds() {

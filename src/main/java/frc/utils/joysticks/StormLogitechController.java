@@ -1,7 +1,7 @@
 package frc.utils.joysticks;
 
 import edu.wpi.first.wpilibj.Joystick;
-import static frc.robot.Constants.kStickNullSize;
+import static frc.robot.constants.Constants.kStickNullSize;
 
 public class StormLogitechController extends Joystick {
 

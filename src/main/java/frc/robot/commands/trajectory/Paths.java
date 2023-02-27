@@ -16,22 +16,22 @@ import java.util.List;
 import static com.pathplanner.lib.PathPlanner.*;
 
 public final class Paths {
-    public static PathPlannerTrajectory straightPath = loadPath("Straight Path", 1, 0.5);
-    public static PathPlannerTrajectory straight180Path = loadPath("180 while forward", 1, 0.5);
-    public static PathPlannerTrajectory tPath = loadPath("TPath", 3, 1);
-    public static PathPlannerTrajectory circularPath = loadPath("Circular", 1, 0.5);
+    public static final PathPlannerTrajectory straightPath = loadPath("Straight Path", 1, 0.5);
+    public static final PathPlannerTrajectory straight180Path = loadPath("180 while forward", 1, 0.5);
+    public static final PathPlannerTrajectory tPath = loadPath("TPath", 3, 1);
+    public static final PathPlannerTrajectory circularPath = loadPath("Circular", 1, 0.5);
     public static PathPlannerTrajectory Auto1 = loadPath("Auto1", 1, 0.5);
-    public static PathPlannerTrajectory testPath = loadPath("Test", 1, 0.5);
-    public static PathPlannerTrajectory doubleConeChargingStationPath = loadPath("Double Cone Charging Station", 1, 0.5);
-    public static PathPlannerTrajectory diagonalPath = getPathToPose(
+    public static final PathPlannerTrajectory testPath = loadPath("Test", 1, 0.5);
+    public static final PathPlannerTrajectory doubleConeChargingStationPath = loadPath("Double Cone Charging Station", 1, 0.5);
+    public static final PathPlannerTrajectory diagonalPath = getPathToPose(
             new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(-90)),
             2, 3);
 
-    public static PathPlannerTrajectory fivePath = PathPlanner.loadPath("5", 2, 3);
-    public static PathPlannerTrajectory fourPath = PathPlanner.loadPath("4", 2, 3);
-    public static PathPlannerTrajectory twoPath = PathPlanner.loadPath("2", 2, 3);
+    public static final PathPlannerTrajectory fivePath = PathPlanner.loadPath("5", 2, 3);
+    public static final PathPlannerTrajectory fourPath = PathPlanner.loadPath("4", 2, 3);
+    public static final PathPlannerTrajectory twoPath = PathPlanner.loadPath("2", 2, 3);
 
-    static PathPlannerTrajectory fiveToFourTransition =
+    static final PathPlannerTrajectory fiveToFourTransition =
             getPathToPose(
                 new Pose2d(
                         fivePath.getEndState().poseMeters.getTranslation(),
@@ -40,7 +40,7 @@ public final class Paths {
                 0.7, 0.5
             );
 
-    static PathPlannerTrajectory fourToTwoTransition =
+    static final PathPlannerTrajectory fourToTwoTransition =
             getPathToPose(
                 new Pose2d(
                         fourPath.getEndState().poseMeters.getTranslation(),
@@ -49,7 +49,7 @@ public final class Paths {
                 0.7, 0.5
             );
 
-    static PathPlannerTrajectory twoToTwoTransition =
+    static final PathPlannerTrajectory twoToTwoTransition =
             getPathToPose(
                 new Pose2d(
                         twoPath.getEndState().poseMeters.getTranslation(),
@@ -58,7 +58,7 @@ public final class Paths {
                 0.7, 0.5
             );
 
-    public static List<PathWithName> listOfPaths = List.of(
+    public static final List<PathWithName> listOfPaths = List.of(
             new PathWithName("Straight", straightPath),
             new PathWithName("Straight 180", straight180Path),
             new PathWithName("T", tPath),
@@ -79,8 +79,8 @@ public final class Paths {
     }
 
     /** end pose should be given relative to robot function will transform pose */
-    public static PathPlannerTrajectory getPathFromRobotPose(Pose2d endPoseFromRobotPose, double maxVel, double maxAcc) {
-        var currentPose = RobotState.getInstance().getCurrentPose();
+    public static PathPlannerTrajectory getPathRelativeToCurrentPose(Pose2d endPoseFromRobotPose, double maxVel, double maxAcc) {
+        Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         //transform is just the current pose - nothing
         var transform = currentPose.minus(new Pose2d());
         return getPathToPose(
@@ -88,6 +88,11 @@ public final class Paths {
                 endPoseFromRobotPose.transformBy(transform),
                 maxVel, maxAcc
         );
+    }
+
+    public static PathPlannerTrajectory getPathAbsoluteToCurrentPose(Pose2d endFieldPose, double maxVel, double maxAcc) {
+        Pose2d currentPose = RobotState.getInstance().getCurrentPose();
+        return getPathToPose(currentPose, endFieldPose, maxVel, maxAcc);
     }
 
     public static SequentialCommandGroup getTeamNumberPathCommand(DrivetrainBase drivetrain) {
@@ -104,9 +109,9 @@ public final class Paths {
     }
 
     public static class PathWithName {
-        public String name;
-        public PathPlannerTrajectory path;
-        public Pose2d startPose;
+        public final String name;
+        public final PathPlannerTrajectory path;
+        public final Pose2d startPose;
 
         public PathWithName(String name, PathPlannerTrajectory path) {
             this.name = name;

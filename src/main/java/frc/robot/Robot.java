@@ -13,7 +13,7 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static frc.robot.Constants.usePneumatics;
+import static frc.robot.constants.Constants.usePneumatics;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
