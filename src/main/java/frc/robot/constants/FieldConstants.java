@@ -51,6 +51,7 @@ public final class FieldConstants {
                 GamePieceType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? GamePieceType.CUBE : GamePieceType.CONE;
                 double yTranslation = distToFirstNodeX + (wpiY * distBetweenNodes);
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
+                    type = (wpiX == 2)? GamePieceType.HYBRID : type;
                     double xTranslation = nodeXs[wpiX];
                     double zTranslation = nodeZs[wpiX];
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
@@ -115,6 +116,6 @@ public final class FieldConstants {
     }
 
     public enum GamePieceType {
-        CUBE, CONE
+        CUBE, CONE, HYBRID
     }
 }
