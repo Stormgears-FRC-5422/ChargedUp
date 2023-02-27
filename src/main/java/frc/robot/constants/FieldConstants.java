@@ -7,14 +7,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import java.io.IOException;
 import java.util.List;
 
-import static frc.robot.constants.Constants.BUMPER_THICKNESS;
-import static frc.robot.constants.Constants.DRIVETRAIN_WHEELBASE_METERS;
+import static frc.robot.constants.Constants.*;
 
 public final class FieldConstants {
     public final static double FIELD_LENGTH = Units.feetToMeters(54) + Units.inchesToMeters(3.25);
@@ -38,27 +36,31 @@ public final class FieldConstants {
         public static ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
 
         private static final double distBetweenNodes = Units.inchesToMeters(22.0);
-        private static final double distToFirstNodeX = Units.inchesToMeters(20.0);
+        private static final double distToFirstNodeY = Units.inchesToMeters(20.0);
         //heights of cone nodes cube nodes don't really matter maybe we can make them a bit lower than the cone nodes
         //hybrid node (last in array) is 10 inches of ground just because
         private static final double[] nodeZs = {Units.inchesToMeters(46.0), Units.inchesToMeters(34.0), Units.inchesToMeters(10.0)};
+        private static final ScoringNode.NodeHeight[] nodeHeights = {
+            ScoringNode.NodeHeight.HIGH, ScoringNode.NodeHeight.MIDDLE, ScoringNode.NodeHeight.HYBRID
+        };
         //last one is kind of a guess (hybrid node)
         private static final double[] nodeXs = {Units.inchesToMeters(14.32), Units.inchesToMeters(31.35), Units.inchesToMeters(47.0)};
 
         static {
-            double scoringX = Units.inchesToMeters(54.05) + BUMPER_THICKNESS + (DRIVETRAIN_WHEELBASE_METERS / 2.0);
+            double scoringX = Units.inchesToMeters(54.05) + (ROBOT_LENGTH / 2.0) + BUMPER_THICKNESS;
             for (int wpiY = 0; wpiY < 9; wpiY++) {
-                GamePieceType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? GamePieceType.CUBE : GamePieceType.CONE;
-                double yTranslation = distToFirstNodeX + (wpiY * distBetweenNodes);
+                ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
+                double yTranslation = distToFirstNodeY + (wpiY * distBetweenNodes);
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
-                    type = (wpiX == 2)? GamePieceType.HYBRID : type;
+                    type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     double xTranslation = nodeXs[wpiX];
                     double zTranslation = nodeZs[wpiX];
+                    var height = nodeHeights[wpiX];
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
                     var scoringPosition = new Pose2d(scoringX, yTranslation, Rotation2d.fromDegrees(180));
-                    var node = new ScoringNode(type, Alliance.Blue, translation, scoringPosition);
+                    var node = new ScoringNode(type, height, Alliance.Blue, translation, scoringPosition);
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
@@ -71,17 +73,30 @@ public final class FieldConstants {
         public static Translation3d[] redAllianceNodesTranslations;
 
         public static class ScoringNode {
-            public final GamePieceType type;
+            public final NodeType type;
+            public final NodeHeight height;
             public final Alliance alliance;
             public final Translation3d translation;
             public final Pose2d scoringPosition;
 
-            public ScoringNode(GamePieceType type, Alliance alliance,
+            public ScoringNode(NodeType type, NodeHeight height, Alliance alliance,
                                Translation3d translation, Pose2d scoringPosition) {
                 this.type = type;
+                this.height = height;
                 this.alliance = alliance;
                 this.translation = translation;
                 this.scoringPosition = scoringPosition;
+            }
+
+            public static ScoringNode nodeFromTranslation(Translation3d translation) {
+                for (int i = 0; i < 9; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        if (blueAllianceGrid[i][j].translation.equals(translation)) return blueAllianceGrid[i][j];
+                        if (redAllianceGrid[i][j].translation.equals(translation)) return redAllianceGrid[i][j];
+                    }
+                }
+                System.out.println("No such node with translation: " + translation);
+                return blueAllianceGrid[0][0];
             }
 
             public static ScoringNode transformBlueToRed(ScoringNode node) {
@@ -103,19 +118,23 @@ public final class FieldConstants {
                 Pose2d transformedScoringPosition = new Pose2d(transformedScoringX,
                         transformedY, transformedRotation);
 
-                return new ScoringNode(node.type, Alliance.Red, transformedTranslation, transformedScoringPosition);
+                return new ScoringNode(node.type, node.height, Alliance.Red, transformedTranslation, transformedScoringPosition);
             }
 
             @Override
             public String toString() {
-                return "ScoringNode(type: " + type + " alliance: " + alliance +
-                        "\n translation: " + translation +
-                        "\n scoring position: " + scoringPosition;
+                return String.format("ScoringNode(type: %1$s, height: %2$s, alliance: %3$s,translation: %4$s, scoringPosition: %5$s)",
+                        type, height, alliance,translation, scoringPosition);
+            }
+            public enum NodeType {
+                CUBE, CONE, HYBRID
+            }
+
+            public enum NodeHeight {
+                HIGH, MIDDLE, HYBRID
             }
         }
     }
 
-    public enum GamePieceType {
-        CUBE, CONE, HYBRID
-    }
+
 }

@@ -58,7 +58,8 @@ public final class Constants {
     public static final String kMK4iModuleKind = StormProp.getString("mk4iModuleKind", "");
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
     public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
-
+    public static final double ROBOT_WIDTH = StormProp.getNumber("robotWidth", 0.);
+    public static final double ROBOT_LENGTH = StormProp.getNumber("robotLength", 0.);
     public static final double BUMPER_THICKNESS = StormProp.getNumber("bumperThickness", 0.);
 
     // <mecanum> Not needed for swerve, just mecanum
