@@ -28,10 +28,11 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
 
     private Pose2d m_currentPose;
 
-    private final Field2d fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
-    private final FieldObject2d odometryPoseSim = fieldSim.getObject("Odometry Pose");
-    private final FieldObject2d visionPoseSim = fieldSim.getObject("Vision Pose");
-    private final FieldObject2d estimatedPoseSim = fieldSim.getRobotObject();
+    private final Field2d fieldSim;
+    private final FieldObject2d
+            odometryPoseSim,
+            visionPoseSim,
+            estimatedPoseSim;
 
     // These standard deviations determine how much the pose estimation trusts itself (state)
     // and how much it trusts the vision measurements in (x, y, radians)
@@ -45,6 +46,11 @@ public class PoseEstimator extends SubsystemBase implements IEnabledDisabled {
 
         m_driveKinematics = kinematics;
         m_modulePositionSupplier = modulePositionSupplier;
+
+        fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
+        odometryPoseSim = fieldSim.getObject("Odometry Pose");
+        visionPoseSim = fieldSim.getObject("Vision Pose");
+        estimatedPoseSim = fieldSim.getRobotObject();
     }
 
     @Override

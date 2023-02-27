@@ -146,6 +146,9 @@ public class RobotContainer {
         } else
             System.out.println("NOT using stormnet");
 
+        //init constants instance
+        ShuffleboardConstants.getInstance();
+
         // Configure the trigger bindings
         configureBindings();
     }

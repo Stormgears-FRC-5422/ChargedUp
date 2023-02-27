@@ -59,6 +59,8 @@ public final class Constants {
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
     public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
 
+    public static final double BUMPER_THICKNESS = StormProp.getNumber("bumperThickness", 0.);
+
     // <mecanum> Not needed for swerve, just mecanum
     public static final double kWheelRadiusMeters = StormProp.getNumber("wheelRadiusMeters", 0.);
     public static final double kWheelMaxRPM = StormProp.getNumber("wheelMaxRPM", 0.);

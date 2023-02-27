@@ -22,9 +22,10 @@ public abstract class DrivetrainBase extends SubsystemBase implements IEnabledDi
     protected double m_driveSpeedScale = 0;
 
     protected ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
-    protected final ShuffleboardTab tab = ShuffleboardConstants.getInstance().drivetrainTab;
+    protected final ShuffleboardTab tab;
     DrivetrainBase() {
         setDriveSpeedScale(kDriveSpeedScale);
+        tab = ShuffleboardConstants.getInstance().drivetrainTab;
     }
 
     protected void setMaxVelocities(double maxVelocityMetersPerSecond, double maxAngularVelocityRadiansPerSecond) {

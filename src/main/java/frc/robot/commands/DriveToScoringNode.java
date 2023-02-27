@@ -1,19 +1,20 @@
-package frc.robot.commands.trajectory;
+package frc.robot.commands;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
+import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 public class DriveToScoringNode extends CommandBase {
 
+    //delegate pathfollowing to command
     private FollowPathCommand m_command;
     private final DrivetrainBase m_drivetrain;
     private final FieldConstants.Grids.ScoringNode m_node;
