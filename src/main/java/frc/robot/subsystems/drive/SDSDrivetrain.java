@@ -182,7 +182,7 @@ public class SDSDrivetrain extends DrivetrainBase {
 
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
         var speeds = m_holonomicController.calculate(RobotState.getInstance().getCurrentPose(), goalState);
-        System.out.println("Current Chassis Speeds: " + speeds);
+//        System.out.println("Current Chassis Speeds: " + speeds);
         drive(speeds, false);
     }
 
@@ -209,13 +209,11 @@ public class SDSDrivetrain extends DrivetrainBase {
         RobotState.getInstance().addDriveData(currentDriveData);
     }
 
-    @Override
-    public void onEnable() {
+    public void enabledInit() {
         resetDriveEncoders();
     }
 
-    @Override
-    public void onDisable() {
+    public void disabledInit() {
         resetDriveEncoders();
     }
 

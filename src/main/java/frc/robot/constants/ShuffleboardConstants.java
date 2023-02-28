@@ -4,18 +4,12 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
-public class ShuffleboardConstants {
-    public ShuffleboardTab robotStateTab = Shuffleboard.getTab("Robot State");
-    public ShuffleboardTab drivetrainTab = Shuffleboard.getTab("Drivetrain");
-    public ShuffleboardTab navXTab = Shuffleboard.getTab("Nav X");
-    public ShuffleboardTab pathFollowingTab = Shuffleboard.getTab("Path Following");
-    public ShuffleboardLayout pathFollowingList = pathFollowingTab
-            .getLayout("Following Command", BuiltInLayouts.kList)
-            .withPosition(0, 0).withSize(2, 4);
-    public GenericEntry dTranslationEntry = pathFollowingList.add("dTranslation", 0.0).getEntry();
-    public GenericEntry dRotationEntry = pathFollowingList.add("dRotation", 0.0).getEntry();
-    public Field2d pathFollowingFieldSim = new Field2d();
-    public Field2d poseEstimationFieldSim = new Field2d();
+public final class ShuffleboardConstants {
+    public final ShuffleboardTab robotStateTab, drivetrainTab, navXTab, pathFollowingTab;
+    public final ShuffleboardLayout pathFollowingList;
+    public final GenericEntry dTranslationEntry, dRotationEntry;
+    public final Field2d pathFollowingFieldSim;
+    public final Field2d poseEstimationFieldSim;
 
     private static ShuffleboardConstants instance;
 
@@ -26,14 +20,28 @@ public class ShuffleboardConstants {
     }
 
     private ShuffleboardConstants() {
+        robotStateTab = Shuffleboard.getTab("Robot State");
+        drivetrainTab = Shuffleboard.getTab("Drivetrain");
+        navXTab = Shuffleboard.getTab("Nav X");
+        pathFollowingTab = Shuffleboard.getTab("Path Following");
+
+        pathFollowingList = pathFollowingTab
+                .getLayout("Following Command", BuiltInLayouts.kList)
+                .withPosition(0, 0).withSize(2, 2);
+
+        dTranslationEntry = pathFollowingList.add("dTranslation", new Double(0.0)).getEntry();
+        dRotationEntry = pathFollowingList.add("dRotation", new Double(0.0)).getEntry();
+
+        pathFollowingFieldSim = new Field2d();
+        poseEstimationFieldSim = new Field2d();
+
         pathFollowingTab
                 .add("Goal v. Current Pose", pathFollowingFieldSim)
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(7, 4).withPosition(2, 0);
 
-        ShuffleboardTab poseEstimationTab = Shuffleboard.getTab("Pose Estimation");
-        poseEstimationTab
-                .add("Pose Estimation", poseEstimationFieldSim)
+        Shuffleboard.getTab("Pose Estimation")
+                .add("Poses", poseEstimationFieldSim)
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(7, 4).withPosition(0, 0);
     }

@@ -48,7 +48,7 @@ public class DriveWithJoystick extends CommandBase {
     }
     @Override
     public void execute() {
-        if (precisionModeSupplier.getAsBoolean() == true) {
+        if (precisionModeSupplier.getAsBoolean()) {
             m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
         } else {
             m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);

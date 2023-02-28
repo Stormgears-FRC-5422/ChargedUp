@@ -7,14 +7,13 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
-import frc.robot.subsystems.IEnabledDisabled;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import java.util.Map;
 import java.util.TreeMap;
 
-public class RobotState implements IEnabledDisabled {
+public class RobotState extends StormSubsystemBase {
     private static RobotState m_instance;
     private final Timer m_timer;
 
@@ -58,16 +57,11 @@ public class RobotState implements IEnabledDisabled {
         return m_timer.get();
     }
 
-    public void resetPose(Pose2d pose) {
-        currentPose = pose;
-    }
-
-    public void resetPose() {
-        resetPose(new Pose2d());
-    }
-
     public Pose2d getCurrentPose() {
-        if (currentPose == null) return getStartPose();
+        if (currentPose == null) {
+            System.out.println("Using start pose for current pose: " + getStartPose());
+            return getStartPose();
+        }
         return currentPose;
     }
 
@@ -88,7 +82,10 @@ public class RobotState implements IEnabledDisabled {
     }
 
     public Pose2d getLastPose() {
-        if (lastPose == null) return getCurrentPose();
+        if (lastPose == null) {
+            System.out.println("Using current pose for last pose: " + getCurrentPose());
+            return getCurrentPose();
+        }
         return lastPose;
     }
 
@@ -156,19 +153,23 @@ public class RobotState implements IEnabledDisabled {
         return getDeltaDegrees() / 0.02;
     }
 
-    public void onEnable() {
+    public void enabledInit() {
         m_timer.reset();
         m_timer.start();
         m_driveDataSet = new TreeMap<Double, DriveData>();
         m_visionDataSet = new TreeMap<Double, Pose2d>();
+
+        currentPose = null;
+        lastPose = null;
+        currentGyroRotation = null;
+        lastGyroRotation = null;
     }
 
-    public void onDisable() {
+    public void disabledInit() {
         m_timer.stop();
-        resetPose();
     }
 
-    public void update() {
+    public void lastPeriodic() {
         fieldSim.setRobotPose(getCurrentPose());
 
         double currentTimeMs = Timer.getFPGATimestamp();

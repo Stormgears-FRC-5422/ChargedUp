@@ -4,14 +4,13 @@ import com.revrobotics.CANSparkMaxLowLevel;
 
 import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.IEnabledDisabled;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import static frc.robot.constants.Constants.*;
 
-public class Arm extends SubsystemBase implements IEnabledDisabled {
+public class Arm extends StormSubsystemBase {
     public StormSpark shoulder;
     public StormSpark elbow;
     public StormTalon shoulderEncoder;
@@ -23,7 +22,7 @@ public class Arm extends SubsystemBase implements IEnabledDisabled {
     // The arm Joint speeds will always be scaled by this factor. It defaults to kArmSpeedScale, but can be reset
     // (say by using the slider on the joystick)
     protected double m_armSpeedScale = 0;
-    private int count = 0;
+    private final int count = 0;
 
     protected ArmJointSpeeds m_jointSpeeds = new ArmJointSpeeds(0.0, 0.0);
 

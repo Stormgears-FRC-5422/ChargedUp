@@ -8,6 +8,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,7 +23,6 @@ import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.commands.trajectory.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
-import frc.robot.subsystems.IEnabledDisabled;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.arm.Arm;
@@ -36,7 +36,6 @@ import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,8 +53,6 @@ public class RobotContainer {
     StormNet m_stormNet;
     NavX m_navX;
 
-    //List of subsystems to be enabled and disabled
-    final ArrayList<IEnabledDisabled> m_enabledAndDisabledSystems = new ArrayList<>();
 
     // **********
     // COMMANDS
@@ -76,13 +73,14 @@ public class RobotContainer {
 
 
     public RobotContainer() throws IllegalDriveTypeException {
+        //init constants
+        FieldConstants.Grids.initGridNodes();
+        ShuffleboardConstants.getInstance();
 
         m_robotState = RobotState.getInstance();
-        m_enabledAndDisabledSystems.add(m_robotState);
 
         if (useNavX) {
             m_navX = new NavX();
-            m_enabledAndDisabledSystems.add(m_navX);
         } else
             System.out.println("NOT using navX");
 
@@ -90,7 +88,6 @@ public class RobotContainer {
         if (useDrive) {
             try {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
-                m_enabledAndDisabledSystems.add(m_drivetrain);
             } catch (Exception e) {
                 e.printStackTrace();
                  useDrive = false;
@@ -102,7 +99,6 @@ public class RobotContainer {
                         m_drivetrain.getSwerveDriveKinematics(),
                         m_drivetrain::getSwerveModulePositions
                 );
-                m_enabledAndDisabledSystems.add(m_poseEstimator);
 
                 autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
                 autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
@@ -122,7 +118,6 @@ public class RobotContainer {
 
         if (useArm) {
             m_arm = new Arm();
-            m_enabledAndDisabledSystems.add(m_arm);
         } else {
             System.out.println("NOT using arm");
         }
@@ -145,9 +140,6 @@ public class RobotContainer {
           m_stormNet = StormNet.getInstance();
         } else
             System.out.println("NOT using stormnet");
-
-        //init constants instance
-        ShuffleboardConstants.getInstance();
 
         // Configure the trigger bindings
         configureBindings();
@@ -179,7 +171,6 @@ public class RobotContainer {
                     m_controller::getWpiYAxis,
                     m_controller::getWpiZAxis,
                     () -> m_controller.getRawButton(2));
-
     	    m_drivetrain.setDefaultCommand(driveWithJoystick);
 
         	m_gyrocommand = new GyroCommand(m_drivetrain, 180);
@@ -187,10 +178,10 @@ public class RobotContainer {
         	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_navX::zeroYaw));
         	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
         	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-            new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
-                m_drivetrain.getCurrentCommand().cancel();
-                driveWithJoystick.schedule();
-            }));
+//            new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
+//                m_drivetrain.getCurrentCommand().cancel();
+//                driveWithJoystick.schedule();
+//            }));
         }
 
 
@@ -200,6 +191,8 @@ public class RobotContainer {
             for (var path : Paths.listOfPaths) {
                 pathCommandChooser.addOption(path.name, getPathFollowCommand(path.name, path.path));
             }
+            var firstPath = Paths.listOfPaths.get(0);
+            pathCommandChooser.setDefaultOption(firstPath.name, getPathFollowCommand(firstPath.name, firstPath.path));
 
             HashMap<String, Command> commandHashMap = new HashMap<>();
             commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
@@ -217,12 +210,13 @@ public class RobotContainer {
                                     new Pose2d(2, 0, Rotation2d.fromDegrees(0)),
                                     2, 3)));
 
-            ShuffleboardConstants.getInstance().pathFollowingList
+            ShuffleboardConstants.getInstance().pathFollowingTab
                     .add("Path Command", pathCommandChooser)
-                    .withWidget(BuiltInWidgets.kComboBoxChooser);
+                    .withPosition(0, 3).withSize(2, 1);
 
-            ShuffleboardConstants.getInstance().pathFollowingList
-                    .add("Run Selected Command", pathCommandChooser.getSelected())
+            ShuffleboardConstants.getInstance().pathFollowingTab
+                    .add("Run Selected Command", (Sendable) pathCommandChooser.getSelected())
+                    .withPosition(0, 2).withSize(2, 1)
                     .withWidget(BuiltInWidgets.kCommand);
         }
     }
@@ -238,6 +232,7 @@ public class RobotContainer {
         if (useDrive && driveType.equals("SwerveDrive")) {
             var selectedPath = autoPathChooser.getSelected();
             m_robotState.setStartPose(selectedPath.startPose);
+            System.out.println(selectedPath.startPose);
             return new FollowPathWithEvents(
                     getPathFollowCommand("Auto path starting " + selectedPath.name, selectedPath.path),
                     selectedPath.path.getMarkers(),
@@ -245,21 +240,6 @@ public class RobotContainer {
             );
         }
         return new PrintCommand("Autonomous! -----");
-    }
-
-
-    void onEnable() {
-        for (var system : m_enabledAndDisabledSystems) {
-            system.onEnable();
-        }
-        System.out.println("-------------enabled-------------");
-    }
-
-    void onDisable() {
-        for (var system : m_enabledAndDisabledSystems) {
-            system.onDisable();
-        }
-        System.out.println("-------------disabled-------------");
     }
 }
 

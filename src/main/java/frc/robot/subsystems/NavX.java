@@ -4,16 +4,14 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.Constants;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import static frc.robot.constants.Constants.navXConnection;
 
-public class NavX extends SubsystemBase implements IEnabledDisabled {
+public class NavX extends StormSubsystemBase {
 
     private final AHRS m_gyro;
     //Offset degrees set at start of match
@@ -34,18 +32,10 @@ public class NavX extends SubsystemBase implements IEnabledDisabled {
         }
 
         ShuffleboardTab tab = ShuffleboardConstants.getInstance().navXTab;
-        tab.addNumber("yaw", this::getYaw)
-                .withWidget(BuiltInWidgets.kGyro);
-        tab.addNumber("pitch", this::getPitch)
-                .withWidget(BuiltInWidgets.kGyro);
-        tab.addNumber("roll", this::getRoll)
-                .withWidget(BuiltInWidgets.kGyro);
-        tab.addBoolean("isMagnetometerCalibrated", this::isMagnetometerCalibrated)
-                .withWidget(BuiltInWidgets.kBooleanBox);
-        tab.addNumber("fusedHeading", this::getFusedHeading)
-                .withWidget(BuiltInWidgets.kGyro);
-        tab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees())
-                .withWidget(BuiltInWidgets.kGyro);
+        tab.addNumber("yaw", this::getYaw);
+        tab.addNumber("offset", this::getYawOffset);
+        tab.addNumber("fusedHeading", this::getFusedHeading);
+        tab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees());
     }
 
 
@@ -54,8 +44,9 @@ public class NavX extends SubsystemBase implements IEnabledDisabled {
     }
 
     /** Yaw offset will be added to yaw (-180, 180) but positive is clockwise */
-    public void configureYawOffset(double yawOffset) {
+    public void setYawOffset(double yawOffset) {
         this.yawOffset = yawOffset;
+        System.out.println("set yaw offset to: " + this.yawOffset);
     }
 
     public double getPitch() {
@@ -78,6 +69,10 @@ public class NavX extends SubsystemBase implements IEnabledDisabled {
         return m_gyro.getFusedHeading();
     }
 
+    private double getYawOffset() {
+        return yawOffset;
+    }
+
     /** get absolute rotation (-180, 180) inverted so counter-clockwise is positive */
     public Rotation2d getAbsoluteRotation() {
         double invertedYaw = 360.0 - getYaw();
@@ -94,15 +89,10 @@ public class NavX extends SubsystemBase implements IEnabledDisabled {
         RobotState.getInstance().setLastGyroRotation(lastRotation);
     }
 
-    @Override
-    public void onEnable() {
+    public void enabledInit() {
         zeroYaw();
         var startPose = RobotState.getInstance().getStartPose();
-        configureYawOffset(startPose.getRotation().getDegrees());
-    }
-
-    @Override
-    public void onDisable() {
-        configureYawOffset(0);
+        System.out.println("Start Pose in navx enable: " + startPose);
+        setYawOffset(startPose.getRotation().getDegrees());
     }
 }

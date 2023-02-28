@@ -8,12 +8,12 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 
 public class GyroCommand extends CommandBase {
 
-    private DrivetrainBase m_drivetrain;
+    private final DrivetrainBase m_drivetrain;
 
-    private double m_targetValue;
+    private final double m_targetValue;
     private double m_currAngle;
     private double m_error;
-    private double Kp = 0.0008;
+    private final double Kp = 0.0008;
 
     public GyroCommand(DrivetrainBase drivetrain, double targetValue){
         m_drivetrain = drivetrain;

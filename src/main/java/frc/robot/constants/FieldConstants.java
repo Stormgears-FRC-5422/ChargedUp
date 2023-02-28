@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import static frc.robot.constants.Constants.*;
 
@@ -46,31 +47,33 @@ public final class FieldConstants {
         //last one is kind of a guess (hybrid node)
         private static final double[] nodeXs = {Units.inchesToMeters(14.32), Units.inchesToMeters(31.35), Units.inchesToMeters(47.0)};
 
-        static {
+        public static void initGridNodes(){
             double scoringX = Units.inchesToMeters(54.05) + (ROBOT_LENGTH / 2.0) + BUMPER_THICKNESS;
             for (int wpiY = 0; wpiY < 9; wpiY++) {
                 ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
                 double yTranslation = distToFirstNodeY + (wpiY * distBetweenNodes);
+
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
+
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     double xTranslation = nodeXs[wpiX];
                     double zTranslation = nodeZs[wpiX];
                     var height = nodeHeights[wpiX];
+
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
                     var scoringPosition = new Pose2d(scoringX, yTranslation, Rotation2d.fromDegrees(180));
                     var node = new ScoringNode(type, height, Alliance.Blue, translation, scoringPosition);
+
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-                    System.out.println("Blue Alliance Node: " + node);
-                    System.out.println("Red Alliance Node: " + transformedNode);
+
+//                    System.out.println("blueGrid[" + wpiY + "][" + wpiX + "]: "  + node);
                 }
             }
         }
-
-        public static Translation3d[] redAllianceNodesTranslations;
 
         public static class ScoringNode {
             public final NodeType type;
@@ -105,27 +108,43 @@ public final class FieldConstants {
                 double blueMiddleNodeY = Units.inchesToMeters(108);
                 Translation3d nodeTranslation = node.translation;
                 double transformedY = (blueMiddleNodeY - nodeTranslation.getY()) + blueMiddleNodeY;
-                //mirror X across field
-                double halfLengthOfField = FIELD_LENGTH / 2.0;
-                //distance to field middle plus middle of field value
-                double transformedX = (halfLengthOfField - nodeTranslation.getX()) + halfLengthOfField;
+                double transformedX = mirrorXPosition(nodeTranslation.getX());
                 Translation3d transformedTranslation = new Translation3d(transformedX,
                         transformedY, nodeTranslation.getZ());
 
                 Pose2d scoringPosition = node.scoringPosition;
-                double transformedScoringX = (halfLengthOfField - scoringPosition.getX()) + halfLengthOfField;
+                double transformedScoringX = mirrorXPosition(scoringPosition.getX());
                 Rotation2d transformedRotation = scoringPosition.getRotation().times(-1);
                 Pose2d transformedScoringPosition = new Pose2d(transformedScoringX,
                         transformedY, transformedRotation);
 
-                return new ScoringNode(node.type, node.height, Alliance.Red, transformedTranslation, transformedScoringPosition);
+                return new ScoringNode(node.type, node.height, Alliance.Red,
+                        transformedTranslation, transformedScoringPosition);
             }
 
             @Override
             public String toString() {
-                return String.format("ScoringNode(type: %1$s, height: %2$s, alliance: %3$s,translation: %4$s, scoringPosition: %5$s)",
-                        type, height, alliance,translation, scoringPosition);
+                return String.format("ScoringNode(%1$s, %2$s, %3$s, %4$s, %5$s)",
+                        type, height, alliance, translation, scoringPosition);
             }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                ScoringNode that = (ScoringNode) o;
+                return type == that.type &&
+                        height == that.height &&
+                        alliance == that.alliance &&
+                        translation.equals(that.translation) &&
+                        scoringPosition.equals(that.scoringPosition);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(type, height, alliance, translation, scoringPosition);
+            }
+
             public enum NodeType {
                 CUBE, CONE, HYBRID
             }
@@ -136,5 +155,9 @@ public final class FieldConstants {
         }
     }
 
+    public static double mirrorXPosition(double xToBeMirrored) {
+        double halfLengthOfField = FIELD_LENGTH / 2.0;
+        return (halfLengthOfField - xToBeMirrored) + halfLengthOfField;
+    }
 
 }

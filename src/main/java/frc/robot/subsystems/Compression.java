@@ -13,17 +13,17 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import static frc.robot.constants.Constants.*;
 
-public class Compression extends SubsystemBase {
+public class Compression extends StormSubsystemBase {
     private boolean running;
-    private boolean onOffSolenoidSet;
-    private boolean cubeConeSolenoidSet;
-    private Compressor mainCompressor;
-    private Solenoid onOffSolenoid;
-    private Solenoid cubeConeSolenoid;
+    private final boolean onOffSolenoidSet;
+    private final boolean cubeConeSolenoidSet;
+    private final Compressor mainCompressor;
+    private final Solenoid onOffSolenoid;
+    private final Solenoid cubeConeSolenoid;
 
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);

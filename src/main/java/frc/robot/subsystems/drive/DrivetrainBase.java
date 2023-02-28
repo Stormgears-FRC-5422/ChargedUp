@@ -7,15 +7,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.Constants;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
-import frc.robot.subsystems.IEnabledDisabled;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import static frc.robot.constants.Constants.kDriveSpeedScale;
 
-public abstract class DrivetrainBase extends SubsystemBase implements IEnabledDisabled {
+public abstract class DrivetrainBase extends StormSubsystemBase {
 
     public double m_maxVelocityMetersPerSecond;
     public double m_maxAngularVelocityRadiansPerSecond;
@@ -74,7 +72,8 @@ public abstract class DrivetrainBase extends SubsystemBase implements IEnabledDi
         return m_chassisSpeeds;
     }
 
-    public SwerveDriveKinematics getSwerveDriveKinematics() {return new SwerveDriveKinematics();};
+    public SwerveDriveKinematics getSwerveDriveKinematics() {return new SwerveDriveKinematics();}
+
     public SwerveModulePosition[] getSwerveModulePositions() {return new SwerveModulePosition[4];}
-    public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {};
+    public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {}
 }

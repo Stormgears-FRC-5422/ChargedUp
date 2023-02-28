@@ -4,11 +4,9 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.constants.Constants;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -34,11 +32,10 @@ public class FollowPathCommand extends CommandBase {
 //
 //    private static final FieldObject2d goalRobotPoseSim = fieldSim.getObject("Goal Pose");
 
-    private final ShuffleboardTab tab;
-    private final ShuffleboardLayout layout;
+
     private final Field2d fieldSim;
+    private final FieldObject2d goalRobotPoseSim;
     private final GenericEntry dTranslationEntry, dRotationEntry;
-    private FieldObject2d goalRobotPoseSim;
 
     public FollowPathCommand(PathPlannerTrajectory path, DrivetrainBase drivetrain, boolean useAlliance) {
         m_path = path;
@@ -47,8 +44,6 @@ public class FollowPathCommand extends CommandBase {
         m_drivetrain = drivetrain;
 
         //Logging
-        tab = ShuffleboardConstants.getInstance().pathFollowingTab;
-        layout = ShuffleboardConstants.getInstance().pathFollowingList;
         fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
         dTranslationEntry = ShuffleboardConstants.getInstance().dTranslationEntry;
         dRotationEntry = ShuffleboardConstants.getInstance().dRotationEntry;
@@ -80,6 +75,7 @@ public class FollowPathCommand extends CommandBase {
         var goalPose = new Pose2d(
                 goalState.poseMeters.getTranslation(),
                 goalState.holonomicRotation);
+        System.out.println(goalPose);
 
         //log error
         dTranslationEntry.setDouble(currentPose.getTranslation().getDistance(goalPose.getTranslation()));
