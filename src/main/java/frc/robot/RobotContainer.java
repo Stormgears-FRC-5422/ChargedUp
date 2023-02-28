@@ -15,6 +15,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -22,11 +23,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.*;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.subsystems.NavX;
@@ -39,10 +39,12 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
+import frc.utils.joysticks.ButtonBoard;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
 import java.util.HashMap;
+import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.*;
 
@@ -79,6 +81,9 @@ public class RobotContainer {
     PoseEstimator m_poseEstimator;
 
     StormLogitechController m_controller;
+
+    ButtonBoard m_buttonboard;
+
 
     private SendableChooser<PathPlannerTrajectory> PathChooser = new SendableChooser<>();
 
@@ -155,14 +160,16 @@ public class RobotContainer {
 
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+     * {@link Trigger#Trigger(BooleanSupplier)} constructor with an arbitrary
      * predicate, or via the named factories in {@link
-     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-     * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-     * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+     * CommandGenericHID}'s subclasses for {@link
+     * CommandXboxController Xbox}/{@link CommandPS4Controller
+     * PS4} controllers or {@link CommandJoystick Flight
      * joysticks}.
      */
     private void configureBindings() {
+
+        Joystick button = new Joystick(0);
         StormXboxController xboxController = new StormXboxController(1);
 
         if (useArm && useController) {
@@ -194,17 +201,30 @@ public class RobotContainer {
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
+
+            m_buttonboard = new ButtonBoard(0);
+
+
             new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
             new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
             new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
-            new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
-            new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
+//            new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
+//            new Trigger(() -> m_controller.getRawButton(7)).onTrue(new BalanceCommand(
+//                    () -> m_NavX.getPitch(),
+//                    () -> m_NavX.getRoll(),
+//                    m_drivetrain));
+        }
+
+            //new Trigger(() -> m_buttonboard.ChargeStationBalance()).onTrue(new BalanceCommand(
+                    //() -> m_NavX.getPitch(),
+                    //() -> m_NavX.getRoll(),
+                    //m_drivetrain));
+
+            new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand(
                     () -> m_NavX.getPitch(),
                     () -> m_NavX.getRoll(),
                     m_drivetrain));
-        }
-
 
 
         if(useDrive &&driveType.equals("SwerveDrive")) {
