@@ -43,6 +43,9 @@ public final class StormSubsystemScheduler {
                 if (hasEnabled && !isEnabled) subsystem.disabledInit();
                 subsystem.disabledPeriodic();
             }
+        }
+
+        for (var subsystem : subsystems) {
             subsystem.lastPeriodic();
         }
 
