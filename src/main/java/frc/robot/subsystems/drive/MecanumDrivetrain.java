@@ -34,6 +34,7 @@ public class MecanumDrivetrain extends DrivetrainBase {
     private final WPI_TalonSRX m_backRightTalon;
 
     public MecanumDrivetrain() {
+        System.out.println("Creating Mecanum Drive");
         // TODO use StormTalon with voltage clamp
         m_frontLeftTalon = new WPI_TalonSRX(frontLeftDriveID);
         m_frontRightTalon = new WPI_TalonSRX(frontRightDriveID);

@@ -10,11 +10,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.*;
+import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -26,6 +32,7 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.GyroCommand;
@@ -33,11 +40,14 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
+import frc.utils.joysticks.ButtonBoard;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 import static frc.robot.constants.Constants.*;
 
@@ -57,6 +67,7 @@ public class RobotContainer {
     // **********
     // COMMANDS
     // **********
+    BalanceCommand m_balancecommand;
     GyroCommand m_gyrocommand;
     BasicArm m_basicArm;
 
@@ -70,6 +81,7 @@ public class RobotContainer {
 
     private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
     private final Map<String, Command> autoEventMap = new HashMap<>();
+    ButtonBoard m_buttonboard;
 
 
     public RobotContainer() throws IllegalDriveTypeException {
@@ -122,6 +134,7 @@ public class RobotContainer {
             System.out.println("USING pose estimator");
             usePoseEstimator = true;
         }
+
         // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
         if (useController) {
             m_controller = new StormLogitechController(kLogitechControllerPort);
@@ -129,6 +142,16 @@ public class RobotContainer {
         } else {
             System.out.println("NOT using controller");
         }
+
+        if (useStormNet) {
+            System.out.println("Using StormNet");
+            StormNet.init();
+            m_stormNet = StormNet.getInstance();
+            m_stormNet.test();
+            var tab = Shuffleboard.getTab("Storm Net");
+            tab.addNumber("Lidar Distance", m_stormNet::getLidarDistance);
+        }
+
         // Configure the trigger bindings
         configureBindings();
     }
@@ -153,7 +176,7 @@ public class RobotContainer {
 
         if (useDrive && useController) {
 
-	        DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+            DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
                     m_controller::getWpiXAxis,
                     m_controller::getWpiYAxis,
@@ -161,17 +184,26 @@ public class RobotContainer {
                     () -> m_controller.getRawButton(2));
     	    m_drivetrain.setDefaultCommand(driveWithJoystick);
 
-        	m_gyrocommand = new GyroCommand(m_drivetrain, 180);
+            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
-        	new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_navX::zeroYaw));
-        	new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
-        	new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-//            new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
-//                m_drivetrain.getCurrentCommand().cancel();
-//                driveWithJoystick.schedule();
-//            }));
+
+            m_buttonboard = new ButtonBoard(0);
+
+
+            new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_navX::zeroYaw));
+            new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
+            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
+            new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
+                m_drivetrain.getCurrentCommand().cancel();
+                driveWithJoystick.schedule();
+            }));
+
+            //BUTTONBOARD TRIGGERS
+            new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand(m_navX::getPitch,
+                    m_navX::getRoll,
+                    m_drivetrain));
+
         }
-
 
         if (useDrive && driveType.equals("SwerveDrive")) {
 

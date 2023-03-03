@@ -4,13 +4,13 @@ import com.revrobotics.CANSparkMaxLowLevel;
 
 import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
-import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import static frc.robot.constants.Constants.*;
+import static frc.robot.Constants.*;
 
-public class Arm extends StormSubsystemBase {
+public class Arm extends SubsystemBase {
     public StormSpark shoulder;
     public StormSpark elbow;
     public StormTalon shoulderEncoder;
@@ -22,7 +22,7 @@ public class Arm extends StormSubsystemBase {
     // The arm Joint speeds will always be scaled by this factor. It defaults to kArmSpeedScale, but can be reset
     // (say by using the slider on the joystick)
     protected double m_armSpeedScale = 0;
-    private final int count = 0;
+    private int count = 0;
 
     protected ArmJointSpeeds m_jointSpeeds = new ArmJointSpeeds(0.0, 0.0);
 
@@ -33,23 +33,27 @@ public class Arm extends StormSubsystemBase {
         setSpeedScale(kArmSpeedScale);
         setMaxAngularVelocities(maxShoulderOmegaRadiansPerSecond, maxElbowOmegaRadiansPerSecond);
 
+        shoulderEncoder = new StormTalon(armShoulderEncoderID);
+        setEncoderOffsetTicks(shoulderEncoder, -armShoulderEncoderOffsetTicks);
+        shoulderEncoder.setNegatePosition(true);
+
+        elbowEncoder = new StormTalon(armElbowEncoderID);
+        setEncoderOffsetTicks(elbowEncoder, -armElbowEncoderOffsetTicks);
+
         shoulder = new StormSpark(armShoulderID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
         shoulder.setInverted(false);
         shoulder.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         shoulder.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
+        shoulder.getEncoder().setPositionConversionFactor(360.0 / armShoulderGearRatio);
+        shoulder.getEncoder().setPosition(shoulderEncoder.getPositionDegrees());
 
         elbow = new StormSpark(armElbowID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
         elbow.setInverted(true);
         elbow.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         elbow.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
+        elbow.getEncoder().setPositionConversionFactor(360.0 / armElbowGearRatio);
+        elbow.getEncoder().setPosition(elbowEncoder.getPositionDegrees());
 
-        shoulderEncoder = new StormTalon(armShoulderEncoderID);
-        shoulderEncoder.setSensorPhase(true);
-        setEncoderOffsetTicks(shoulderEncoder, armShoulderEncoderOffsetTicks);
-
-        elbowEncoder = new StormTalon(armElbowEncoderID);
-        elbowEncoder.setSensorPhase(false);
-        setEncoderOffsetTicks(elbowEncoder, armElbowEncoderOffsetTicks);
     }
 
     @Override
@@ -59,15 +63,18 @@ public class Arm extends StormSubsystemBase {
         double s = MAX_VOLTAGE * m_jointSpeeds.shoulderOmegaRadiansPerSecond / m_maxShoulderOmegaRadiansPerSecond;
         double e = MAX_VOLTAGE * m_jointSpeeds.elbowOmegaRadiansPerSecond / m_maxElbowOmegaRadiansPerSecond;
 
-        int ps = shoulderEncoder.getPositionTicks();
-        int pe = elbowEncoder.getPositionTicks();
+        double ps = shoulderEncoder.getPositionDegrees(StormTalon.AngleRangeType.range0to1);
+        double pe = elbowEncoder.getPositionDegrees(StormTalon.AngleRangeType.range0to1);
+
+        double nps = shoulder.getEncoder().getPosition();
+        double npe = elbow.getEncoder().getPosition();
 
         shoulder.setVoltage(s);
         elbow.setVoltage(e);
 
-//        if (count++ % 100 == 0) {
-//            System.out.println("Shoulder v: " + s + " , p: " + ps + " ; Elbow v: " + e + " , p: " + pe);
-//        }
+        if (count++ % 100 == 0) {
+            System.out.println("Shoulder v: " + s + " , p: " + ps + " , neo: " + nps + " ; Elbow v: " + e + " , p: " + pe + " , neo: " + npe);
+        }
     }
 
     public void moveArm(ArmJointSpeeds speeds) {
@@ -89,12 +96,12 @@ public class Arm extends StormSubsystemBase {
     }
 
     private void setEncoderOffsetTicks(StormTalon talon, int offset) {
-        talon.setOffsetRadians(2. * Math.PI * offset / magEncoderTicksPerRotation);
+        talon.setOffsetRadians(2. * Math.PI * offset / kMagEncoderTicksPerRotation);
     }
 
     // TODO - what are the best natural units for this? ticks, radians, degrees?
     private double getEncoderAbsolutePositionDegrees(StormTalon talon) {
-        return 360. * talon.getPositionTicks() / magEncoderTicksPerRotation;
+        return 360. * talon.getPositionTicks() / kMagEncoderTicksPerRotation;
     }
 
     private void setMaxAngularVelocities(double maxShoulderOmegaRadiansPerSecond, double maxElbowOmegaRadiansPerSecond) {
@@ -102,9 +109,11 @@ public class Arm extends StormSubsystemBase {
         this.m_maxElbowOmegaRadiansPerSecond = maxElbowOmegaRadiansPerSecond;
     }
 
+
     public void setSpeedScale(double scale) {
         m_armSpeedScale = MathUtil.clamp(scale, 0, kArmSpeedScale);
     }
+
 
 /*
     public ChassisSpeeds getCurrentChassisSpeeds() {
