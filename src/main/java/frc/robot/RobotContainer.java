@@ -90,16 +90,23 @@ public class RobotContainer {
         m_robotState = RobotState.getInstance();
         m_robotState.setStartPose(new Pose2d());
 
+        if (useNavX) {
+            m_NavX = new NavX();
+        } else
+            System.out.println("NOT using NavX");
+
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (useDrive) {
             try {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
+                System.out.println("Successfully created Drivetrain!");
             } catch (Exception e) {
                 e.printStackTrace();
                 useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
-            if (driveType.equals("SwerveDrive")) {
+
+            if (useDrive && driveType.equals("SwerveDrive")) {
                 m_poseEstimator = new PoseEstimator(
                         m_drivetrain.getSwerveDriveKinematics(),
                         m_drivetrain.getGyroscopeRotation(),
@@ -120,10 +127,6 @@ public class RobotContainer {
             System.out.println("NOT using drive");
         }
 
-        if (useNavX) {
-            m_NavX = new NavX();
-        } else
-            System.out.println("NOT using NavX");
 
         if (useArm) {
             m_arm = new Arm();
@@ -171,6 +174,7 @@ public class RobotContainer {
         if (useStormNet && useController) {
             //System.out.println("Enabling StormNet test button");
             //new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::test));
+            new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
         }
 
         if (useArm && useController) {
@@ -208,8 +212,7 @@ public class RobotContainer {
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
         }
 
-        if (useDrive && driveType.equals("SwerveDrive")) {
-            new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
+        if (useDrive && driveType.equals("SwerveDrive") ) {
             new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
                     () -> m_NavX.getPitch(),
                     () -> m_NavX.getRoll(),

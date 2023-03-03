@@ -36,6 +36,8 @@ public class NavX extends SubsystemBase {
         navXtab.addNumber("roll", this::getRoll);
         navXtab.addBoolean("isMagnetometerCalibrated", this::isMagnetometerCalibrated);
         navXtab.addNumber("fusedHeading", this::getFusedHeading);
+
+        RobotState.getInstance().setCurrentGyroRotation(Rotation2d.fromDegrees(360.0 - getYaw()));
     }
 
 

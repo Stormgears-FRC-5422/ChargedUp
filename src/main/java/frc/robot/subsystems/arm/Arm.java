@@ -54,6 +54,13 @@ public class Arm extends SubsystemBase {
         elbow.getEncoder().setPositionConversionFactor(360.0 / armElbowGearRatio);
         elbow.getEncoder().setPosition(elbowEncoder.getPositionDegrees());
 
+//        double ps = shoulderEncoder.getPositionDegrees(StormTalon.AngleRangeType.rangeNegToPos);
+//        double pe = elbowEncoder.getPositionDegrees(StormTalon.AngleRangeType.rangeNegToPos);
+//
+//        double nps = shoulder.getEncoder().getPosition();
+//        double npe = elbow.getEncoder().getPosition();
+//        System.out.println("Shoulder p: " + ps + " , neo: " + nps + " ; Elbow p: " + pe + " , neo: " + npe);
+
     }
 
     @Override
@@ -63,11 +70,14 @@ public class Arm extends SubsystemBase {
         double s = MAX_VOLTAGE * m_jointSpeeds.shoulderOmegaRadiansPerSecond / m_maxShoulderOmegaRadiansPerSecond;
         double e = MAX_VOLTAGE * m_jointSpeeds.elbowOmegaRadiansPerSecond / m_maxElbowOmegaRadiansPerSecond;
 
-        double ps = shoulderEncoder.getPositionDegrees(StormTalon.AngleRangeType.range0to1);
-        double pe = elbowEncoder.getPositionDegrees(StormTalon.AngleRangeType.range0to1);
+        double ps = shoulderEncoder.getPositionDegrees(StormTalon.AngleRangeType.rangeNegToPos);
+        double pe = elbowEncoder.getPositionDegrees(StormTalon.AngleRangeType.rangeNegToPos);
 
         double nps = shoulder.getEncoder().getPosition();
+        nps = nps > 180.0 ? nps - 360.0 : nps;
+
         double npe = elbow.getEncoder().getPosition();
+        npe = npe > 180.0 ? npe - 360.0 : npe;
 
         shoulder.setVoltage(s);
         elbow.setVoltage(e);
