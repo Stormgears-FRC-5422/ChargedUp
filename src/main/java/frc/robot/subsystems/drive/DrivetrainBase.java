@@ -11,7 +11,10 @@ import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
+import java.util.Objects;
+
 import static frc.robot.constants.Constants.kDriveSpeedScale;
+import static frc.robot.constants.Constants.usePoseEstimator;
 
 public abstract class DrivetrainBase extends StormSubsystemBase {
 
@@ -39,12 +42,11 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
                 m_driveSpeedScale * speeds.omegaRadiansPerSecond);
 
         if (fieldRelative) {
-            m_chassisSpeeds =
-                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                            s,
-                            RobotState.getInstance().getCurrentPose().getRotation());
-        }
-        else {
+            var rotation = (usePoseEstimator)?
+                    RobotState.getInstance().getCurrentPose().getRotation() :
+                    RobotState.getInstance().getCurrentGyroRotation();
+            m_chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(s, rotation);
+        } else {
             m_chassisSpeeds = s;
         }
     }

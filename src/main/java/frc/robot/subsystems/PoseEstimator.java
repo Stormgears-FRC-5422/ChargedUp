@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 public class PoseEstimator extends StormSubsystemBase {
     private SwerveDrivePoseEstimator m_poseEstimator;
-    private final SwerveDriveKinematics m_driveKinematics;
+    private final Supplier<SwerveDriveKinematics> m_driveKinematicsSupplier;
     private final Supplier<SwerveModulePosition[]> m_modulePositionSupplier;
 
     private Pose2d m_currentPose;
@@ -37,22 +37,13 @@ public class PoseEstimator extends StormSubsystemBase {
     private final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
     private final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
 
-    public PoseEstimator(SwerveDriveKinematics kinematics,
+    public PoseEstimator(Supplier<SwerveDriveKinematics> kinematicsSupplier,
                          Supplier<SwerveModulePosition[]> modulePositionSupplier) {
 
-        m_driveKinematics = kinematics;
+        m_driveKinematicsSupplier = kinematicsSupplier;
         m_modulePositionSupplier = modulePositionSupplier;
 
         Pose2d startPose = RobotState.getInstance().getStartPose();
-
-        m_poseEstimator = new SwerveDrivePoseEstimator(
-                m_driveKinematics,
-                RobotState.getInstance().getCurrentGyroRotation(),
-                m_modulePositionSupplier.get(),
-                startPose,
-                stateStdDevs,
-                visionMeasurementStdDevs
-        );
 
         fieldSim = ShuffleboardConstants.getInstance().poseEstimationFieldSim;
         odometryPoseSim = fieldSim.getObject("Odometry Pose");
@@ -65,7 +56,7 @@ public class PoseEstimator extends StormSubsystemBase {
         Pose2d startPose = RobotState.getInstance().getStartPose();
         System.out.println("Start pose at pose estimator on enable: " + startPose);
         m_poseEstimator = new SwerveDrivePoseEstimator(
-                m_driveKinematics,
+                m_driveKinematicsSupplier.get(),
                 RobotState.getInstance().getCurrentGyroRotation(),
                 m_modulePositionSupplier.get(),
                 startPose,

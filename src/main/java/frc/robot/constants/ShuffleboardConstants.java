@@ -6,10 +6,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 public final class ShuffleboardConstants {
     public final ShuffleboardTab robotStateTab, drivetrainTab, navXTab, pathFollowingTab;
+    public final Field2d poseEstimationFieldSim;
+
+    // Shuffleboard stuff for path following
     public final ShuffleboardLayout pathFollowingList;
     public final GenericEntry dTranslationEntry, dRotationEntry;
     public final Field2d pathFollowingFieldSim;
-    public final Field2d poseEstimationFieldSim;
 
     private static ShuffleboardConstants instance;
 
@@ -29,8 +31,8 @@ public final class ShuffleboardConstants {
                 .getLayout("Following Command", BuiltInLayouts.kList)
                 .withPosition(0, 0).withSize(2, 2);
 
-        dTranslationEntry = pathFollowingList.add("dTranslation", new Double(0.0)).getEntry();
-        dRotationEntry = pathFollowingList.add("dRotation", new Double(0.0)).getEntry();
+        dTranslationEntry = pathFollowingList.add("dTranslation", 0.0).getEntry();
+        dRotationEntry = pathFollowingList.add("dRotation", 0.0).getEntry();
 
         pathFollowingFieldSim = new Field2d();
         poseEstimationFieldSim = new Field2d();

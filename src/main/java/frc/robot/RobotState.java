@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
@@ -58,6 +59,10 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getCurrentPose() {
+        if (!Constants.usePoseEstimator) {
+            System.out.println("NOT using pose estimator. Can't get current pose!");
+            return getStartPose();
+        }
         if (currentPose == null) {
             System.out.println("Using start pose for current pose: " + getStartPose());
             return getStartPose();
@@ -71,7 +76,7 @@ public class RobotState extends StormSubsystemBase {
 
     public Pose2d getStartPose() {
         if (startPose == null) {
-            System.out.println("********* Starting position was not set! *********");
+            System.out.println("Starting position was not set! Which is fine...");
             return new Pose2d();
         }
         return startPose;
@@ -82,6 +87,10 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getLastPose() {
+        if (!Constants.usePoseEstimator) {
+            System.out.println("NOT using pose estimator. Can't get last pose!");
+            return getCurrentPose();
+        }
         if (lastPose == null) {
             System.out.println("Using current pose for last pose: " + getCurrentPose());
             return getCurrentPose();
@@ -94,7 +103,14 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Rotation2d getCurrentGyroRotation() {
-        if (currentGyroRotation == null) return Rotation2d.fromDegrees(0);
+        if (!Constants.useNavX) {
+            System.out.println("NOT using gyro. Can't get current gyro rotation!");
+            return Rotation2d.fromDegrees(0);
+        }
+        if (currentGyroRotation == null) {
+            System.out.println("Current gyro rotation not set!");
+            return Rotation2d.fromDegrees(0);
+        }
         return currentGyroRotation;
     }
 
@@ -103,7 +119,14 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Rotation2d getLastGyroRotation() {
-        if (lastGyroRotation == null) return getCurrentGyroRotation();
+        if (!Constants.useNavX) {
+            System.out.println("NOT using gyro. Can't get current gyro rotation!");
+            return Rotation2d.fromDegrees(0);
+        }
+        if (lastGyroRotation == null) {
+            System.out.println("Last gyro rotation not set!");
+            return getCurrentGyroRotation();
+        }
         return lastGyroRotation;
     }
 
@@ -123,12 +146,9 @@ public class RobotState extends StormSubsystemBase {
         return m_driveDataSet.lastEntry();
     }
 
-    /**
-     * Must provide own timstamp with this function as camera will have delay
-     * @param timeStamp
-     */
-    public void addVisionData(double timeStamp, Pose2d visionData) {
-        m_visionDataSet.put(timeStamp, visionData);
+    /** Must provide own timstamp with this function as camera will have delay*/
+    public void addVisionData(double timeStampSeconds, Pose2d visionData) {
+        m_visionDataSet.put(timeStampSeconds, visionData);
     }
 
     public Map.Entry<Double, Pose2d> getLatestVisionData() {
@@ -156,8 +176,8 @@ public class RobotState extends StormSubsystemBase {
     public void enabledInit() {
         m_timer.reset();
         m_timer.start();
-        m_driveDataSet = new TreeMap<Double, DriveData>();
-        m_visionDataSet = new TreeMap<Double, Pose2d>();
+        m_driveDataSet.clear();
+        m_visionDataSet.clear();
 
         currentPose = null;
         lastPose = null;
@@ -172,9 +192,9 @@ public class RobotState extends StormSubsystemBase {
     public void lastPeriodic() {
         fieldSim.setRobotPose(getCurrentPose());
 
-        double currentTimeMs = Timer.getFPGATimestamp();
-        m_driveDataSet.tailMap(currentTimeMs - 2000, true);
-        m_visionDataSet.tailMap(currentTimeMs - 2000, true);
+        double currentTime = Timer.getFPGATimestamp();
+        m_driveDataSet.tailMap(currentTime - 1.0, true);
+        m_visionDataSet.tailMap(currentTime - 1.0, true);
     }
 
     public static class DriveData {

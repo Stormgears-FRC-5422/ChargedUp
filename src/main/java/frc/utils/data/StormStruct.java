@@ -28,10 +28,10 @@ public class StormStruct {
     private int m_typeid;
     private final NetworkTableInstance m_ntinst;
     private final NetworkTable m_base_table;
-    private StringArraySubscriber m_names_sub;
-    private IntegerArraySubscriber m_encodings_sub;
-    private IntegerSubscriber m_type_sub;
-    private HashMap<String,RawSubscriber> m_data_subscribers;
+    private final StringArraySubscriber m_names_sub;
+    private final IntegerArraySubscriber m_encodings_sub;
+    private final IntegerSubscriber m_type_sub;
+    private final HashMap<String,RawSubscriber> m_data_subscribers;
     private boolean m_initialized;
 
 

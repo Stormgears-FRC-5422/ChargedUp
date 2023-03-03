@@ -1,4 +1,4 @@
-package frc.robot.commands.trajectory;
+package frc.robot.commands.pathFollowing;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -6,6 +6,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotState;
@@ -68,10 +69,14 @@ public final class Paths {
             new PathWithName("Double Cone Charging Station", doubleConeChargingStationPath));
 
     public static PathPlannerTrajectory getPathToPose(Pose2d startPose, Pose2d endPose, double maxVel, double maxAcc) {
+//        double firstHeading = calcHeading(startPose.getTranslation(), endPose.getTranslation());
+//        double lastHeading = calcHeading(endPose.getTranslation(), startPose.getTranslation());
         return generatePath(
                     new PathConstraints(maxVel, maxAcc),
-                    new PathPoint(startPose.getTranslation(), new Rotation2d(), startPose.getRotation()),
-                    new PathPoint(endPose.getTranslation(), new Rotation2d(), endPose.getRotation()));
+                    new PathPoint(startPose.getTranslation(), Rotation2d.fromRadians(0), startPose.getRotation())
+                            .withControlLengths(0.0, 0.0),
+                    new PathPoint(endPose.getTranslation(), Rotation2d.fromRadians(0), endPose.getRotation())
+                            .withControlLengths(0.0, 0.0));
     }
 
     public static PathPlannerTrajectory getPathToPose(Pose2d endPose, double maxVel, double maxAcc) {
@@ -108,15 +113,21 @@ public final class Paths {
         );
     }
 
+    /** gives desired heading in radians pointing from A to B */
+    public static double calcHeading(Translation2d translationA, Translation2d translationB) {
+        //Move the ending about the initial
+        Translation2d aboutInitialTranslation = translationB.minus(translationA);
+        //This is to find the reference angle and the heading in radians
+        return Math.atan2(aboutInitialTranslation.getY(), aboutInitialTranslation.getX());
+    }
+
     public static class PathWithName {
         public final String name;
         public final PathPlannerTrajectory path;
-        public final Pose2d startPose;
 
         public PathWithName(String name, PathPlannerTrajectory path) {
             this.name = name;
             this.path = path;
-            this.startPose = path.getInitialHolonomicPose();
         }
     }
 }

@@ -19,8 +19,8 @@ import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
-import frc.robot.commands.trajectory.FollowPathCommand;
-import frc.robot.commands.trajectory.Paths;
+import frc.robot.commands.pathFollowing.FollowPathCommand;
+import frc.robot.commands.pathFollowing.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.NavX;
@@ -93,25 +93,6 @@ public class RobotContainer {
                  useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
-
-            if (driveType.equals("SwerveDrive")) {
-                m_poseEstimator = new PoseEstimator(
-                        m_drivetrain.getSwerveDriveKinematics(),
-                        m_drivetrain::getSwerveModulePositions
-                );
-
-                autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
-                autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
-                autoEventMap.put("LiftArm", new PrintCommand("Lifting the arm!"));
-                autoEventMap.put("PlaceGamePiece", new PrintCommand("Placing the game piece!"));
-                autoEventMap.put("Balance", new PrintCommand("Balancing on charging station!"));
-
-                //add paths to chooser
-                for (var pathWithName : Paths.listOfPaths) {
-                    autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
-                }
-                SmartDashboard.putData("Auto Paths", autoPathChooser);
-            }
         } else {
             System.out.println("NOT using drive");
         }
@@ -127,6 +108,20 @@ public class RobotContainer {
         } else
             System.out.println("NOT using pneumatics");
 
+        if (useStormNet) {
+          StormNet.init();
+          m_stormNet = StormNet.getInstance();
+        } else
+            System.out.println("NOT using stormnet");
+
+        if (useDrive && driveType.equals("SwerveDrive")) {
+            m_poseEstimator = new PoseEstimator(
+                    m_drivetrain::getSwerveDriveKinematics,
+                    m_drivetrain::getSwerveModulePositions
+            );
+            System.out.println("USING pose estimator");
+            usePoseEstimator = true;
+        }
         // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
         if (useController) {
             m_controller = new StormLogitechController(kLogitechControllerPort);
@@ -134,13 +129,6 @@ public class RobotContainer {
         } else {
             System.out.println("NOT using controller");
         }
-
-        if (useStormNet) {
-          StormNet.init();
-          m_stormNet = StormNet.getInstance();
-        } else
-            System.out.println("NOT using stormnet");
-
         // Configure the trigger bindings
         configureBindings();
     }
@@ -187,6 +175,18 @@ public class RobotContainer {
 
         if (useDrive && driveType.equals("SwerveDrive")) {
 
+            autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
+            autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
+            autoEventMap.put("LiftArm", new PrintCommand("Lifting the arm!"));
+            autoEventMap.put("PlaceGamePiece", new PrintCommand("Placing the game piece!"));
+            autoEventMap.put("Balance", new PrintCommand("Balancing on charging station!"));
+
+            //add paths to chooser
+            for (var pathWithName : Paths.listOfPaths) {
+                autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
+            }
+            SmartDashboard.putData("Auto Paths", autoPathChooser);
+
             SendableChooser<Command> pathCommandChooser = new SendableChooser<>();
             for (var path : Paths.listOfPaths) {
                 pathCommandChooser.addOption(path.name, getPathFollowCommand(path.name, path.path));
@@ -231,8 +231,7 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         if (useDrive && driveType.equals("SwerveDrive")) {
             var selectedPath = autoPathChooser.getSelected();
-            m_robotState.setStartPose(selectedPath.startPose);
-            System.out.println(selectedPath.startPose);
+            m_robotState.setStartPose(selectedPath.path.getInitialHolonomicPose());
             return new FollowPathWithEvents(
                     getPathFollowCommand("Auto path starting " + selectedPath.name, selectedPath.path),
                     selectedPath.path.getMarkers(),

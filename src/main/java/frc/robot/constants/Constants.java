@@ -123,6 +123,7 @@ public final class Constants {
     public static boolean useArm = StormProp.getBoolean("useArm", false);
     public static boolean useVision = StormProp.getBoolean("useVision", false);
     public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
+    public static boolean usePoseEstimator = false;
     // **********
     // Don't put other variables after the usage members
     // **********

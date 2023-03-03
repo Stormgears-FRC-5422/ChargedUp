@@ -161,8 +161,6 @@ public class SDSDrivetrain extends DrivetrainBase {
                 .withPosition(6, 1);
         pathFollowingTab.add("Rotation PID Controller", rotController)
                 .withWidget(BuiltInWidgets.kPIDController);
-
-        resetDriveEncoders();
     }
 
     @Override

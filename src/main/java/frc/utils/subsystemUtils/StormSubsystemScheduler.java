@@ -16,9 +16,9 @@ public final class StormSubsystemScheduler {
 
     private final ArrayList<StormSubsystemBase> subsystems = new ArrayList<>();
 
-    private boolean hasEnabled = false;
-    private boolean autoHasEnabled = false;
-    private boolean teleopHasEnabled = false;
+    private boolean wasEnabled = false;
+    private boolean autoWasEnabled = false;
+    private boolean teleopWasEnabled = false;
 
     private StormSubsystemScheduler() {}
 
@@ -30,17 +30,17 @@ public final class StormSubsystemScheduler {
         for (var subsystem : subsystems) {
             if (isEnabled) {
                 // rising edge of enabled-ness
-                if (isEnabled && !hasEnabled) {
+                if (!wasEnabled) {
                     subsystem.enabledInit();
-                    if (autoEnabled && !autoHasEnabled) subsystem.autoInit();
-                    if (teleopEnabled && !teleopHasEnabled) subsystem.teleopInit();
+                    if (autoEnabled && !autoWasEnabled) subsystem.autoInit();
+                    if (teleopEnabled && !teleopWasEnabled) subsystem.teleopInit();
                 }
                 subsystem.enabledPeriodic();
                 if (autoEnabled) subsystem.autoPeriodic();
                 if (teleopEnabled) subsystem.teleopPeriodic();
             } else {
                 // falling edge of enabled-ness
-                if (hasEnabled && !isEnabled) subsystem.disabledInit();
+                if (wasEnabled) subsystem.disabledInit();
                 subsystem.disabledPeriodic();
             }
         }
@@ -49,9 +49,9 @@ public final class StormSubsystemScheduler {
             subsystem.lastPeriodic();
         }
 
-        hasEnabled = isEnabled;
-        autoHasEnabled = autoEnabled;
-        teleopHasEnabled = teleopEnabled;
+        wasEnabled = isEnabled;
+        autoWasEnabled = autoEnabled;
+        teleopWasEnabled = teleopEnabled;
     }
 
     public void register(StormSubsystemBase... subsystems) {

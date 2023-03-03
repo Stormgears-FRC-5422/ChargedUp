@@ -20,11 +20,12 @@ public final class FieldConstants {
     public final static double FIELD_WIDTH = Units.feetToMeters(26) + Units.inchesToMeters(3.5);
 
     public static final AprilTagFieldLayout APRILTAG_FIELD_LAYOUT;
+
     static {
         try {
             APRILTAG_FIELD_LAYOUT = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
         } catch (IOException e) {
-            System.out.println("Could not load april tag field layout! with message " + e);
+            System.out.println("Could not load april tag field layout! error msg: \n " + e);
             throw new RuntimeException(e);
         }
     }
@@ -36,11 +37,10 @@ public final class FieldConstants {
         public static ScoringNode[][] blueAllianceGrid = new ScoringNode[9][3];
         public static ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
 
-        private static final double distBetweenNodes = Units.inchesToMeters(22.0);
+        public static final double distBetweenNodes = Units.inchesToMeters(22.0);
         private static final double distToFirstNodeY = Units.inchesToMeters(20.0);
         //heights of cone nodes cube nodes don't really matter maybe we can make them a bit lower than the cone nodes
         //hybrid node (last in array) is 10 inches of ground just because
-        private static final double[] nodeZs = {Units.inchesToMeters(46.0), Units.inchesToMeters(34.0), Units.inchesToMeters(10.0)};
         private static final ScoringNode.NodeHeight[] nodeHeights = {
             ScoringNode.NodeHeight.HIGH, ScoringNode.NodeHeight.MIDDLE, ScoringNode.NodeHeight.HYBRID
         };
@@ -56,21 +56,18 @@ public final class FieldConstants {
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
 
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
-                    double xTranslation = nodeXs[wpiX];
-                    double zTranslation = nodeZs[wpiX];
                     var height = nodeHeights[wpiX];
 
+                    double xTranslation = nodeXs[wpiX];
+                    double zTranslation = height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
                     var scoringPosition = new Pose2d(scoringX, yTranslation, Rotation2d.fromDegrees(180));
                     var node = new ScoringNode(type, height, Alliance.Blue, translation, scoringPosition);
-
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-
-//                    System.out.println("blueGrid[" + wpiY + "][" + wpiX + "]: "  + node);
                 }
             }
         }
@@ -105,18 +102,15 @@ public final class FieldConstants {
             public static ScoringNode transformBlueToRed(ScoringNode node) {
                 if (node.alliance == Alliance.Red) return node;
                 //transform Y so that arrays are correct positioning since nodes are mirrored
-                double blueMiddleNodeY = Units.inchesToMeters(108);
                 Translation3d nodeTranslation = node.translation;
-                double transformedY = (blueMiddleNodeY - nodeTranslation.getY()) + blueMiddleNodeY;
                 double transformedX = mirrorXPosition(nodeTranslation.getX());
+
+                double blueMiddleNodeY = Units.inchesToMeters(108);
+                double transformedY = (blueMiddleNodeY - nodeTranslation.getY()) + blueMiddleNodeY;
                 Translation3d transformedTranslation = new Translation3d(transformedX,
                         transformedY, nodeTranslation.getZ());
 
-                Pose2d scoringPosition = node.scoringPosition;
-                double transformedScoringX = mirrorXPosition(scoringPosition.getX());
-                Rotation2d transformedRotation = scoringPosition.getRotation().times(-1);
-                Pose2d transformedScoringPosition = new Pose2d(transformedScoringX,
-                        transformedY, transformedRotation);
+                Pose2d transformedScoringPosition = mirrorPose(node.scoringPosition);
 
                 return new ScoringNode(node.type, node.height, Alliance.Red,
                         transformedTranslation, transformedScoringPosition);
@@ -150,7 +144,17 @@ public final class FieldConstants {
             }
 
             public enum NodeHeight {
-                HIGH, MIDDLE, HYBRID
+                HIGH(Units.inchesToMeters(46.0)),
+                MIDDLE(Units.inchesToMeters(34.0)),
+                HYBRID(Units.inchesToMeters(0.0));
+
+                private final double height;
+                private NodeHeight(double height) {
+                    this.height = height;
+                }
+                public double getHeight() {
+                    return height;
+                }
             }
         }
     }
@@ -160,4 +164,9 @@ public final class FieldConstants {
         return (halfLengthOfField - xToBeMirrored) + halfLengthOfField;
     }
 
+    public static Pose2d mirrorPose(Pose2d poseToBeMirror) {
+        double xMirrored = mirrorXPosition(poseToBeMirror.getX());
+        var rotationMirrored = poseToBeMirror.getRotation().times(-1.0);
+        return new Pose2d(xMirrored, poseToBeMirror.getY(), rotationMirrored);
+    }
 }
