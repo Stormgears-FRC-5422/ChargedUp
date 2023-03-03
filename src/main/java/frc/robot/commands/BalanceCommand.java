@@ -1,23 +1,14 @@
 package frc.robot.commands;
 
-import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.drive.DrivetrainBase;
-import frc.robot.subsystems.NavX;
 import java.util.function.DoubleSupplier;
-
-import static frc.robot.Constants.navXConnection;
-import static java.lang.Math.abs;
 
 
 public class BalanceCommand extends CommandBase {
 
-  private DrivetrainBase m_drivetrain;
-
-  private NavX m_NavX;
   private DoubleSupplier m_getPitch;
 
   private  DoubleSupplier m_getRoll;
@@ -34,7 +25,7 @@ public class BalanceCommand extends CommandBase {
           0.,
           0.); ;
 
-  private double balanceThresh = 5;
+  private double balanceThresh;
 
   private final double Kp = 0.07;
 
@@ -44,8 +35,6 @@ public class BalanceCommand extends CommandBase {
 
   private double balanceSpeed;
 
-  private String direction;
-
 
   public BalanceCommand(DoubleSupplier getPitch, DoubleSupplier getRoll, DrivetrainBase drive) {
     m_getPitch = getPitch;
@@ -53,26 +42,12 @@ public class BalanceCommand extends CommandBase {
     m_drive = drive;
 
     addRequirements(m_drive);
-
   }
 
 
   @Override
   public void initialize() {
     System.out.println("Balance Command Starting");
-    if(m_getPitch.getAsDouble() > 5) {
-      direction = "Forward";
-    }
-    if (m_getPitch.getAsDouble() < -5) {
-      direction = "Backward";
-    }
-    if (m_getRoll.getAsDouble() > 5) {
-      direction = "Right";
-    }
-    if (m_getRoll.getAsDouble() < -5) {
-      direction = "Left";
-    }
-
   }
 
 
@@ -81,24 +56,43 @@ public class BalanceCommand extends CommandBase {
   public void execute() {
     System.out.println("Running");
 
-    switch (direction) {
-      case "Forward":
-      case "Backward":
-        m_currTilt = m_getPitch.getAsDouble();
-        System.out.println(m_getPitch.getAsDouble() + " Pitch");
-        break;
-      case "Right":
-      case "Left":
-        m_currTilt = m_getRoll.getAsDouble();
-        System.out.println(m_getRoll.getAsDouble() + " Roll");
-        break;
+    if(m_getPitch.getAsDouble() > 5) {
+      System.out.println("Forward");
+      m_currTilt = m_getPitch.getAsDouble();
+      balanceThresh = 5;
+    }
+    if(m_getPitch.getAsDouble() < -5){
+      m_currTilt = m_getPitch.getAsDouble();
+      balanceThresh = -5;
+      System.out.println("Backward");
     }
 
-    m_error =  balanceThresh - m_currTilt;
-    balanceSpeed = m_error * Kp;
-    System.out.println(balanceSpeed);
+    if (m_getRoll.getAsDouble() > 5) {
+      m_currTilt =m_getRoll.getAsDouble();
+      balanceThresh = 5;
+      System.out.println("Right");
 
-    if(abs(m_currTilt) > balanceThresh) {
+    }
+    if ( m_getRoll.getAsDouble() < -5) {
+      m_currTilt =m_getRoll.getAsDouble();
+      balanceThresh = -5;
+      System.out.println("Left");
+
+    }
+
+
+    if(balanceThresh == 5){
+    m_error =  m_currTilt - balanceThresh;
+    }
+    else{
+      m_error = 5 + m_currTilt;
+    }
+
+    balanceSpeed = m_error * Kp;
+
+    System.out.println("Balance Speed: " + balanceSpeed);
+    System.out.println("Pitch/Roll: " + m_currTilt);
+
       m_drive.drive(
               new ChassisSpeeds(
                       balanceSpeed,
@@ -107,7 +101,6 @@ public class BalanceCommand extends CommandBase {
               ),
               true
       );
-    }
   }
 
 
