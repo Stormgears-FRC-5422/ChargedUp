@@ -8,15 +8,11 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
-import com.pathplanner.lib.commands.FollowPathWithEvents;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -43,8 +39,6 @@ import frc.utils.joysticks.ButtonBoard;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
-
-import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.*;
@@ -99,8 +93,9 @@ public class RobotContainer {
 
         if (useNavX) {
             m_NavX = new NavX();
-        } else
+        } else {
             System.out.println("NOT using NavX");
+        }
 
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (useDrive) {
@@ -113,6 +108,7 @@ public class RobotContainer {
                 System.out.println("NOT using drive - caught exception!");
             }
 
+            // Need to check useDrive again because we might have failed above
             if (useDrive && driveType.equals("SwerveDrive")) {
                 m_poseEstimator = new PoseEstimator(
                         m_drivetrain.getSwerveDriveKinematics(),
@@ -128,12 +124,11 @@ public class RobotContainer {
                 PathChooser.addOption("Test Path (caution!)", Paths.testPath);
                 PathChooser.addOption("Auto1 Path (caution!)", Paths.Auto1);
                 SmartDashboard.putData("Auto Paths", PathChooser);
+                System.out.println("Using Drive");
             }
-            System.out.println("Using Drive");
         } else {
             System.out.println("NOT using drive");
         }
-
 
         if (useArm) {
             m_arm = new Arm();
@@ -143,14 +138,16 @@ public class RobotContainer {
 
         if (usePneumatics) {
             m_compression = new Compression();
+        } else {
+            System.out.println("NOT using Pneumatics");
         }
 
         // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
-        if (useController) {
+        if (useLogitechController) {
             m_controller = new StormLogitechController(kLogitechControllerPort);
             System.out.println("using controller");
         } else {
-            System.out.println("NOT using controller");
+            System.out.println("NOT using logitech controller");
         }
 
         if (useStormNet) {
@@ -160,6 +157,8 @@ public class RobotContainer {
             m_stormNet.test();
             var tab = Shuffleboard.getTab("Storm Net");
             tab.addNumber("Lidar Distance", m_stormNet::getLidarDistance);
+        } else {
+            System.out.println("NOT using StormNet");
         }
 
         // Configure the trigger bindings
@@ -176,33 +175,35 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
+        StormXboxController xboxController;
 
-        Joystick button = new Joystick(0);
-        StormXboxController xboxController = new StormXboxController(1);
-        System.out.println("useStormNet: " + useStormNet + ", useController: " + useController);
-        if (useStormNet && useController) {
+        System.out.println("useStormNet: " + useStormNet + ", useLogitechController: " + useLogitechController);
+        if (useStormNet && useLogitechController) {
             //System.out.println("Enabling StormNet test button");
             //new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::test));
             new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
         }
 
-        if (useArm && useController) {
-            m_basicArm = new BasicArm(m_arm,
-                    xboxController::getLeftJoystickY,
-                    xboxController::getRightJoystickY);
-            m_arm.setDefaultCommand(m_basicArm);
+        if (useXboxController) {
+            xboxController = new StormXboxController(1);
+
+            if (useArm) {
+                m_basicArm = new BasicArm(m_arm,
+                        xboxController::getLeftJoystickY,
+                        xboxController::getRightJoystickY);
+                m_arm.setDefaultCommand(m_basicArm);
+            }
+
+            if (usePneumatics) {
+                new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
+                new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
+            } else {
+                System.out.println("Pneumatics or controller not operational");
+            }
         }
 
-        if (usePneumatics && useController) {
-            new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
-            new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
-        } else {
-            System.out.println("Pneumatics or controller not operational");
-        }
-
-        if (useDrive && useController) {
+        if (useDrive && useLogitechController) {
             // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
-
             DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,
                     () -> m_controller.getWpiXAxis() * kDriveSpeedScale,
@@ -211,20 +212,12 @@ public class RobotContainer {
                     () -> m_controller.getRawButton(2));
 
             m_drivetrain.setDefaultCommand(driveWithJoystick);
-
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
-
-
-
 
             new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_drivetrain::zeroGyroscope));
             new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
             new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
-
-
-            //BUTTONBOARD TRIGGERS
-
 
             if (useDrive && driveType.equals("SwerveDrive")) {
                 new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
@@ -234,17 +227,18 @@ public class RobotContainer {
                         m_drivetrain));
             }
         }
-        //BUTTONBOARD TRIGGERS
 
-        m_buttonboard1 = new ButtonBoard(1);
-        m_buttonboard1 = new ButtonBoard(2);
-        if (!m_buttonboard1.jumper()) {
-            System.out.println("Switching ButtonBoard ports");
+        //BUTTONBOARD TRIGGERS
+        if (useButtonBoard) {
+            m_buttonboard1 = new ButtonBoard(1);
             m_buttonboard1 = new ButtonBoard(2);
-            m_buttonboard2 = new ButtonBoard(1);
-        } else {
-            System.out.println("Not Switching ButtonBoard ports");
-        }
+            if (!m_buttonboard1.jumper()) {
+                System.out.println("Switching ButtonBoard ports");
+                m_buttonboard1 = new ButtonBoard(2);
+                m_buttonboard2 = new ButtonBoard(1);
+            } else {
+                System.out.println("Not Switching ButtonBoard ports");
+            }
 
 //        new Trigger(m_buttonboard1::leftSub).onTrue();
 //        new Trigger(m_buttonboard1::rightSub).onTrue();
@@ -261,15 +255,13 @@ public class RobotContainer {
 //        new Trigger(m_buttonboard2::grid9).onTrue();
 //        new Trigger(m_buttonboard2::confirm).onTrue();
 //        new Trigger(m_buttonboard2::cancel).onTrue();
-
+        }
 
         if (useDrive && driveType.equals("SwerveDrive") ) {
             new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
-
                     () -> m_NavX.getPitch(),
                     () -> m_NavX.getRoll(),
                     m_drivetrain));
-
 
 //        if(useDrive &&driveType.equals("SwerveDrive")) {
 //            SmartDashboard.putData("Trapezoid Move Forward Command",
