@@ -54,7 +54,7 @@ public class MecanumDrivetrain extends DrivetrainBase {
     }
 
     @Override
-    public void periodic() {
+    public void stormPeriodic() {
         MecanumDriveWheelSpeeds wheelSpeeds = m_kinematics.toWheelSpeeds(m_chassisSpeeds);
         wheelSpeeds.desaturate(this.m_maxVelocityMetersPerSecond);
 

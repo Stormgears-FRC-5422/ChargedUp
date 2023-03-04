@@ -29,6 +29,7 @@ public final class StormSubsystemScheduler {
 
         for (var subsystem : subsystems) {
             if (isEnabled) {
+                subsystem.stormPeriodic();
                 // rising edge of enabled-ness
                 if (!wasEnabled) {
                     subsystem.enabledInit();

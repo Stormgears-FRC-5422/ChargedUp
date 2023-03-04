@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import frc.robot.RobotState;
 
@@ -191,7 +192,7 @@ public class SDSDrivetrain extends DrivetrainBase {
         ((CANSparkMax) m_backRightModule.getDriveMotor()).getEncoder().setPosition(0);
     }
 
-    public void periodic() {
+    public void stormPeriodic() {
         SwerveModuleState[] states = m_kinematics.toSwerveModuleStates(m_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, m_maxVelocityMetersPerSecond);
 
@@ -200,11 +201,11 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_backLeftModule.set(MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
         m_backRightModule.set(MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
 
-        RobotState.DriveData currentDriveData = new RobotState.DriveData(
+        RobotState.OdometryData currentOdometryData = new RobotState.OdometryData(
                 getSwerveModulePositions(),
                 getGyroscopeRotation()
         );
-        RobotState.getInstance().addDriveData(currentDriveData);
+        RobotState.getInstance().addOdometryData(Timer.getFPGATimestamp(), currentOdometryData);
     }
 
     public void enabledInit() {

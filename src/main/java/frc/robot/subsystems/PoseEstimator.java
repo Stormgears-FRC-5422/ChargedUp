@@ -24,7 +24,6 @@ public class PoseEstimator extends StormSubsystemBase {
 
     private Pose2d m_currentPose;
 
-    private final Field2d fieldSim;
     private final FieldObject2d
             odometryPoseSim,
             visionPoseSim,
@@ -43,9 +42,7 @@ public class PoseEstimator extends StormSubsystemBase {
         m_driveKinematicsSupplier = kinematicsSupplier;
         m_modulePositionSupplier = modulePositionSupplier;
 
-        Pose2d startPose = RobotState.getInstance().getStartPose();
-
-        fieldSim = ShuffleboardConstants.getInstance().poseEstimationFieldSim;
+        Field2d fieldSim = ShuffleboardConstants.getInstance().poseEstimationFieldSim;
         odometryPoseSim = fieldSim.getObject("Odometry Pose");
         visionPoseSim = fieldSim.getObject("Vision Pose");
         estimatedPoseSim = fieldSim.getRobotObject();
@@ -71,11 +68,11 @@ public class PoseEstimator extends StormSubsystemBase {
         //set last pose to uncalculated current pose
         Pose2d lastPose = m_currentPose;
 
-        var latestDriveEntry = RobotState.getInstance().getLatestDriveData();
+        var latestOdometryEntry = RobotState.getInstance().getLatestOdometryData();
         //drive data
-        if (latestDriveEntry != null) {
-            double time = latestDriveEntry.getKey();
-            var data = latestDriveEntry.getValue();
+        if (latestOdometryEntry != null) {
+            double time = latestOdometryEntry.getKey();
+            var data = latestOdometryEntry.getValue();
             m_poseEstimator.updateWithTime(time, data.getGyroAngle(), data.getModulePositions());
             odometryPoseSim.setPose(m_poseEstimator.getEstimatedPosition());
         }
@@ -104,10 +101,7 @@ public class PoseEstimator extends StormSubsystemBase {
         resetEstimator(
                 RobotState.getInstance().getCurrentGyroRotation(),
                 m_modulePositionSupplier.get(),
-                pose);
-    }
-
-    private void resetEstimator() {
-        resetEstimator(new Pose2d());
+                pose
+        );
     }
 }

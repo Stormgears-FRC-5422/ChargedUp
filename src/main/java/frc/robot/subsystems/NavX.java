@@ -4,6 +4,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
@@ -69,10 +70,8 @@ public class NavX extends StormSubsystemBase {
     }
 
     @Override
-    public void periodic() {
-        var lastRotation = RobotState.getInstance().getCurrentGyroRotation();
-        RobotState.getInstance().setCurrentGyroRotation(getAbsoluteRotation());
-        RobotState.getInstance().setLastGyroRotation(lastRotation);
+    public void stormPeriodic() {
+        RobotState.getInstance().addGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
     }
 
     public void enabledInit() {

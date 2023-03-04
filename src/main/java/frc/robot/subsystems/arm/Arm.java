@@ -7,10 +7,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 
-public class Arm extends SubsystemBase {
+public class Arm extends StormSubsystemBase {
     public StormSpark shoulder;
     public StormSpark elbow;
     public StormTalon shoulderEncoder;
@@ -57,7 +58,7 @@ public class Arm extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
+    public void stormPeriodic() {
         double MAX_VOLTAGE = 12.0;
 
         double s = MAX_VOLTAGE * m_jointSpeeds.shoulderOmegaRadiansPerSecond / m_maxShoulderOmegaRadiansPerSecond;

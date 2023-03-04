@@ -2,11 +2,14 @@ package frc.utils.subsystemUtils;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+/** all of these methods are called before wpilib perioidcs */
 public abstract class StormSubsystemBase extends SubsystemBase {
     public StormSubsystemBase() {
         StormSubsystemScheduler.getInstance().register(this);
     }
 
+    /** use as periodic instead of periodic */
+    public void stormPeriodic() {}
     public void enabledInit() {}
     public void enabledPeriodic() {}
     public void disabledInit() {}

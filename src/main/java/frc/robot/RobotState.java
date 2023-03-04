@@ -18,11 +18,11 @@ public class RobotState extends StormSubsystemBase {
     private static RobotState m_instance;
     private final Timer m_timer;
 
-    private TreeMap<Double, DriveData> m_driveDataSet = new TreeMap<>();
-    private TreeMap<Double, Pose2d> m_visionDataSet = new TreeMap<>();
+    private final TreeMap<Double, OdometryData> m_odometryData = new TreeMap<>();
+    private final TreeMap<Double, Rotation2d> m_gyroData = new TreeMap<>();
+    private final TreeMap<Double, Pose2d> m_visionData = new TreeMap<>();
 
     private Pose2d currentPose, startPose, lastPose;
-    private Rotation2d currentGyroRotation, lastGyroRotation;
 
     private final Field2d fieldSim;
 
@@ -47,7 +47,7 @@ public class RobotState extends StormSubsystemBase {
         layout.addNumber("Pose Angle", () -> getCurrentPose().getRotation().getDegrees());
         layout.addNumber("Robot Time", this::getTimeSeconds);
         layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
-        layout.addNumber("Rotational Velocity", this::getCurrentRotationalVel);
+        layout.addNumber("Rotational Velocity", this::getCurrentDegPerSecVel);
         fieldSim = new Field2d();
         tab.add(fieldSim).withWidget(BuiltInWidgets.kField)
                 .withPosition(2, 0)
@@ -102,57 +102,51 @@ public class RobotState extends StormSubsystemBase {
         this.lastPose = lastPose;
     }
 
+    public void addGyroData(double time, Rotation2d angle) {
+        m_gyroData.put(time, angle);
+    }
+
+    public Rotation2d getAngleAtTimeSeconds(double time) {
+        var floorEntry = m_gyroData.floorEntry(time);
+        var ceilEntry = m_gyroData.ceilingEntry(time);
+        double timeFromFloor = time - floorEntry.getKey();
+        if (floorEntry == null) {
+            System.out.println("Don't have gyro data for time: " + time);
+            return getStartPose().getRotation();
+        }
+        if (ceilEntry == null) {
+            double rotationalVel = getCurrentDegPerSecVel();
+            Rotation2d rotationFromFloor = Rotation2d.fromDegrees(rotationalVel * timeFromFloor);
+            return floorEntry.getValue().plus(rotationFromFloor);
+        }
+        double timeFloorToCeiling = ceilEntry.getKey() - floorEntry.getKey();
+        var deltaRotation = ceilEntry.getValue().minus(floorEntry.getValue());
+        return floorEntry.getValue().plus(deltaRotation.times(timeFromFloor / timeFloorToCeiling));
+    }
+
     public Rotation2d getCurrentGyroRotation() {
         if (!Constants.useNavX) {
             System.out.println("NOT using gyro. Can't get current gyro rotation!");
             return Rotation2d.fromDegrees(0);
         }
-        if (currentGyroRotation == null) {
-            System.out.println("Current gyro rotation not set!");
-            return Rotation2d.fromDegrees(0);
-        }
-        return currentGyroRotation;
+        return m_gyroData.lastEntry().getValue();
     }
 
-    public void setCurrentGyroRotation(Rotation2d currentRotation) {
-        this.currentGyroRotation = currentRotation;
+    public void addOdometryData(double time, OdometryData odometryData) {
+        m_odometryData.put(time, odometryData);
     }
 
-    public Rotation2d getLastGyroRotation() {
-        if (!Constants.useNavX) {
-            System.out.println("NOT using gyro. Can't get current gyro rotation!");
-            return Rotation2d.fromDegrees(0);
-        }
-        if (lastGyroRotation == null) {
-            System.out.println("Last gyro rotation not set!");
-            return getCurrentGyroRotation();
-        }
-        return lastGyroRotation;
-    }
-
-    public void setLastGyroRotation(Rotation2d lastRotation) {
-        this.lastGyroRotation = lastRotation;
-    }
-
-    public void addDriveData(DriveData driveData) {
-        if (m_timer == null) {
-            System.out.println("Timer was not set!!!!!!!");
-            return;
-        }
-        m_driveDataSet.put(Timer.getFPGATimestamp(), driveData);
-    }
-
-    public Map.Entry<Double, DriveData> getLatestDriveData() {
-        return m_driveDataSet.lastEntry();
+    public Map.Entry<Double, OdometryData> getLatestOdometryData() {
+        return m_odometryData.lastEntry();
     }
 
     /** Must provide own timstamp with this function as camera will have delay*/
     public void addVisionData(double timeStampSeconds, Pose2d visionData) {
-        m_visionDataSet.put(timeStampSeconds, visionData);
+        m_visionData.put(timeStampSeconds, visionData);
     }
 
     public Map.Entry<Double, Pose2d> getLatestVisionData() {
-        return m_visionDataSet.lastEntry();
+        return m_visionData.lastEntry();
     }
 
     public double getDeltaDistanceMeters() {
@@ -166,23 +160,23 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public double getDeltaDegrees() {
-        return Math.abs(getCurrentGyroRotation().getDegrees() - getLastGyroRotation().getDegrees());
+        return Math.abs(getCurrentPose().getRotation().minus(getLastPose().getRotation()).getDegrees());
     }
 
-    public double getCurrentRotationalVel() {
+    public double getCurrentDegPerSecVel() {
         return getDeltaDegrees() / 0.02;
     }
 
     public void enabledInit() {
         m_timer.reset();
         m_timer.start();
-        m_driveDataSet.clear();
-        m_visionDataSet.clear();
+
+        m_odometryData.clear();
+        m_gyroData.clear();
+        m_visionData.clear();
 
         currentPose = null;
         lastPose = null;
-        currentGyroRotation = null;
-        lastGyroRotation = null;
     }
 
     public void disabledInit() {
@@ -193,27 +187,17 @@ public class RobotState extends StormSubsystemBase {
         fieldSim.setRobotPose(getCurrentPose());
 
         double currentTime = Timer.getFPGATimestamp();
-        m_driveDataSet.tailMap(currentTime - 1.0, true);
-        m_visionDataSet.tailMap(currentTime - 1.0, true);
+        m_odometryData.tailMap(currentTime - 1.0, true);
+        m_visionData.tailMap(currentTime - 1.0, true);
     }
 
-    public static class DriveData {
+    public static class OdometryData {
         private final SwerveModulePosition[] modulePositions;
         private final Rotation2d gyroAngle;
 
-        public DriveData(SwerveModulePosition[] modulePositions, Rotation2d gyroAngle) {
+        public OdometryData(SwerveModulePosition[] modulePositions, Rotation2d gyroAngle) {
             this.modulePositions = modulePositions;
             this.gyroAngle = gyroAngle;
-        }
-
-        public DriveData() {
-            this.modulePositions = new SwerveModulePosition[] {
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition()
-            };
-            this.gyroAngle = new Rotation2d();
         }
 
         public Rotation2d getGyroAngle() {

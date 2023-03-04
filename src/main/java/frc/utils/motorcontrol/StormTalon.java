@@ -4,7 +4,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.math.MathUtil;
 
-import static frc.robot.Constants.kMagEncoderTicksPerRotation;
+import static frc.robot.constants.Constants.kMagEncoderTicksPerRotation;
 import static java.lang.Math.floor;
 
 public class StormTalon extends WPI_TalonSRX {

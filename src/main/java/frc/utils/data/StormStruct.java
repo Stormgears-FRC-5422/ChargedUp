@@ -1,16 +1,6 @@
 package frc.utils.data;
 
-import edu.wpi.first.networktables.StringArrayTopic;
-import edu.wpi.first.networktables.IntegerArraySubscriber;
-import edu.wpi.first.networktables.IntegerArrayTopic;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.IntegerTopic;
-import edu.wpi.first.networktables.RawTopic;
-import edu.wpi.first.networktables.StringArraySubscriber;
-import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.RawSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.*;
 
 import java.sql.Struct;
 import java.util.HashMap;
@@ -66,17 +56,13 @@ public class StormStruct {
         this.intialize();
     }
 
-    /**
-     * Call this when the data structure has been published to network tables
-     */
+    /** Call this when the data structure has been published to network tables */
     public boolean intialize() {
         if (!m_initialized) {
             this.m_typeid = (int) this.m_type_sub.get();
             if (this.m_typeid != -1) {
-
                 String[] names = this.m_names_sub.get();
                 long[] encodings = this.m_encodings_sub.get();
-
                 this.m_fieldNames = new String[names.length];
 
                 for (int i=0;i<names.length; i++) {
@@ -101,24 +87,28 @@ public class StormStruct {
         RawSubscriber sub;
         Vector<HashMap<String,Double>> data_list;
         if (!m_data_subscribers.containsKey(name)) {
-            sub = m_base_table.getRawTopic("binary_data/" + this.m_struct_name + "/" + name).subscribe(this.m_struct_name,new byte[0]);
-        }
-        else {
+            sub = m_base_table.getRawTopic("binary_data/" + this.m_struct_name + "/" + name)
+                    .subscribe(this.m_struct_name,new byte[0]);
+        } else {
             sub = m_data_subscribers.get(name);
         }
 
         // Get raw data
-        byte[] raw_data = sub.get();
+        TimestampedRaw timestamped_data = sub.getAtomic();
+        byte[] raw_data = timestamped_data.value;
+        double timestamp = timestamped_data.serverTime;
         if (raw_data.length > 0) {
             // Decode raw data into HashMap
             data_list = this.unpack(raw_data);
-        }
-        else {
-            data_list = new Vector<HashMap<String,Double>>();
+            for (var data : data_list) {
+                data.put("timestamp", timestamp);
+            }
+        } else {
+            data_list = new Vector<>();
         }
 
         // Return Data
-        return(data_list);
+        return data_list;
     }
 
     /**
