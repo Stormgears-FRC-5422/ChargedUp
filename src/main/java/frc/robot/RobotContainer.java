@@ -221,7 +221,6 @@ public class RobotContainer {
             new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
             new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
-            new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
 
             //BUTTONBOARD TRIGGERS
             new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand( () -> m_NavX.getPitch(),
