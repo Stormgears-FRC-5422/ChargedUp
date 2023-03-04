@@ -192,8 +192,7 @@ public class RobotContainer {
         }
 
         if (usePneumatics && useController) {
-            new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCone));
-            new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCube));
+            new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
             new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
         } else {
             System.out.println("Pneumatics or controller not operational");

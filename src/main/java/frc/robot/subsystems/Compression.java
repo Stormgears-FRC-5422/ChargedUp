@@ -10,20 +10,20 @@
 
 package frc.robot.subsystems;
 
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.*;
 
 public class Compression extends SubsystemBase {
-    private boolean running;
-    private boolean onOffSolenoidSet;
-    private boolean cubeConeSolenoidSet;
-    private Compressor mainCompressor;
-    private Solenoid onOffSolenoid;
-    private Solenoid cubeConeSolenoid;
+    public boolean running;
+    public boolean onOffSolenoidSet;
+    public Compressor mainCompressor;
+    public Solenoid onOffSolenoid;
 
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
@@ -32,12 +32,9 @@ public class Compression extends SubsystemBase {
         onOffSolenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, onOffSolenoidChannel);
         onOffSolenoid.set(false);
 
-        cubeConeSolenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, cubeConeSolenoidChannel);
-        cubeConeSolenoid.set(false);
 
         running = false;
         onOffSolenoidSet = false;
-        cubeConeSolenoidSet = false;
         printStatus();
     }
 
@@ -53,17 +50,11 @@ public class Compression extends SubsystemBase {
         printStatus();
     }
 
-    public void grabCube(){
-        cubeConeSolenoid.set(true);
-        onOffSolenoid.set(true);
-    }
-    public void grabCone(){
-        cubeConeSolenoid.set(false);
+    public void grabCubeOrCone(){
         onOffSolenoid.set(true);
     }
 
     public void release(){
-        cubeConeSolenoid.set(false);
         onOffSolenoid.set(false);
     }
 
@@ -73,5 +64,12 @@ public class Compression extends SubsystemBase {
         System.out.println("Compressor isEnabled: " + mainCompressor.isEnabled());
         System.out.println("Compressor getPressureSwitchValve: " + mainCompressor.getPressureSwitchValue());
         System.out.println("Solenoid isEnabled(): " + !onOffSolenoid.isDisabled());
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putBoolean("The compressor is enabled", mainCompressor.isEnabled());
+        SmartDashboard.putBoolean("Solenoid isEnabled(): ", !onOffSolenoid.isDisabled());
+        SmartDashboard.putBoolean("Compressor getPressureSwitchValve: ", mainCompressor.getPressureSwitchValue());
     }
 }
