@@ -197,12 +197,16 @@ public class RobotContainer {
             if (usePneumatics) {
                 new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
                 new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
+                new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
+                new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::startCompressor));
+
             } else {
                 System.out.println("Pneumatics or controller not operational");
             }
         }
 
         if (useDrive && useLogitechController) {
+
             // TODO - get rid of the magic numbers here and make these config settings (do we have them already?)
             DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
                     m_drivetrain,

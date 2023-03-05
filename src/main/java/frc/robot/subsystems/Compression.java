@@ -20,10 +20,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.*;
 
 public class Compression extends SubsystemBase {
-    public boolean running;
-    public boolean onOffSolenoidSet;
-    public Compressor mainCompressor;
-    public Solenoid onOffSolenoid;
+    private boolean running;
+    private boolean onOffSolenoidSet;
+    private Compressor mainCompressor;
+    private Solenoid onOffSolenoid;
 
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
