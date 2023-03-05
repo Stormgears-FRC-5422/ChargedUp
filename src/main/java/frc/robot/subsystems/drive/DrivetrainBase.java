@@ -11,10 +11,8 @@ import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import java.util.Objects;
-
 import static frc.robot.constants.Constants.kDriveSpeedScale;
-import static frc.robot.constants.Constants.usePoseEstimator;
+import static frc.robot.constants.Constants.SubsystemToggles.usePoseEstimator;
 
 public abstract class DrivetrainBase extends StormSubsystemBase {
 

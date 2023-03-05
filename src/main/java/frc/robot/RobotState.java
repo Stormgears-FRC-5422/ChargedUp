@@ -9,18 +9,20 @@ import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
+import frc.robot.subsystems.vision.Vision;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Vector;
 
 public class RobotState extends StormSubsystemBase {
     private static RobotState m_instance;
     private final Timer m_timer;
 
-    private final TreeMap<Double, OdometryData> m_odometryData = new TreeMap<>();
-    private final TreeMap<Double, Rotation2d> m_gyroData = new TreeMap<>();
-    private final TreeMap<Double, Pose2d> m_visionData = new TreeMap<>();
+    private TreeMap<Double, OdometryData> m_odometryData = new TreeMap<>();
+    private TreeMap<Double, Rotation2d> m_gyroData = new TreeMap<>();
+    private TreeMap<Double, Vector<Vision.AprilTagData>> m_visionData = new TreeMap<>();
 
     private Pose2d currentPose, startPose, lastPose;
 
@@ -59,12 +61,12 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getCurrentPose() {
-        if (!Constants.usePoseEstimator) {
-            System.out.println("NOT using pose estimator. Can't get current pose!");
+        if (!Constants.SubsystemToggles.usePoseEstimator) {
+//            System.out.println("NOT using pose estimator. Can't get current pose!");
             return getStartPose();
         }
         if (currentPose == null) {
-            System.out.println("Using start pose for current pose: " + getStartPose());
+//            System.out.println("Using start pose for current pose: " + getStartPose());
             return getStartPose();
         }
         return currentPose;
@@ -76,7 +78,7 @@ public class RobotState extends StormSubsystemBase {
 
     public Pose2d getStartPose() {
         if (startPose == null) {
-            System.out.println("Starting position was not set! Which is fine...");
+//            System.out.println("Starting position was not set! Which is fine...");
             return new Pose2d();
         }
         return startPose;
@@ -87,12 +89,12 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getLastPose() {
-        if (!Constants.usePoseEstimator) {
-            System.out.println("NOT using pose estimator. Can't get last pose!");
+        if (!Constants.SubsystemToggles.usePoseEstimator) {
+//            System.out.println("NOT using pose estimator. Can't get last pose!");
             return getCurrentPose();
         }
         if (lastPose == null) {
-            System.out.println("Using current pose for last pose: " + getCurrentPose());
+//            System.out.println("Using current pose for last pose: " + getCurrentPose());
             return getCurrentPose();
         }
         return lastPose;
@@ -120,16 +122,16 @@ public class RobotState extends StormSubsystemBase {
             return floorEntry.getValue().plus(rotationFromFloor);
         }
         double timeFloorToCeiling = ceilEntry.getKey() - floorEntry.getKey();
-        var deltaRotation = ceilEntry.getValue().minus(floorEntry.getValue());
-        return floorEntry.getValue().plus(deltaRotation.times(timeFromFloor / timeFloorToCeiling));
+        return floorEntry.getValue().interpolate(ceilEntry.getValue(), timeFromFloor / timeFloorToCeiling);
     }
 
     public Rotation2d getCurrentGyroRotation() {
-        if (!Constants.useNavX) {
+        if (!Constants.SubsystemToggles.useNavX) {
             System.out.println("NOT using gyro. Can't get current gyro rotation!");
             return Rotation2d.fromDegrees(0);
         }
-        return m_gyroData.lastEntry().getValue();
+        var entry = m_gyroData.lastEntry();
+        return (entry != null)? entry.getValue() : new Rotation2d();
     }
 
     public void addOdometryData(double time, OdometryData odometryData) {
@@ -141,11 +143,11 @@ public class RobotState extends StormSubsystemBase {
     }
 
     /** Must provide own timstamp with this function as camera will have delay*/
-    public void addVisionData(double timeStampSeconds, Pose2d visionData) {
-        m_visionData.put(timeStampSeconds, visionData);
+    public void addVisionData(double time, Vector<Vision.AprilTagData> visionData) {
+        m_visionData.put(time, visionData);
     }
 
-    public Map.Entry<Double, Pose2d> getLatestVisionData() {
+    public Map.Entry<Double, Vector<Vision.AprilTagData>> getLatestVisionData() {
         return m_visionData.lastEntry();
     }
 
@@ -171,9 +173,9 @@ public class RobotState extends StormSubsystemBase {
         m_timer.reset();
         m_timer.start();
 
-        m_odometryData.clear();
-        m_gyroData.clear();
-        m_visionData.clear();
+        m_odometryData = new TreeMap<>();
+        m_gyroData = new TreeMap<>();
+        m_visionData = new TreeMap<>();
 
         currentPose = null;
         lastPose = null;
@@ -181,14 +183,22 @@ public class RobotState extends StormSubsystemBase {
 
     public void disabledInit() {
         m_timer.stop();
+
+        m_odometryData = new TreeMap<>();
+        m_gyroData = new TreeMap<>();
+        m_visionData = new TreeMap<>();
+
+        currentPose = null;
+        lastPose = null;
     }
 
     public void lastPeriodic() {
         fieldSim.setRobotPose(getCurrentPose());
 
         double currentTime = Timer.getFPGATimestamp();
-        m_odometryData.tailMap(currentTime - 1.0, true);
-        m_visionData.tailMap(currentTime - 1.0, true);
+//        m_odometryData = (TreeMap<Double, OdometryData>) m_odometryData.tailMap(currentTime - 1.0, true);
+//        m_visionData = (TreeMap<Double, Vector<Vision.AprilTagData>>) m_visionData.tailMap(currentTime - 1.0, true);
+//        m_gyroData = (TreeMap<Double, Rotation2d>) m_gyroData.tailMap(currentTime - 1.0, true);
     }
 
     public static class OdometryData {

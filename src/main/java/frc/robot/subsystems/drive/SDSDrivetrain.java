@@ -152,16 +152,16 @@ public class SDSDrivetrain extends DrivetrainBase {
         backLeftModuleLayout.addNumber("driveDistance()", m_backLeftModule::getDriveDistance);
         backRightModuleLayout.addNumber("driveDistance()", m_backRightModule::getDriveDistance);
 
-        var pathFollowingTab = Shuffleboard.getTab("Path Following");
-
-        pathFollowingTab.add("X PID Controller", xController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(4, 1);
-        pathFollowingTab.add("Y PID Controller", yController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(6, 1);
-        pathFollowingTab.add("Rotation PID Controller", rotController)
-                .withWidget(BuiltInWidgets.kPIDController);
+//        var pathFollowingTab = Shuffleboard.getTab("Path Following");
+//
+//        pathFollowingTab.add("X PID Controller", xController)
+//                .withWidget(BuiltInWidgets.kPIDController)
+//                .withPosition(4, 1);
+//        pathFollowingTab.add("Y PID Controller", yController)
+//                .withWidget(BuiltInWidgets.kPIDController)
+//                .withPosition(6, 1);
+//        pathFollowingTab.add("Rotation PID Controller", rotController)
+//                .withWidget(BuiltInWidgets.kPIDController);
     }
 
     @Override
@@ -200,7 +200,10 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_frontRightModule.set(MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
         m_backLeftModule.set(MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
         m_backRightModule.set(MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
+    }
 
+    @Override
+    public void enabledPeriodic() {
         RobotState.OdometryData currentOdometryData = new RobotState.OdometryData(
                 getSwerveModulePositions(),
                 getGyroscopeRotation()

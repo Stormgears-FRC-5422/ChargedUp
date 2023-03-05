@@ -30,7 +30,15 @@ public final class FieldConstants {
         }
     }
 
-    public static List<AprilTag> APRILTAGS = APRILTAG_FIELD_LAYOUT.getTags();
+    public static Pose2d getTagPose(int id) {
+        var tagPose = APRILTAG_FIELD_LAYOUT.getTagPose(id);
+        if (tagPose.isPresent()) {
+            return tagPose.get().toPose2d();
+        } else {
+            System.out.println("Couldn't get april tag pose!");
+            return new Pose2d();
+        }
+    }
 
     /** Grid arrays [0][0] are the highest and the farthest from substation */
     public final static class Grids {
@@ -68,6 +76,7 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
+                    System.out.println(blueAllianceGrid[wpiY][wpiX]);
                 }
             }
         }

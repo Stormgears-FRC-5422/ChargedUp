@@ -15,6 +15,7 @@ import static frc.robot.constants.Constants.navXConnection;
 public class NavX extends StormSubsystemBase {
 
     private final AHRS m_gyro;
+    private Rotation2d offset = new Rotation2d();
 
     public NavX() {
         switch (navXConnection) {
@@ -56,25 +57,31 @@ public class NavX extends StormSubsystemBase {
         m_gyro.zeroYaw();
     }
 
+    private void setAngle(Rotation2d angle) {
+        zeroYaw();
+        offset = angle;
+    }
+
     public double getFusedHeading() {
         return m_gyro.getFusedHeading();
     }
 
-    /** get absolute rotation (-180, 180) inverted so counter-clockwise is positive */
+    /** get absolute rotation (-180, 180) inverted so counter-clockwise is positive with offset */
     public Rotation2d getAbsoluteRotation() {
-        double invertedYaw = -1 * getYaw();
+        double invertedYaw = 0.0 - getYaw();
         // get absolute
         double absolute0To360 = (invertedYaw + 180.0) % 360;
         // subtract 180 again
-        return Rotation2d.fromDegrees((absolute0To360 - 180.0));
+        var rotationWithOffset =  Rotation2d.fromDegrees(absolute0To360).rotateBy(offset);
+        return Rotation2d.fromDegrees((rotationWithOffset.getDegrees() % 360) - 180.0);
     }
 
     @Override
-    public void stormPeriodic() {
+    public void enabledPeriodic() {
         RobotState.getInstance().addGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
     }
 
     public void enabledInit() {
-        zeroYaw();
+        setAngle(RobotState.getInstance().getStartPose().getRotation());
     }
 }

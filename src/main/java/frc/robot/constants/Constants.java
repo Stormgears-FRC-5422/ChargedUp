@@ -4,9 +4,7 @@
 
 package frc.robot.constants;
 
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.shuffleboard.*;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.math.geometry.*;
 import frc.utils.configfile.StormProp;
 
 
@@ -112,18 +110,46 @@ public final class Constants {
     public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
     public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
 
-    // **********
-    // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
-    // **********
-    public static boolean useDrive = StormProp.getBoolean("useDrive", false);
-    public static boolean useNavX = StormProp.getBoolean("useNavX", false);
-    public static boolean useController = StormProp.getBoolean("useController", false);
-    public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
-    public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
-    public static boolean useArm = StormProp.getBoolean("useArm", false);
-    public static boolean useVision = StormProp.getBoolean("useVision", false);
-    public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
-    public static boolean usePoseEstimator = false;
+    public static class VisionConstants {
+        private static final double kCameraXTranslation = StormProp.getNumber("CameraWpiX", 0.0);
+        private static final double kCameraYTranslation = StormProp.getNumber("CameraWpiY", 0.0);
+        private static final double kCameraZTranslation = StormProp.getNumber("CameraWpiZ", 0.0);
+        private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
+        private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
+
+        public static final Pose3d CAMERA_POSITION = new Pose3d(
+                kCameraXTranslation, kCameraYTranslation, kCameraZTranslation,
+                new Rotation3d(0,
+                        Math.toRadians(kCameraPitch),
+                        Math.toRadians(kCameraYaw))
+        );
+
+        // could be done a lot easier
+        public static final Transform3d CAMERA_ROBOT_TRANSFORM = new Transform3d(
+                CAMERA_POSITION,
+                new Pose3d()
+        );
+        public static final Transform2d CAMERA_ROBOT_TRANSFORM2D = new Transform2d(
+                CAMERA_POSITION.toPose2d(),
+                new Pose2d()
+        );
+
+    }
+
+    public static class SubsystemToggles {
+        // **********
+        // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
+        // **********
+        public static boolean useDrive = StormProp.getBoolean("useDrive", false);
+        public static boolean useNavX = StormProp.getBoolean("useNavX", false);
+        public static boolean useController = StormProp.getBoolean("useController", false);
+        public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
+        public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
+        public static boolean useArm = StormProp.getBoolean("useArm", false);
+        public static boolean useVision = StormProp.getBoolean("useVision", false);
+        public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
+        public static boolean usePoseEstimator = false;
+    }
     // **********
     // Don't put other variables after the usage members
     // **********

@@ -74,9 +74,9 @@ public final class Paths {
         return generatePath(
                     new PathConstraints(maxVel, maxAcc),
                     new PathPoint(startPose.getTranslation(), Rotation2d.fromRadians(0), startPose.getRotation())
-                            .withControlLengths(0.0, 0.0),
+                            .withControlLengths(0.01, 0.01),
                     new PathPoint(endPose.getTranslation(), Rotation2d.fromRadians(0), endPose.getRotation())
-                            .withControlLengths(0.0, 0.0));
+                            .withControlLengths(0.01, 0.01));
     }
 
     public static PathPlannerTrajectory getPathToPose(Pose2d endPose, double maxVel, double maxAcc) {

@@ -22,6 +22,10 @@ public class DriveToPose extends CommandBase {
         this.maxVel = maxVel;
         this.maxAcc = maxAcc;
 
+        if (startPose == null) startPose = RobotState.getInstance().getCurrentPose();
+        var path = Paths.getPathToPose(startPose, goalPose, maxVel, maxAcc);
+        m_followCommand = new FollowPathCommand(path, m_drivetrain);
+
         addRequirements(m_drivetrain);
     }
 
@@ -32,9 +36,10 @@ public class DriveToPose extends CommandBase {
 
     @Override
     public void initialize() {
-        if (startPose == null) startPose = RobotState.getInstance().getCurrentPose();
-        var path = Paths.getPathToPose(startPose, goalPose, maxVel, maxAcc);
-        m_followCommand = new FollowPathCommand(path, m_drivetrain);
+        System.out.printf(
+                "Drive to pose starting at: %1$s and ending at: %2$s%n",
+                startPose, goalPose);
+        m_followCommand.initialize();
     }
 
     @Override

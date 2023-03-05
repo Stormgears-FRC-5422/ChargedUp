@@ -75,7 +75,6 @@ public class FollowPathCommand extends CommandBase {
         var goalPose = new Pose2d(
                 goalState.poseMeters.getTranslation(),
                 goalState.holonomicRotation);
-        System.out.println(goalPose);
 
         //log error
         dTranslationEntry.setDouble(currentPose.getTranslation().getDistance(goalPose.getTranslation()));

@@ -12,15 +12,17 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import frc.robot.RobotState;
+import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
+import frc.robot.subsystems.vision.AprilTagPoseEstimationStrategy;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import java.util.function.Supplier;
+import static frc.robot.constants.Constants.VisionConstants.*;
 
 public class PoseEstimator extends StormSubsystemBase {
-    private SwerveDrivePoseEstimator m_poseEstimator;
-    private final Supplier<SwerveDriveKinematics> m_driveKinematicsSupplier;
-    private final Supplier<SwerveModulePosition[]> m_modulePositionSupplier;
+    private final SwerveDrivePoseEstimator m_poseEstimator;
+//    private final SwerveDriveKinematics m_driveKinematics;
+//    private final SwerveModulePosition[] m_modulePosition;
 
     private Pose2d m_currentPose;
 
@@ -36,11 +38,19 @@ public class PoseEstimator extends StormSubsystemBase {
     private final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
     private final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
 
-    public PoseEstimator(Supplier<SwerveDriveKinematics> kinematicsSupplier,
-                         Supplier<SwerveModulePosition[]> modulePositionSupplier) {
+    private double currentOdometryEntryTime, currentVisionEntryTime;
 
-        m_driveKinematicsSupplier = kinematicsSupplier;
-        m_modulePositionSupplier = modulePositionSupplier;
+    public PoseEstimator(SwerveDriveKinematics kinematics,
+                         SwerveModulePosition[] modulePositions) {
+        var startPose = RobotState.getInstance().getStartPose();
+        m_poseEstimator = new SwerveDrivePoseEstimator(
+                kinematics,
+                RobotState.getInstance().getCurrentGyroRotation(),
+                modulePositions,
+                startPose,
+                stateStdDevs,
+                visionMeasurementStdDevs
+        );
 
         Field2d fieldSim = ShuffleboardConstants.getInstance().poseEstimationFieldSim;
         odometryPoseSim = fieldSim.getObject("Odometry Pose");
@@ -52,14 +62,6 @@ public class PoseEstimator extends StormSubsystemBase {
     public void enabledInit() {
         Pose2d startPose = RobotState.getInstance().getStartPose();
         System.out.println("Start pose at pose estimator on enable: " + startPose);
-        m_poseEstimator = new SwerveDrivePoseEstimator(
-                m_driveKinematicsSupplier.get(),
-                RobotState.getInstance().getCurrentGyroRotation(),
-                m_modulePositionSupplier.get(),
-                startPose,
-                stateStdDevs,
-                visionMeasurementStdDevs
-        );
         resetEstimator(startPose);
     }
 
@@ -72,18 +74,32 @@ public class PoseEstimator extends StormSubsystemBase {
         //drive data
         if (latestOdometryEntry != null) {
             double time = latestOdometryEntry.getKey();
-            var data = latestOdometryEntry.getValue();
-            m_poseEstimator.updateWithTime(time, data.getGyroAngle(), data.getModulePositions());
-            odometryPoseSim.setPose(m_poseEstimator.getEstimatedPosition());
+            if (time != currentOdometryEntryTime) {
+                var data = latestOdometryEntry.getValue();
+                m_poseEstimator.updateWithTime(time, data.getGyroAngle(), data.getModulePositions());
+                odometryPoseSim.setPose(m_poseEstimator.getEstimatedPosition());
+                currentOdometryEntryTime = time;
+            }
         }
 
         var latestVisionEntry = RobotState.getInstance().getLatestVisionData();
         //add the vision entry to estimator
         if (latestVisionEntry != null) {
             double time = latestVisionEntry.getKey();
-            Pose2d pose = latestVisionEntry.getValue();
-            m_poseEstimator.addVisionMeasurement(pose, time);
-            visionPoseSim.setPose(pose);
+            if (time != currentVisionEntryTime) {
+                var info = latestVisionEntry.getValue();
+                // calculate camera angle by adding to the gyro angle
+                Rotation2d gyroAngle = RobotState.getInstance().getAngleAtTimeSeconds(time);
+                Rotation2d cameraAngle = gyroAngle.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
+                // just call the pose estimation strategy class
+                Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
+                // have to transform to robot pose
+                Pose2d visionRobotPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
+                m_poseEstimator.addVisionMeasurement(visionRobotPose, time);
+                // log the position
+                visionPoseSim.setPose(visionRobotPose);
+                currentVisionEntryTime = time;
+            }
         }
 
         //set pose in state object
@@ -100,7 +116,12 @@ public class PoseEstimator extends StormSubsystemBase {
     private void resetEstimator(Pose2d pose) {
         resetEstimator(
                 RobotState.getInstance().getCurrentGyroRotation(),
-                m_modulePositionSupplier.get(),
+                new SwerveModulePosition[] {
+                        new SwerveModulePosition(),
+                        new SwerveModulePosition(),
+                        new SwerveModulePosition(),
+                        new SwerveModulePosition()
+                },
                 pose
         );
     }
