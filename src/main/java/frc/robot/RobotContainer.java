@@ -23,9 +23,11 @@ import edu.wpi.first.wpilibj2.command.button.*;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.LidarIndicatorCommand;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.subsystems.NavX;
+import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
@@ -36,6 +38,7 @@ import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.joysticks.ButtonBoard;
+import frc.utils.joysticks.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
@@ -66,6 +69,8 @@ public class RobotContainer {
     BalanceCommand m_balancecommand;
 
     GyroCommand m_gyrocommand;
+
+    LidarIndicatorCommand m_lidarIndicatorCommand;
     BasicArm m_basicArm;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
@@ -77,8 +82,7 @@ public class RobotContainer {
 
     StormLogitechController m_controller;
 
-    ButtonBoard m_buttonboard1;
-    ButtonBoard m_buttonboard2;
+    ButtonBoardConfig m_buttonboardconfig;
 
 
     private SendableChooser<PathPlannerTrajectory> PathChooser = new SendableChooser<>();
@@ -232,17 +236,16 @@ public class RobotContainer {
             }
         }
 
+
+        NeoPixel m_neoPixel = new NeoPixel();
+        new Trigger(() -> m_controller.getRawButton(9)).whileTrue(new InstantCommand(() -> m_neoPixel.setAll(m_neoPixel.fullColor)));
+
+
         //BUTTONBOARD TRIGGERS
         if (useButtonBoard) {
-            m_buttonboard1 = new ButtonBoard(1);
-            m_buttonboard1 = new ButtonBoard(2);
-            if (!m_buttonboard1.jumper()) {
-                System.out.println("Switching ButtonBoard ports");
-                m_buttonboard1 = new ButtonBoard(2);
-                m_buttonboard2 = new ButtonBoard(1);
-            } else {
-                System.out.println("Not Switching ButtonBoard ports");
-            }
+            m_buttonboardconfig = new ButtonBoardConfig();
+
+        }
 
 //        new Trigger(m_buttonboard1::leftSub).onTrue();
 //        new Trigger(m_buttonboard1::rightSub).onTrue();
@@ -259,14 +262,16 @@ public class RobotContainer {
 //        new Trigger(m_buttonboard2::grid9).onTrue();
 //        new Trigger(m_buttonboard2::confirm).onTrue();
 //        new Trigger(m_buttonboard2::cancel).onTrue();
-        }
 
-        if (useDrive && driveType.equals("SwerveDrive") ) {
+
+        if (useDrive && driveType.equals("SwerveDrive")) {
             new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
                     () -> m_NavX.getPitch(),
                     () -> m_NavX.getRoll(),
                     m_drivetrain));
 
+        }
+    }
 //        if(useDrive &&driveType.equals("SwerveDrive")) {
 //            SmartDashboard.putData("Trapezoid Move Forward Command",
 //                    new TrapezoidMoveForward(m_drivetrain, 5, 1, 0.5));
@@ -330,8 +335,8 @@ public class RobotContainer {
 //                    commandHashMap
 //            );
 //            commandPlayer.add("Straight Path With Events", pathWithEvents).withPosition(5, 0);
-        }
-    }
+
+
 
 
 
@@ -379,6 +384,11 @@ public class RobotContainer {
 
     void onEnable() {
         m_robotState.onEnable();
+
+
+//        m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet);
+//        m_lidarIndicatorCommand.schedule();
+
         if (useDrive) {
             m_drivetrain.onEnable();
             if (driveType.equals("SwerveDrive")) {
