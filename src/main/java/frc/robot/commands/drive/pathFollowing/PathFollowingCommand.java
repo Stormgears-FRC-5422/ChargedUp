@@ -1,4 +1,4 @@
-package frc.robot.commands.pathFollowing;
+package frc.robot.commands.drive.pathFollowing;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;

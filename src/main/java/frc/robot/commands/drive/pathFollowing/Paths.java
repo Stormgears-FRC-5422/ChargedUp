@@ -1,4 +1,4 @@
-package frc.robot.commands.pathFollowing;
+package frc.robot.commands.drive.pathFollowing;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -7,10 +7,7 @@ import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotState;
-import frc.robot.subsystems.drive.DrivetrainBase;
 
 import java.util.List;
 

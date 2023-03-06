@@ -31,11 +31,13 @@ public class BalancePitchCommand extends CommandBase {
         m_drivetrain.drive(new ChassisSpeeds(pidOut, 0.0, 0.0), true);
     }
 
+    // do we need this
     @Override
     public boolean isFinished() {
         return controller.atSetpoint();
     }
 
+    // again???
     @Override
     public void end(boolean interrupted) {
         if (!interrupted)

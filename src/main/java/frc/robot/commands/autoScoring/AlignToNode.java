@@ -9,8 +9,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotState;
-import frc.robot.commands.pathFollowing.PathFollowingCommand;
-import frc.robot.commands.pathFollowing.Paths;
+import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
+import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 import static frc.robot.constants.FieldConstants.Grids.ScoringNode;
@@ -34,22 +34,20 @@ public class AlignToNode extends PathFollowingCommand {
         Pose2d alignedPose = new Pose2d(alignedX, scoringPose.getY(), scoringPose.getRotation());
         // make an intermediate translation to go around possible obstacles in the most simple way
         Translation2d intermediateTranslation = new Translation2d(alignedX, currentPose.getY());
+        // calculate the direction of travel for going to intermediate pose and then aligned
         double initialHeading = Paths.calcHeading(currentPose.getTranslation(), intermediateTranslation);
-        // make the rotation part smooth by finding the intermediate rotation
-        double distToIntermediate = currentPose.getTranslation().getDistance(intermediateTranslation);
-        double totalDist = distToIntermediate + intermediateTranslation.getDistance(alignedPose.getTranslation());
-        Rotation2d intermediateRot = currentPose.getRotation().interpolate(scoringPose.getRotation(),
-                distToIntermediate / totalDist);
-        // make the path from current pose -> intermediate -> aligned
+        double endHeading = Paths.calcHeading(alignedPose.getTranslation(), intermediateTranslation);
+        // use distances to control the heading control lengths make the start heading be stronger for a curve
+        double startToScoringPose = currentPose.getTranslation().getDistance(scoringPose.getTranslation());
+        double intermediateToEnd = alignedPose.getTranslation().getDistance(intermediateTranslation);
+        // make the path from current pose  -> aligned
         // still have to drive to scoring position, this makes time for arm movements
         var path = PathPlanner.generatePath(
                 new PathConstraints(2, 1.5),
                 new PathPoint(currentPose.getTranslation(), new Rotation2d(initialHeading), currentPose.getRotation())
-                        .withNextControlLength(distToIntermediate),
-                new PathPoint(intermediateTranslation, new Rotation2d(), intermediateRot)
-                        .withControlLengths(0, 0),
-                new PathPoint(alignedPose.getTranslation(), new Rotation2d(), alignedPose.getRotation())
-                        .withControlLengths(0, 0)
+                        .withNextControlLength(startToScoringPose),
+                new PathPoint(alignedPose.getTranslation(), new Rotation2d(endHeading), alignedPose.getRotation())
+                        .withPrevControlLength(intermediateToEnd)
         );
         withPath(path);
         super.initialize();
