@@ -77,6 +77,9 @@ public class ButtonBoard extends Joystick {
     return  getRawButton(15);
   }
 
+  public boolean kill() {
+        return  getRawButton(16);
+  }
   //HAVE NOT DONE switches (kill switch, manual arm control etc.)
 
 

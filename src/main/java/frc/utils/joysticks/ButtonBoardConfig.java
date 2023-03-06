@@ -13,7 +13,7 @@ public class ButtonBoardConfig {
     m_buttonboard2 = new ButtonBoard(2);
   }
 
-  public void buttonBoardSetup() {
+  public void buttonBoardSetup() throws KillSwitch {
     System.out.println("buttonBoardSetup starting");
 
     if (!m_buttonboard1.jumper()) {
@@ -22,6 +22,14 @@ public class ButtonBoardConfig {
       m_buttonboard2 = new ButtonBoard(1);
     } else {
       System.out.println("Not Switching ButtonBoard ports");
+    }
+
+
+
+    if (m_buttonboard2.kill()) {
+      System.out.println("Killing robot");
+      throw new KillSwitch("Killing robot");
+
     }
 
     new Trigger(m_buttonboard1::leftSub).onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")));
