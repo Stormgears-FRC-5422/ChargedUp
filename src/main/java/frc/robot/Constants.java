@@ -30,6 +30,7 @@ public final class Constants {
     public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
     public static final double kPrecisionSpeedScale = StormProp.getNumber("precisionSpeedScale", 0.0);
     public static final double kArmSpeedScale = StormProp.getNumber("armSpeedScale", 0.0);
+    public static final double kXYArmSpeedScale = StormProp.getNumber("XYarmSpeedScale", 0.0);
 
     public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
     public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);
@@ -96,7 +97,8 @@ public final class Constants {
     public static final int kMagEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
     public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
     public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
-
+    public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
+    public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
 
@@ -109,6 +111,7 @@ public final class Constants {
     public static boolean usePneumatics = StormProp.getBoolean("usePneumatics",false);
     public static boolean useStormNet = StormProp.getBoolean("useStormNet",false);
 	public static boolean useArm = StormProp.getBoolean("useArm", false);
+    public static boolean useXYArmMode = StormProp.getBoolean("useXYArmMode", false);
     // **********
     // Don't put other variables after the usage members
     // **********

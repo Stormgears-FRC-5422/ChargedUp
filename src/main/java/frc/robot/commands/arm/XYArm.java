@@ -1,38 +1,42 @@
 package frc.robot.commands.arm;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmJointSpeeds;
+
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.*;
+import static frc.robot.Constants.kArmSpeedScale;
 
-public class BasicArm extends ArmCommand {
+public class XYArm extends ArmCommand {
     Arm arm;
-    DoubleSupplier shoulderOmegaSupplier;
-    DoubleSupplier elbowOmegaSupplier;
+    DoubleSupplier XSpeedSupplier;
+    DoubleSupplier YSpeedSupplier;
 
-    public BasicArm(Arm arm,
-                    DoubleSupplier shoulderOmegaSupplier,
-                    DoubleSupplier elbowOmegaSupplier) {
+    public XYArm(Arm arm,
+                 DoubleSupplier XSpeedSupplier,
+                 DoubleSupplier YSpeedSupplier) {
 
         this.arm = arm;
-        this.shoulderOmegaSupplier = shoulderOmegaSupplier;
-        this.elbowOmegaSupplier = elbowOmegaSupplier;
+        this.XSpeedSupplier = XSpeedSupplier;
+        this.YSpeedSupplier = YSpeedSupplier;
 
         addRequirements(arm);
     }
 
     @Override
     public void initialize() {
-        System.out.println("BasicArm Command Initialize!");
+        System.out.println("XYArm Command Initialize!");
         super.initialize();
     }
 
     @Override
     public void execute() {
         arm.setSpeedScale(kArmSpeedScale);
-        arm.percentOutMoveArm(new ArmJointSpeeds(shoulderOmegaSupplier.getAsDouble(), elbowOmegaSupplier.getAsDouble()));
+        arm.percentOutXYMoveArm(new ChassisSpeeds(XSpeedSupplier.getAsDouble(),
+                                                  YSpeedSupplier.getAsDouble(),
+                               0.0 ));
     }
 
     @Override
@@ -42,7 +46,7 @@ public class BasicArm extends ArmCommand {
 
     @Override
     public void end(boolean interrupted) {
-        System.out.println("BasicArm Command done!");
+        System.out.println("XYArm Command done!");
         // TODO - maybe this should be conditional - we don't want to undo what the interrupting command is trying to do.
         // but for now this is safer, and I don't think we'll keep this around long term.
         arm.stopArm();

@@ -11,7 +11,6 @@ import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,7 +26,9 @@ import edu.wpi.first.wpilibj2.command.button.*;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
+import frc.robot.commands.arm.XYArm;
 import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.arm.Arm;
@@ -71,7 +72,7 @@ public class RobotContainer {
     BalanceCommand m_balancecommand;
 
     GyroCommand m_gyrocommand;
-    BasicArm m_basicArm;
+    ArmCommand m_armCommand;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
@@ -185,10 +186,16 @@ public class RobotContainer {
         }
 
         if (useArm && useController) {
-            m_basicArm = new BasicArm(m_arm,
-                    xboxController::getLeftJoystickY,
-                    xboxController::getRightJoystickY);
-            m_arm.setDefaultCommand(m_basicArm);
+            if (useXYArmMode) {
+                m_armCommand = new XYArm(m_arm,
+                        xboxController::getLeftJoystickY,
+                        xboxController::getRightJoystickY);
+            } else {
+                m_armCommand = new BasicArm(m_arm,
+                        xboxController::getLeftJoystickY,
+                        xboxController::getRightJoystickY);
+            }
+            m_arm.setDefaultCommand(m_armCommand);
         }
 
         if (usePneumatics && useController) {
