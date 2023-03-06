@@ -107,11 +107,14 @@ public final class Constants {
     // **********
     public static boolean useDrive = StormProp.getBoolean("useDrive", false);
     public static boolean useNavX = StormProp.getBoolean("useNavX", false);
-    public static boolean useController = StormProp.getBoolean("useController", false);
+    public static boolean useLogitechController = StormProp.getBoolean("useLogitechController", false);
+    public static boolean useXboxController = StormProp.getBoolean("useXboxController", false);
+    public static boolean useButtonBoard = StormProp.getBoolean("useButtonBoard", false);
     public static boolean usePneumatics = StormProp.getBoolean("usePneumatics",false);
     public static boolean useStormNet = StormProp.getBoolean("useStormNet",false);
 	public static boolean useArm = StormProp.getBoolean("useArm", false);
     public static boolean useXYArmMode = StormProp.getBoolean("useXYArmMode", false);
+    public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
     // **********
     // Don't put other variables after the usage members
     // **********
