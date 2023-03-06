@@ -1,6 +1,7 @@
 package frc.utils.subsystemUtils;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ public final class StormSubsystemScheduler {
     private StormSubsystemScheduler() {}
 
     public void run() {
+        double timeAtStart = Timer.getFPGATimestamp();
         boolean isEnabled = DriverStation.isEnabled();
         boolean autoEnabled = DriverStation.isAutonomousEnabled();
         boolean teleopEnabled = DriverStation.isTeleopEnabled();
@@ -53,6 +55,11 @@ public final class StormSubsystemScheduler {
         wasEnabled = isEnabled;
         autoWasEnabled = autoEnabled;
         teleopWasEnabled = teleopEnabled;
+        double timeThroughLoop = Timer.getFPGATimestamp() - timeAtStart;
+        if (timeThroughLoop > 0.05) {
+            DriverStation.reportWarning("Time through StormSubsystemScheduler.run(): "
+                    + timeThroughLoop, true);
+        }
     }
 
     public void register(StormSubsystemBase... subsystems) {

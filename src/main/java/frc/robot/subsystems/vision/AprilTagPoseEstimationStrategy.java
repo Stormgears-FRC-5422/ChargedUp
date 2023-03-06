@@ -78,9 +78,9 @@ public final class AprilTagPoseEstimationStrategy {
         var fartherTagTranslation = getTagPose(fartherTagData.id).getTranslation();
         double distBetween = closerTagTranslation.getDistance(fartherTagTranslation);
         // calculate transformations
-        double theta = getAngle(fartherTagData.dist, distBetween, closerTagData.dist);
-        double xTransform = Math.sin(theta) * closerTagData.dist;
-        double yTransform = Math.cos(theta) * closerTagData.dist;
+        double angleMadeByCloseTagAndWall = getAngle(fartherTagData.dist, distBetween, closerTagData.dist);
+        double xTransform = Math.sin(angleMadeByCloseTagAndWall) * closerTagData.dist;
+        double yTransform = Math.cos(angleMadeByCloseTagAndWall) * closerTagData.dist;
         // should add or subtract transformations based on their position on the field
         // if wpi X is less than the other one then we should add otherwise we should subtract
         double signX = (closerTagTranslation.getX() < fartherTagTranslation.getX())? 1.0 : -1.0;

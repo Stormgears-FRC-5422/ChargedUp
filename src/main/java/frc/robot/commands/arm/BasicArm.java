@@ -45,7 +45,8 @@ public class BasicArm extends CommandBase {
         System.out.println("BasicArm Command done!");
         // TODO - maybe this should be conditional - we don't want to undo what the interrupting command is trying to do.
         // but for now this is safer, and I don't think we'll keep this around long term.
-        arm.stopArm();
+        if (!interrupted)
+            arm.stopArm();
     }
 
 }

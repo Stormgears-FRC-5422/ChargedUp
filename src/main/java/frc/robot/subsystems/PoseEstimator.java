@@ -21,13 +21,10 @@ import static frc.robot.constants.Constants.VisionConstants.*;
 
 public class PoseEstimator extends StormSubsystemBase {
     private final SwerveDrivePoseEstimator m_poseEstimator;
-//    private final SwerveDriveKinematics m_driveKinematics;
-//    private final SwerveModulePosition[] m_modulePosition;
 
     private Pose2d m_currentPose;
 
     private final FieldObject2d
-            odometryPoseSim,
             visionPoseSim,
             estimatedPoseSim;
 
@@ -43,6 +40,7 @@ public class PoseEstimator extends StormSubsystemBase {
     public PoseEstimator(SwerveDriveKinematics kinematics,
                          SwerveModulePosition[] modulePositions) {
         var startPose = RobotState.getInstance().getStartPose();
+
         m_poseEstimator = new SwerveDrivePoseEstimator(
                 kinematics,
                 RobotState.getInstance().getCurrentGyroRotation(),
@@ -53,7 +51,6 @@ public class PoseEstimator extends StormSubsystemBase {
         );
 
         Field2d fieldSim = ShuffleboardConstants.getInstance().poseEstimationFieldSim;
-        odometryPoseSim = fieldSim.getObject("Odometry Pose");
         visionPoseSim = fieldSim.getObject("Vision Pose");
         estimatedPoseSim = fieldSim.getRobotObject();
     }
@@ -70,35 +67,36 @@ public class PoseEstimator extends StormSubsystemBase {
         //set last pose to uncalculated current pose
         Pose2d lastPose = m_currentPose;
 
-        var latestOdometryEntry = RobotState.getInstance().getLatestOdometryData();
+        var currentOdometryData = RobotState.getInstance().getCurrentOdometryData();
         //drive data
-        if (latestOdometryEntry != null) {
-            double time = latestOdometryEntry.getKey();
+        if (currentOdometryData != null) {
+            double time = currentOdometryData.getFirst();
             if (time != currentOdometryEntryTime) {
-                var data = latestOdometryEntry.getValue();
+                var data = currentOdometryData.getSecond();
                 m_poseEstimator.updateWithTime(time, data.getGyroAngle(), data.getModulePositions());
-                odometryPoseSim.setPose(m_poseEstimator.getEstimatedPosition());
                 currentOdometryEntryTime = time;
             }
         }
 
-        var latestVisionEntry = RobotState.getInstance().getLatestVisionData();
-        //add the vision entry to estimator
-        if (latestVisionEntry != null) {
-            double time = latestVisionEntry.getKey();
-            if (time != currentVisionEntryTime) {
-                var info = latestVisionEntry.getValue();
-                // calculate camera angle by adding to the gyro angle
-                Rotation2d gyroAngle = RobotState.getInstance().getAngleAtTimeSeconds(time);
-                Rotation2d cameraAngle = gyroAngle.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
-                // just call the pose estimation strategy class
-                Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
-                // have to transform to robot pose
-                Pose2d visionRobotPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
-                m_poseEstimator.addVisionMeasurement(visionRobotPose, time);
-                // log the position
-                visionPoseSim.setPose(visionRobotPose);
-                currentVisionEntryTime = time;
+        if (Constants.SubsystemToggles.useVision) {
+            var currentVisionData = RobotState.getInstance().getCurrentVisionData();
+            //add the vision entry to estimator
+            if (currentVisionData != null) {
+                double time = currentVisionData.getFirst();
+                if (time != currentVisionEntryTime) {
+                    var info = currentVisionData.getSecond();
+                    // calculate camera angle by adding to the gyro angle
+                    Rotation2d gyroAngle = RobotState.getInstance().getAngleAtTimeSeconds(time);
+                    Rotation2d cameraAngle = gyroAngle.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
+                    // just call the pose estimation strategy class
+                    Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
+                    // have to transform to robot pose
+                    Pose2d visionRobotPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
+                    m_poseEstimator.addVisionMeasurement(visionRobotPose, time);
+                    // log the position
+                    visionPoseSim.setPose(visionRobotPose);
+                    currentVisionEntryTime = time;
+                }
             }
         }
 

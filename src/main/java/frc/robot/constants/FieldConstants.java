@@ -19,6 +19,8 @@ public final class FieldConstants {
     public final static double FIELD_LENGTH = Units.feetToMeters(54) + Units.inchesToMeters(3.25);
     public final static double FIELD_WIDTH = Units.feetToMeters(26) + Units.inchesToMeters(3.5);
 
+    public final static double HALF_FIELDLENGTH = FIELD_LENGTH / 2.0;
+
     public static final AprilTagFieldLayout APRILTAG_FIELD_LAYOUT;
 
     static {
@@ -127,8 +129,13 @@ public final class FieldConstants {
 
             @Override
             public String toString() {
-                return String.format("ScoringNode(%1$s, %2$s, %3$s, %4$s, %5$s)",
-                        type, height, alliance, translation, scoringPosition);
+                return String.format(
+                        "ScoringNode(%1$s, %2$s, %3$s," +
+                        " node(x: %4$s y: %5$s z: %6$s)" +
+                        " scoring pose(x: %7$s y: %8$s heading: %9$s)",
+                        type, height, alliance,
+                        translation.getX(), translation.getY(), translation.getZ(),
+                        scoringPosition.getX(), scoringPosition.getY(), scoringPosition.getRotation().getDegrees());
             }
 
             @Override
@@ -169,13 +176,12 @@ public final class FieldConstants {
     }
 
     public static double mirrorXPosition(double xToBeMirrored) {
-        double halfLengthOfField = FIELD_LENGTH / 2.0;
-        return (halfLengthOfField - xToBeMirrored) + halfLengthOfField;
+        return (HALF_FIELDLENGTH - xToBeMirrored) + HALF_FIELDLENGTH;
     }
 
-    public static Pose2d mirrorPose(Pose2d poseToBeMirror) {
-        double xMirrored = mirrorXPosition(poseToBeMirror.getX());
-        var rotationMirrored = poseToBeMirror.getRotation().times(-1.0);
-        return new Pose2d(xMirrored, poseToBeMirror.getY(), rotationMirrored);
+    public static Pose2d mirrorPose(Pose2d pose) {
+        double xMirrored = mirrorXPosition(pose.getX());
+        var rotationMirrored = pose.getRotation().times(-1.0);
+        return new Pose2d(xMirrored, pose.getY(), rotationMirrored);
     }
 }

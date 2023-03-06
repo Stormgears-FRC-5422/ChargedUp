@@ -69,13 +69,13 @@ public final class Paths {
             new PathWithName("Double Cone Charging Station", doubleConeChargingStationPath));
 
     public static PathPlannerTrajectory getPathToPose(Pose2d startPose, Pose2d endPose, double maxVel, double maxAcc) {
-//        double firstHeading = calcHeading(startPose.getTranslation(), endPose.getTranslation());
-//        double lastHeading = calcHeading(endPose.getTranslation(), startPose.getTranslation());
+        double firstHeading = calcHeading(startPose.getTranslation(), endPose.getTranslation());
+        double lastHeading = calcHeading(endPose.getTranslation(), startPose.getTranslation());
         return generatePath(
                     new PathConstraints(maxVel, maxAcc),
-                    new PathPoint(startPose.getTranslation(), Rotation2d.fromRadians(0), startPose.getRotation())
+                    new PathPoint(startPose.getTranslation(), Rotation2d.fromRadians(firstHeading), startPose.getRotation())
                             .withControlLengths(0.01, 0.01),
-                    new PathPoint(endPose.getTranslation(), Rotation2d.fromRadians(0), endPose.getRotation())
+                    new PathPoint(endPose.getTranslation(), Rotation2d.fromRadians(lastHeading), endPose.getRotation())
                             .withControlLengths(0.01, 0.01));
     }
 
@@ -100,18 +100,18 @@ public final class Paths {
         return getPathToPose(currentPose, endFieldPose, maxVel, maxAcc);
     }
 
-    public static SequentialCommandGroup getTeamNumberPathCommand(DrivetrainBase drivetrain) {
-        return new SequentialCommandGroup(
-                new PrintCommand("Starting team number command at position: " + RobotState.getInstance().getCurrentPose()),
-                new FollowPathCommand(fivePath, drivetrain),
-                new FollowPathCommand(fiveToFourTransition, drivetrain),
-                new FollowPathCommand(fourPath, drivetrain),
-                new FollowPathCommand(fourToTwoTransition, drivetrain),
-                new FollowPathCommand(twoPath, drivetrain),
-                new FollowPathCommand(twoToTwoTransition, drivetrain),
-                new FollowPathCommand(twoPath, drivetrain)
-        );
-    }
+//    public static SequentialCommandGroup getTeamNumberPathCommand(DrivetrainBase drivetrain) {
+//        return new SequentialCommandGroup(
+//                new PrintCommand("Starting team number command at position: " + RobotState.getInstance().getCurrentPose()),
+//                new FollowPathCommand(fivePath, drivetrain),
+//                new FollowPathCommand(fiveToFourTransition, drivetrain),
+//                new FollowPathCommand(fourPath, drivetrain),
+//                new FollowPathCommand(fourToTwoTransition, drivetrain),
+//                new FollowPathCommand(twoPath, drivetrain),
+//                new FollowPathCommand(twoToTwoTransition, drivetrain),
+//                new FollowPathCommand(twoPath, drivetrain)
+//        );
+//    }
 
     /** gives desired heading in radians pointing from A to B */
     public static double calcHeading(Translation2d translationA, Translation2d translationB) {

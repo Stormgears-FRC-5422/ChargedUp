@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
@@ -43,6 +44,9 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
             var rotation = (usePoseEstimator)?
                     RobotState.getInstance().getCurrentPose().getRotation() :
                     RobotState.getInstance().getCurrentGyroRotation();
+            // if we are on the red team make sure field relative is the other way
+            if (DriverStation.getAlliance() == DriverStation.Alliance.Red)
+                rotation.rotateBy(new Rotation2d(Math.PI));
             m_chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(s, rotation);
         } else {
             m_chassisSpeeds = s;
@@ -76,4 +80,5 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
 
     public SwerveModulePosition[] getSwerveModulePositions() {return new SwerveModulePosition[4];}
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {}
+    public boolean atReferenceState() {return true;}
 }

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -12,7 +13,6 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -20,9 +20,10 @@ public class RobotState extends StormSubsystemBase {
     private static RobotState m_instance;
     private final Timer m_timer;
 
-    private TreeMap<Double, OdometryData> m_odometryData = new TreeMap<>();
-    private TreeMap<Double, Rotation2d> m_gyroData = new TreeMap<>();
-    private TreeMap<Double, Vector<Vision.AprilTagData>> m_visionData = new TreeMap<>();
+
+    private Pair<Double, OdometryData> currentOdometryData = null;
+    private Pair<Double, Vector<Vision.AprilTagData>> currentVisionData = null;
+    private TreeMap<Double, Rotation2d> gyroData = new TreeMap<>();
 
     private Pose2d currentPose, startPose, lastPose;
 
@@ -105,12 +106,12 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public void addGyroData(double time, Rotation2d angle) {
-        m_gyroData.put(time, angle);
+        gyroData.put(time, angle);
     }
 
     public Rotation2d getAngleAtTimeSeconds(double time) {
-        var floorEntry = m_gyroData.floorEntry(time);
-        var ceilEntry = m_gyroData.ceilingEntry(time);
+        var floorEntry = gyroData.floorEntry(time);
+        var ceilEntry = gyroData.ceilingEntry(time);
         double timeFromFloor = time - floorEntry.getKey();
         if (floorEntry == null) {
             System.out.println("Don't have gyro data for time: " + time);
@@ -130,25 +131,25 @@ public class RobotState extends StormSubsystemBase {
             System.out.println("NOT using gyro. Can't get current gyro rotation!");
             return Rotation2d.fromDegrees(0);
         }
-        var entry = m_gyroData.lastEntry();
+        var entry = gyroData.lastEntry();
         return (entry != null)? entry.getValue() : new Rotation2d();
     }
 
-    public void addOdometryData(double time, OdometryData odometryData) {
-        m_odometryData.put(time, odometryData);
+    public void setOdometryData(double time, OdometryData odometryData) {
+        currentOdometryData = new Pair<>(time, odometryData);
     }
 
-    public Map.Entry<Double, OdometryData> getLatestOdometryData() {
-        return m_odometryData.lastEntry();
+    public Pair<Double, OdometryData> getCurrentOdometryData() {
+        return currentOdometryData;
     }
 
     /** Must provide own timstamp with this function as camera will have delay*/
-    public void addVisionData(double time, Vector<Vision.AprilTagData> visionData) {
-        m_visionData.put(time, visionData);
+    public void setVisionData(double time, Vector<Vision.AprilTagData> visionData) {
+        currentVisionData = new Pair<>(time, visionData);
     }
 
-    public Map.Entry<Double, Vector<Vision.AprilTagData>> getLatestVisionData() {
-        return m_visionData.lastEntry();
+    public Pair<Double, Vector<Vision.AprilTagData>> getCurrentVisionData() {
+        return currentVisionData;
     }
 
     public double getDeltaDistanceMeters() {
@@ -162,7 +163,7 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public double getDeltaDegrees() {
-        return Math.abs(getCurrentPose().getRotation().minus(getLastPose().getRotation()).getDegrees());
+        return getLastPose().getRotation().minus(getCurrentPose().getRotation()).getDegrees();
     }
 
     public double getCurrentDegPerSecVel() {
@@ -173,9 +174,9 @@ public class RobotState extends StormSubsystemBase {
         m_timer.reset();
         m_timer.start();
 
-        m_odometryData = new TreeMap<>();
-        m_gyroData = new TreeMap<>();
-        m_visionData = new TreeMap<>();
+        currentOdometryData = null;
+        currentVisionData = null;
+        gyroData = new TreeMap<>();
 
         currentPose = null;
         lastPose = null;
@@ -184,9 +185,9 @@ public class RobotState extends StormSubsystemBase {
     public void disabledInit() {
         m_timer.stop();
 
-        m_odometryData = new TreeMap<>();
-        m_gyroData = new TreeMap<>();
-        m_visionData = new TreeMap<>();
+        currentOdometryData = null;
+        currentVisionData = null;
+        gyroData = new TreeMap<>();
 
         currentPose = null;
         lastPose = null;
@@ -194,11 +195,6 @@ public class RobotState extends StormSubsystemBase {
 
     public void lastPeriodic() {
         fieldSim.setRobotPose(getCurrentPose());
-
-        double currentTime = Timer.getFPGATimestamp();
-//        m_odometryData = (TreeMap<Double, OdometryData>) m_odometryData.tailMap(currentTime - 1.0, true);
-//        m_visionData = (TreeMap<Double, Vector<Vision.AprilTagData>>) m_visionData.tailMap(currentTime - 1.0, true);
-//        m_gyroData = (TreeMap<Double, Rotation2d>) m_gyroData.tailMap(currentTime - 1.0, true);
     }
 
     public static class OdometryData {

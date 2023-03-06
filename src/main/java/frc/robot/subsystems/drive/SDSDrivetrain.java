@@ -9,6 +9,8 @@ import com.swervedrivespecialties.swervelib.ModuleConfiguration;
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -152,16 +154,18 @@ public class SDSDrivetrain extends DrivetrainBase {
         backLeftModuleLayout.addNumber("driveDistance()", m_backLeftModule::getDriveDistance);
         backRightModuleLayout.addNumber("driveDistance()", m_backRightModule::getDriveDistance);
 
-//        var pathFollowingTab = Shuffleboard.getTab("Path Following");
-//
-//        pathFollowingTab.add("X PID Controller", xController)
-//                .withWidget(BuiltInWidgets.kPIDController)
-//                .withPosition(4, 1);
-//        pathFollowingTab.add("Y PID Controller", yController)
-//                .withWidget(BuiltInWidgets.kPIDController)
-//                .withPosition(6, 1);
-//        pathFollowingTab.add("Rotation PID Controller", rotController)
-//                .withWidget(BuiltInWidgets.kPIDController);
+        var pidTesting = Shuffleboard.getTab("Drivetrain PIDS");
+
+        pidTesting.add("X PID Controller", xController)
+                .withWidget(BuiltInWidgets.kPIDController)
+                .withPosition(4, 1);
+        pidTesting.add("Y PID Controller", yController)
+                .withWidget(BuiltInWidgets.kPIDController)
+                .withPosition(6, 1);
+        pidTesting.add("Rotation PID Controller", rotController)
+                .withWidget(BuiltInWidgets.kPIDController);
+        rotController.enableContinuousInput(-Math.PI, Math.PI);
+        m_holonomicController.setTolerance(new Pose2d(0.04, 0.04, Rotation2d.fromDegrees(1.5)));
     }
 
     @Override
@@ -179,10 +183,16 @@ public class SDSDrivetrain extends DrivetrainBase {
         };
     }
 
+    @Override
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {
         var speeds = m_holonomicController.calculate(RobotState.getInstance().getCurrentPose(), goalState);
 //        System.out.println("Current Chassis Speeds: " + speeds);
         drive(speeds, false);
+    }
+
+    @Override
+    public boolean atReferenceState() {
+        return m_holonomicController.atReference();
     }
 
     private void resetDriveEncoders() {
@@ -208,7 +218,7 @@ public class SDSDrivetrain extends DrivetrainBase {
                 getSwerveModulePositions(),
                 getGyroscopeRotation()
         );
-        RobotState.getInstance().addOdometryData(Timer.getFPGATimestamp(), currentOdometryData);
+        RobotState.getInstance().setOdometryData(Timer.getFPGATimestamp(), currentOdometryData);
     }
 
     public void enabledInit() {

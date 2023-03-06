@@ -4,6 +4,8 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
+import static frc.robot.constants.ShuffleboardConstants.VisionShuffleboardConstants.aprilTagLayouts;
+
 public final class ShuffleboardConstants {
     public final ShuffleboardTab robotStateTab, drivetrainTab, navXTab, pathFollowingTab;
     public final Field2d poseEstimationFieldSim;
@@ -14,6 +16,15 @@ public final class ShuffleboardConstants {
     public final Field2d pathFollowingFieldSim;
 
     private static ShuffleboardConstants instance;
+
+    public static class VisionShuffleboardConstants {
+        public static ShuffleboardTab tab;
+        public static ShuffleboardLayout[] aprilTagLayouts = new ShuffleboardLayout[8];
+
+        public static GenericEntry[] distValues = new GenericEntry[8];
+        public static GenericEntry[] yawValues = new GenericEntry[8];
+        public static GenericEntry[] offsetValues = new GenericEntry[8];
+    }
 
     public static ShuffleboardConstants getInstance() {
         if (instance != null) return instance;
@@ -46,5 +57,18 @@ public final class ShuffleboardConstants {
                 .add("Poses", poseEstimationFieldSim)
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(7, 4).withPosition(0, 0);
+
+        VisionShuffleboardConstants.tab = Shuffleboard.getTab("Vision");
+        for (int i = 0; i < 8; i++) {
+            aprilTagLayouts[i] = VisionShuffleboardConstants.tab
+                    .getLayout("April Tag " + (i+1), BuiltInLayouts.kList)
+                    .withPosition(i, 0).withSize(1, 5);
+            VisionShuffleboardConstants.distValues[i] = aprilTagLayouts[i]
+                    .add("dist", 0.0).getEntry();
+            VisionShuffleboardConstants.yawValues[i] = aprilTagLayouts[i]
+                    .add("yaw", 0.0).getEntry();
+            VisionShuffleboardConstants.offsetValues[i] = aprilTagLayouts[i]
+                    .add("offset", 0.0).getEntry();
+        }
     }
 }

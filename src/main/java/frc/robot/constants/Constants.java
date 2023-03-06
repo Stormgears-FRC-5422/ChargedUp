@@ -5,6 +5,7 @@
 package frc.robot.constants;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.util.Units;
 import frc.utils.configfile.StormProp;
 
 
@@ -111,9 +112,9 @@ public final class Constants {
     public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
 
     public static class VisionConstants {
-        private static final double kCameraXTranslation = StormProp.getNumber("CameraWpiX", 0.0);
-        private static final double kCameraYTranslation = StormProp.getNumber("CameraWpiY", 0.0);
-        private static final double kCameraZTranslation = StormProp.getNumber("CameraWpiZ", 0.0);
+        private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiX", 0.0));
+        private static final double kCameraYTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiY", 0.0));
+        private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
         private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
         private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
 

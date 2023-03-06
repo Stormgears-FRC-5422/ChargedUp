@@ -45,8 +45,8 @@
           "PickUpFromGround"
         ],
         "executionBehavior": "sequential",
-        "waitBehavior": "none",
-        "waitTime": 0
+        "waitBehavior": "minimum",
+        "waitTime": 5.0
       }
     },
     {

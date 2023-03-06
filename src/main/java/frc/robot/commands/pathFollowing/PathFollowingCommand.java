@@ -11,55 +11,65 @@ import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
-public class FollowPathCommand extends CommandBase {
+/**
+ * Command that follows a path. path must be assigned before execute either with
+ * withPath() method or in constructor. Use this whenever following any paths for logging.
+ */
+public class PathFollowingCommand extends CommandBase {
 
-    private PathPlannerTrajectory m_path;
     private final DrivetrainBase m_drivetrain;
+    private PathPlannerTrajectory m_path;
+    private boolean transformForAlliance = false;
 
-    private double startTime, currentTime, endTime;
-
-    //for logging
-//    private static final ShuffleboardTab pathFollowTab = Shuffleboard.getTab("Path Following");
-//    private static final GenericEntry dTranslationEntry = pathFollowTab.add("dTranslation", 0.0).getEntry();
-//    private static final GenericEntry dRotationEntry = pathFollowTab.add("dRotation", 0.0).getEntry();
-//    private static final Field2d fieldSim = new Field2d();
-//
-//    static {
-//        pathFollowTab.add("Current Pose vs Goal", fieldSim)
-//                .withWidget(BuiltInWidgets.kField)
-//                .withSize(4, 3).withPosition(1, 0);
-//    }
-//
-//    private static final FieldObject2d goalRobotPoseSim = fieldSim.getObject("Goal Pose");
-
+    private double startTime, currentTime, totalTime;
 
     private final Field2d fieldSim;
     private final FieldObject2d goalRobotPoseSim;
     private final GenericEntry dTranslationEntry, dRotationEntry;
 
-    public FollowPathCommand(PathPlannerTrajectory path, DrivetrainBase drivetrain, boolean useAlliance) {
-        m_path = path;
-        if (useAlliance)
-            m_path = PathPlannerTrajectory.transformTrajectoryForAlliance(m_path, DriverStation.getAlliance());
+    public PathFollowingCommand(DrivetrainBase drivetrain, PathPlannerTrajectory path, boolean transformForAlliance) {
         m_drivetrain = drivetrain;
+        m_path = path;
+        this.transformForAlliance = transformForAlliance;
 
-        //Logging
         fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
+        goalRobotPoseSim = fieldSim.getObject("Goal Pose");
         dTranslationEntry = ShuffleboardConstants.getInstance().dTranslationEntry;
         dRotationEntry = ShuffleboardConstants.getInstance().dRotationEntry;
-        goalRobotPoseSim = fieldSim.getObject("Goal Pose");
 
         addRequirements(m_drivetrain);
     }
 
-    public FollowPathCommand(PathPlannerTrajectory path, DrivetrainBase drivetrain) {
-        this(path, drivetrain, false);
+    public PathFollowingCommand(DrivetrainBase drivetrain) {
+        m_drivetrain = drivetrain;
+
+        fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
+        goalRobotPoseSim = fieldSim.getObject("Goal Pose");
+        dTranslationEntry = ShuffleboardConstants.getInstance().dTranslationEntry;
+        dRotationEntry = ShuffleboardConstants.getInstance().dRotationEntry;
+
+        addRequirements(m_drivetrain);
+    }
+
+    /** must be set in constructor or here before command schedule */
+    public PathFollowingCommand withPath(PathPlannerTrajectory path) {
+        m_path = path;
+        return this;
+    }
+
+    public PathFollowingCommand withTransformForAlliance(boolean transformForAlliance) {
+        this.transformForAlliance = transformForAlliance;
+        return this;
     }
 
     @Override
     public void initialize() {
+        m_path = transformForAlliance?
+                PathPlannerTrajectory.transformTrajectoryForAlliance(m_path, DriverStation.getAlliance()) :
+                m_path;
+
         startTime = RobotState.getInstance().getTimeSeconds();
-        endTime = m_path.getTotalTimeSeconds();
+        totalTime = m_path.getTotalTimeSeconds();
         System.out.println("Following path starting at: " + startTime);
         System.out.println("Pose at start: " + RobotState.getInstance().getCurrentPose());
 
@@ -87,15 +97,13 @@ public class FollowPathCommand extends CommandBase {
     }
 
     @Override
-    public void end(boolean interrupted) {
-        System.out.println("Ending with interrupted: " + interrupted);
-        System.out.println("Following path command ended at: " + RobotState.getInstance().getTimeSeconds());
-        System.out.println("Pose at End: " + RobotState.getInstance().getCurrentPose());
+    public boolean isFinished() {
+        return (currentTime >= totalTime) && m_drivetrain.atReferenceState();
     }
 
     @Override
-    public boolean isFinished() {
-        return currentTime >= endTime;
+    public void end(boolean interrupted) {
+        System.out.println("Following path command ended at: " + RobotState.getInstance().getTimeSeconds());
+        System.out.println("Pose at End: " + RobotState.getInstance().getCurrentPose());
     }
-
 }

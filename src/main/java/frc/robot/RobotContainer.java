@@ -6,24 +6,21 @@ package frc.robot;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.BalanceCommand;
-import frc.robot.commands.DriveToScoringNode;
-import frc.robot.commands.DriveWithJoystick;
+import frc.robot.commands.drive.BalanceCommand;
+import frc.robot.commands.autoScoring.DriveToScoringNode;
+import frc.robot.commands.drive.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
-import frc.robot.commands.pathFollowing.DriveToPose;
-import frc.robot.commands.pathFollowing.FollowPathCommand;
+import frc.robot.commands.pathFollowing.FolllowPathFromPose;
+import frc.robot.commands.pathFollowing.PathFollowingCommand;
 import frc.robot.commands.pathFollowing.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
@@ -32,7 +29,7 @@ import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
-import frc.robot.commands.GyroCommand;
+import frc.robot.commands.drive.GyroCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
@@ -68,6 +65,7 @@ public class RobotContainer {
     GyroCommand m_gyrocommand;
     BasicArm m_basicArm;
 
+
     // **********
     // Other
     // **********
@@ -90,8 +88,9 @@ public class RobotContainer {
 
         if (SubsystemToggles.useNavX) {
             m_navX = new NavX();
-        } else
+        } else {
             System.out.println("NOT using navX");
+        }
 
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (SubsystemToggles.useDrive) {
@@ -108,8 +107,9 @@ public class RobotContainer {
 
         if (SubsystemToggles.useVision) {
             m_vision = new Vision();
-        } else
+        } else {
             System.out.println("NOT using vision");
+        }
 
         if (SubsystemToggles.useArm) {
             m_arm = new Arm();
@@ -154,7 +154,6 @@ public class RobotContainer {
             tab.addNumber("Lidar Distance", m_stormNet::getLidarDistance);
         }
 
-
         // Configure the trigger bindings
         configureBindings();
     }
@@ -188,12 +187,14 @@ public class RobotContainer {
     	    m_drivetrain.setDefaultCommand(driveWithJoystick);
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
-
-
             m_buttonboard = new ButtonBoard(0);
 
-
-            new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(m_navX::zeroYaw));
+            // zero angle command when we are red make sure robot pointing forwards is 180
+            new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(() -> {
+                double angle = (DriverStation.getAlliance() == DriverStation.Alliance.Red)?
+                        180.0 : 0;
+                m_navX.setAngle(angle);
+            }));
             new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
             new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
@@ -222,49 +223,31 @@ public class RobotContainer {
             }
             SmartDashboard.putData("Auto Paths", autoPathChooser);
 
-            SendableChooser<Command> pathCommandChooser = new SendableChooser<>();
+            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
             for (var path : Paths.listOfPaths) {
-                pathCommandChooser.addOption(path.name, getPathFollowCommand(path.name, path.path));
+                testPathChooser.addOption(path.name, path.path);
             }
-            var firstPath = Paths.listOfPaths.get(0);
-            pathCommandChooser.setDefaultOption(firstPath.name, getPathFollowCommand(firstPath.name, firstPath.path));
-
-            HashMap<String, Command> commandHashMap = new HashMap<>();
-            commandHashMap.put("halfway", new PrintCommand("Passed Halfway!"));
-            FollowPathWithEvents pathWithEvents = new FollowPathWithEvents(
-                    getPathFollowCommand("Straight Path with markers", Paths.straightPath),
-                    Paths.straightPath.getMarkers(),
-                    commandHashMap
-            );
-
-            pathCommandChooser.addOption("Straight with events", pathWithEvents);
-            pathCommandChooser.addOption("Team Number", Paths.getTeamNumberPathCommand(m_drivetrain));
-            pathCommandChooser.addOption("Straight Path from robot", new DriveToPose(
-                    new Pose2d(2, 0, Rotation2d.fromDegrees(0)), m_drivetrain, 3.0, 2.0));
-//            pathCommandChooser.addOption("Go To First Node", new DriveToScoringNode(
-//                    m_drivetrain, FieldConstants.Grids.blueAllianceGrid[0][0]
-//            ));
+            testPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0).path);
 
             ShuffleboardConstants.getInstance().pathFollowingTab
-                    .add("Path Command", pathCommandChooser)
+                    .add("Path Command", testPathChooser)
                     .withPosition(0, 3).withSize(2, 1);
 
             ShuffleboardConstants.getInstance().pathFollowingTab
-                    .add("Run Selected Command", (Sendable) pathCommandChooser.getSelected())
+                    .add("Run Selected Command",
+                            new FolllowPathFromPose(m_drivetrain, testPathChooser.getSelected()))
                     .withPosition(0, 2).withSize(2, 1)
                     .withWidget(BuiltInWidgets.kCommand);
 
-            SmartDashboard.putData("Go to first node",
-                    new DriveToScoringNode(
-                            m_drivetrain, FieldConstants.Grids.blueAllianceGrid[0][0]));
+            SmartDashboard.putData("Closest Blue alliance node", new DriveToScoringNode(
+                    m_drivetrain, FieldConstants.Grids.blueAllianceGrid[0][0]));
+            SmartDashboard.putData("Second Closest Blue alliance node", new DriveToScoringNode(
+                    m_drivetrain, FieldConstants.Grids.blueAllianceGrid[1][0]));
         }
     }
 
-    private Command getPathFollowCommand(String message, PathPlannerTrajectory path) {
-        return new SequentialCommandGroup(
-                new PrintCommand(message),
-                new FollowPathCommand(path, m_drivetrain)
-        );
+    private Command getPathFollowCommand(PathPlannerTrajectory path) {
+        return new PathFollowingCommand(m_drivetrain).withPath(path);
     }
 
     public Command getAutonomousCommand() {
@@ -272,7 +255,7 @@ public class RobotContainer {
             var selectedPath = autoPathChooser.getSelected();
             m_robotState.setStartPose(selectedPath.path.getInitialHolonomicPose());
             return new FollowPathWithEvents(
-                    getPathFollowCommand("Auto path starting " + selectedPath.name, selectedPath.path),
+                    getPathFollowCommand(selectedPath.path),
                     selectedPath.path.getMarkers(),
                     autoEventMap
             );

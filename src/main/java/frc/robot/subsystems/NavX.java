@@ -15,7 +15,7 @@ import static frc.robot.constants.Constants.navXConnection;
 public class NavX extends StormSubsystemBase {
 
     private final AHRS m_gyro;
-    private Rotation2d offset = new Rotation2d();
+    private double offset = 0.0;
 
     public NavX() {
         switch (navXConnection) {
@@ -55,9 +55,11 @@ public class NavX extends StormSubsystemBase {
 
     public void zeroYaw() {
         m_gyro.zeroYaw();
+        offset = 0.0;
     }
 
-    private void setAngle(Rotation2d angle) {
+    /** angle must be (-180, 180) such that counter-clockwise if positive */
+    public void setAngle(double angle) {
         zeroYaw();
         offset = angle;
     }
@@ -68,12 +70,12 @@ public class NavX extends StormSubsystemBase {
 
     /** get absolute rotation (-180, 180) inverted so counter-clockwise is positive with offset */
     public Rotation2d getAbsoluteRotation() {
-        double invertedYaw = 0.0 - getYaw();
-        // get absolute
-        double absolute0To360 = (invertedYaw + 180.0) % 360;
-        // subtract 180 again
-        var rotationWithOffset =  Rotation2d.fromDegrees(absolute0To360).rotateBy(offset);
-        return Rotation2d.fromDegrees((rotationWithOffset.getDegrees() % 360) - 180.0);
+        double invertedYaw = -1.0 * getYaw();
+        double abs0to360 = invertedYaw + 180.0;
+        double offsetModified = offset + 360.0;
+        abs0to360 += offsetModified;
+        abs0to360 = (abs0to360 > 360)? abs0to360 % 360 : abs0to360;
+        return Rotation2d.fromDegrees(abs0to360 - 180.0);
     }
 
     @Override
@@ -82,6 +84,6 @@ public class NavX extends StormSubsystemBase {
     }
 
     public void enabledInit() {
-        setAngle(RobotState.getInstance().getStartPose().getRotation());
+        setAngle(RobotState.getInstance().getStartPose().getRotation().getDegrees());
     }
 }

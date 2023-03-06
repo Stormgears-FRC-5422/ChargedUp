@@ -5,6 +5,8 @@ import frc.robot.RobotState;
 import frc.utils.data.StormStruct;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
+import static frc.robot.constants.ShuffleboardConstants.VisionShuffleboardConstants.*;
+
 import java.util.Vector;
 
 public class Vision extends StormSubsystemBase {
@@ -34,9 +36,14 @@ public class Vision extends StormSubsystemBase {
             );
             currentAprilTags.add(aprilTagData);
         }
+        for (var aprilTagData : currentAprilTags) {
+            distValues[aprilTagData.id - 1].setDouble(aprilTagData.dist);
+            offsetValues[aprilTagData.id - 1].setDouble(aprilTagData.offCenterDegrees);
+            yawValues[aprilTagData.id - 1].setDouble(aprilTagData.yawDegrees);
+        }
         // convert timestamp to seconds
         double timeSeconds = infoList.get(0).get("timestamp") / 0.01;
-        RobotState.getInstance().addVisionData(timeSeconds, currentAprilTags);
+        RobotState.getInstance().setVisionData(timeSeconds, currentAprilTags);
     }
 
     public static class AprilTagData {
