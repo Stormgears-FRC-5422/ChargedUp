@@ -1,16 +1,17 @@
 package frc.robot.constants;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static frc.robot.constants.Constants.*;
@@ -47,6 +48,8 @@ public final class FieldConstants {
         public static ScoringNode[][] blueAllianceGrid = new ScoringNode[9][3];
         public static ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
 
+        static RectangleRegion rectangleRegion = new RectangleRegion(new Translation2d(1, 1), new Translation2d(0, 0));
+
         public static final double distBetweenNodes = Units.inchesToMeters(22.0);
         private static final double distToFirstNodeY = Units.inchesToMeters(20.0);
         //heights of cone nodes cube nodes don't really matter maybe we can make them a bit lower than the cone nodes
@@ -81,6 +84,7 @@ public final class FieldConstants {
                     System.out.println(blueAllianceGrid[wpiY][wpiX]);
                 }
             }
+            System.out.println(rectangleRegion.collidesWith(1, 0));
         }
 
         public static class ScoringNode {
@@ -183,5 +187,54 @@ public final class FieldConstants {
         double xMirrored = mirrorXPosition(pose.getX());
         var rotationMirrored = pose.getRotation().times(-1.0);
         return new Pose2d(xMirrored, pose.getY(), rotationMirrored);
+    }
+
+    public static interface Region {
+        /** all field coords */
+        boolean collidesWith(Pose2d pose);
+        /** all field coords */
+        default boolean collidesWith(Translation2d translation) {
+            return collidesWith(new Pose2d(translation, new Rotation2d()));
+        }
+        /** all field coords */
+        default boolean collidesWith(double x, double y) {
+            return collidesWith(new Translation2d(x, y));
+        }
+    }
+
+    public static class RectangleRegion implements Region {
+        public final Translation2d topLeft, bottomRight;
+
+        /** field coords */
+        public RectangleRegion(Translation2d topLeft, Translation2d bottomRight) {
+            this.topLeft = topLeft;
+            this.bottomRight = bottomRight;
+        }
+
+        /** field coords */
+        public RectangleRegion(double x1, double y1, double x2, double y2) {
+            this.topLeft = new Translation2d(x1, y1);
+            this.bottomRight = new Translation2d(x2, y2);
+        }
+
+        @Override
+        public boolean collidesWith(Pose2d position) {
+            return (position.getX() <= topLeft.getY() && position.getX() >= bottomRight.getX()) &&
+                    (position.getY() <= topLeft.getY() && position.getY() >= bottomRight.getY());
+        }
+    }
+
+    public static class PolyRectangleRegion implements Region {
+
+        public ArrayList<RectangleRegion> rectangleRegions;
+
+        public PolyRectangleRegion(RectangleRegion... rectangleRegions) {
+            this.rectangleRegions.addAll(Arrays.asList(rectangleRegions));
+        }
+
+        @Override
+        public boolean collidesWith(Pose2d pose) {
+            return false;
+        }
     }
 }

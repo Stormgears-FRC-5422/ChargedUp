@@ -21,11 +21,16 @@ public class PathFollowingCommand extends CommandBase {
     private PathPlannerTrajectory m_path;
     private boolean transformForAlliance = false;
 
+    private Pose2d currentPose, endPose;
+
     private double startTime, currentTime, totalTime;
 
     private final Field2d fieldSim;
     private final FieldObject2d goalRobotPoseSim;
     private final GenericEntry dTranslationEntry, dRotationEntry;
+
+    private static final double TRANSLATION_TOLERANCE_METERS = 0.025;
+    private static final double ROTATION_TOLERANCE_DEGREES = 1.2;
 
     public PathFollowingCommand(DrivetrainBase drivetrain, PathPlannerTrajectory path, boolean transformForAlliance) {
         m_drivetrain = drivetrain;
@@ -68,10 +73,15 @@ public class PathFollowingCommand extends CommandBase {
                 PathPlannerTrajectory.transformTrajectoryForAlliance(m_path, DriverStation.getAlliance()) :
                 m_path;
 
+        currentPose = RobotState.getInstance().getCurrentPose();
+        endPose = new Pose2d(
+                m_path.getEndState().poseMeters.getTranslation(),
+                m_path.getEndState().holonomicRotation
+        );
         startTime = RobotState.getInstance().getTimeSeconds();
         totalTime = m_path.getTotalTimeSeconds();
         System.out.println("Following path starting at: " + startTime);
-        System.out.println("Pose at start: " + RobotState.getInstance().getCurrentPose());
+        System.out.println("Pose at start: " + currentPose + " to: " + endPose);
 
         fieldSim.getRobotObject().setTrajectory(m_path);
     }
@@ -98,7 +108,9 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (currentTime >= totalTime) && m_drivetrain.atReferenceState();
+        return (currentTime >= totalTime) && m_drivetrain.atReferenceState() &&
+                (currentPose.getTranslation().getDistance(endPose.getTranslation()) <= TRANSLATION_TOLERANCE_METERS) &&
+                (Math.abs(currentPose.getRotation().getDegrees() - endPose.getRotation().getDegrees()) <= ROTATION_TOLERANCE_DEGREES);
     }
 
     @Override
