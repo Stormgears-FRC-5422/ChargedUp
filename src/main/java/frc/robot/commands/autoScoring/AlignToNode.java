@@ -27,10 +27,11 @@ public class AlignToNode extends PathFollowingCommand {
     @Override
     public void initialize() {
         var currentPose = RobotState.getInstance().getCurrentPose();
+        if (goalNode.gridRegion.inRegion(currentPose)) end(true);
         var scoringPose = goalNode.scoringPosition;
-        // come in from 1.2 feet out and if it is red then we have to subtract instead of add
+        // come in from some distance out and if it is red then we have to subtract instead of add
         boolean isRed = goalNode.alliance == DriverStation.Alliance.Red;
-        double alignedX = scoringPose.getX() + (isRed? -1.0 : 1.0) * Units.feetToMeters(1.2);
+        double alignedX = scoringPose.getX() + (isRed? -1.0 : 1.0) * Units.inchesToMeters(10);
         Pose2d alignedPose = new Pose2d(alignedX, scoringPose.getY(), scoringPose.getRotation());
         // make an intermediate translation to go around possible obstacles in the most simple way
         Translation2d intermediateTranslation = new Translation2d(alignedX, currentPose.getY());
@@ -43,7 +44,7 @@ public class AlignToNode extends PathFollowingCommand {
         // make the path from current pose  -> aligned
         // still have to drive to scoring position, this makes time for arm movements
         var path = PathPlanner.generatePath(
-                new PathConstraints(2, 1.5),
+                new PathConstraints(1, 0.6),
                 new PathPoint(currentPose.getTranslation(), new Rotation2d(initialHeading), currentPose.getRotation())
                         .withNextControlLength(startToScoringPose),
                 new PathPoint(alignedPose.getTranslation(), new Rotation2d(endHeading), alignedPose.getRotation())

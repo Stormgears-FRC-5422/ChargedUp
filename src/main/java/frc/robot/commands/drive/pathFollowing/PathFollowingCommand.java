@@ -117,5 +117,7 @@ public class PathFollowingCommand extends CommandBase {
     public void end(boolean interrupted) {
         System.out.println("Following path command ended at: " + RobotState.getInstance().getTimeSeconds());
         System.out.println("Pose at End: " + RobotState.getInstance().getCurrentPose());
+        if (!interrupted)
+            m_drivetrain.stopDrive();
     }
 }

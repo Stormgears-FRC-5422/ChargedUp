@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.drive.BalanceCommand;
-import frc.robot.commands.autoScoring.DriveToScoringNode;
+import frc.robot.commands.autoScoring.AutoScore;
 import frc.robot.commands.drive.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -239,9 +239,9 @@ public class RobotContainer {
                     .withPosition(0, 2).withSize(2, 1)
                     .withWidget(BuiltInWidgets.kCommand);
 
-            SmartDashboard.putData("Closest Blue alliance node", new DriveToScoringNode(
+            SmartDashboard.putData("Closest Blue alliance node", new AutoScore(
                     m_drivetrain, FieldConstants.Grids.blueAllianceGrid[0][0]));
-            SmartDashboard.putData("Second Closest Blue alliance node", new DriveToScoringNode(
+            SmartDashboard.putData("Second Closest Blue alliance node", new AutoScore(
                     m_drivetrain, FieldConstants.Grids.blueAllianceGrid[1][0]));
         }
     }

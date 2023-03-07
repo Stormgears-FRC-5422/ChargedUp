@@ -48,9 +48,8 @@ public final class FieldConstants {
         public static ScoringNode[][] blueAllianceGrid = new ScoringNode[9][3];
         public static ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
 
-        static RectangleRegion rectangleRegion = new RectangleRegion(new Translation2d(1, 1), new Translation2d(0, 0));
-
-        public static final double distBetweenNodes = Units.inchesToMeters(22.0);
+        private static final double halfRobotLengthWithBumper = (ROBOT_LENGTH / 2.0) + BUMPER_THICKNESS;
+        private static final double distBetweenNodes = Units.inchesToMeters(22.0);
         private static final double distToFirstNodeY = Units.inchesToMeters(20.0);
         //heights of cone nodes cube nodes don't really matter maybe we can make them a bit lower than the cone nodes
         //hybrid node (last in array) is 10 inches of ground just because
@@ -60,31 +59,45 @@ public final class FieldConstants {
         //last one is kind of a guess (hybrid node)
         private static final double[] nodeXs = {Units.inchesToMeters(14.32), Units.inchesToMeters(31.35), Units.inchesToMeters(47.0)};
 
+        // Calaculate regions for every 3 by 3 of nodes
+        private static final double distBetweenChargingStationGrid = Units.inchesToMeters(59.0);
+        private static final double regionMaxX = distBetweenChargingStationGrid - halfRobotLengthWithBumper;
+        private static final double regionMinX = Units.inchesToMeters(54.05);
+        private static final double firstRegionWidth = Units.inchesToMeters(75.185);
+        private static final double secondRegionWidth = Units.inchesToMeters(65.55);
+        private static final double thirdRegionWidth = Units.inchesToMeters(75.345);
+        private static final double[] regionWidths = new double[] {firstRegionWidth, secondRegionWidth, thirdRegionWidth};
+
         public static void initGridNodes(){
-            double scoringX = Units.inchesToMeters(54.05) + (ROBOT_LENGTH / 2.0) + BUMPER_THICKNESS;
+            double scoringX = Units.inchesToMeters(54.05) + halfRobotLengthWithBumper;
             for (int wpiY = 0; wpiY < 9; wpiY++) {
                 ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
                 double yTranslation = distToFirstNodeY + (wpiY * distBetweenNodes);
-
+                // calculating regions for blue nodes
+                int currentRegion = wpiY / 3;
+                double regionWidth = regionWidths[currentRegion];
+                double regionMinY = 0.0;
+                for (int i = 0; i <= currentRegion; i++)
+                    regionMinY += regionWidths[i];
+                double regionMaxY = regionMinY + regionWidth;
+                RectangleRegion region = new RectangleRegion(regionMaxX, regionMaxY, regionMinX, regionMinY);
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
-
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     var height = nodeHeights[wpiX];
-
                     double xTranslation = nodeXs[wpiX];
                     double zTranslation = height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
                     var scoringPosition = new Pose2d(scoringX, yTranslation, Rotation2d.fromDegrees(180));
-                    var node = new ScoringNode(type, height, Alliance.Blue, translation, scoringPosition);
+
+                    var node = new ScoringNode(type, height, Alliance.Blue, translation, scoringPosition, region);
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
                     System.out.println(blueAllianceGrid[wpiY][wpiX]);
                 }
             }
-            System.out.println(rectangleRegion.collidesWith(1, 0));
         }
 
         public static class ScoringNode {
@@ -93,25 +106,16 @@ public final class FieldConstants {
             public final Alliance alliance;
             public final Translation3d translation;
             public final Pose2d scoringPosition;
+            public final RectangleRegion gridRegion;
 
             public ScoringNode(NodeType type, NodeHeight height, Alliance alliance,
-                               Translation3d translation, Pose2d scoringPosition) {
+                               Translation3d translation, Pose2d scoringPosition, RectangleRegion gridRegion) {
                 this.type = type;
                 this.height = height;
                 this.alliance = alliance;
                 this.translation = translation;
                 this.scoringPosition = scoringPosition;
-            }
-
-            public static ScoringNode nodeFromTranslation(Translation3d translation) {
-                for (int i = 0; i < 9; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        if (blueAllianceGrid[i][j].translation.equals(translation)) return blueAllianceGrid[i][j];
-                        if (redAllianceGrid[i][j].translation.equals(translation)) return redAllianceGrid[i][j];
-                    }
-                }
-                System.out.println("No such node with translation: " + translation);
-                return blueAllianceGrid[0][0];
+                this.gridRegion = gridRegion;
             }
 
             public static ScoringNode transformBlueToRed(ScoringNode node) {
@@ -127,8 +131,14 @@ public final class FieldConstants {
 
                 Pose2d transformedScoringPosition = mirrorPose(node.scoringPosition);
 
+                var region = node.gridRegion;
+                RectangleRegion transformedRegion = new RectangleRegion(
+                        mirrorTranslation(region.topLeft),
+                        mirrorTranslation(region.bottomRight)
+                );
+
                 return new ScoringNode(node.type, node.height, Alliance.Red,
-                        transformedTranslation, transformedScoringPosition);
+                        transformedTranslation, transformedScoringPosition, transformedRegion);
             }
 
             @Override
@@ -183,22 +193,26 @@ public final class FieldConstants {
         return (HALF_FIELDLENGTH - xToBeMirrored) + HALF_FIELDLENGTH;
     }
 
+    public static Translation2d mirrorTranslation(Translation2d translation) {
+        return new Translation2d(mirrorXPosition(translation.getX()), translation.getY());
+    }
+
     public static Pose2d mirrorPose(Pose2d pose) {
         double xMirrored = mirrorXPosition(pose.getX());
         var rotationMirrored = pose.getRotation().times(-1.0);
         return new Pose2d(xMirrored, pose.getY(), rotationMirrored);
     }
 
-    public static interface Region {
+    public interface Region {
         /** all field coords */
-        boolean collidesWith(Pose2d pose);
+        boolean inRegion(Pose2d pose);
         /** all field coords */
-        default boolean collidesWith(Translation2d translation) {
-            return collidesWith(new Pose2d(translation, new Rotation2d()));
+        default boolean inRegion(Translation2d translation) {
+            return inRegion(new Pose2d(translation, new Rotation2d()));
         }
         /** all field coords */
-        default boolean collidesWith(double x, double y) {
-            return collidesWith(new Translation2d(x, y));
+        default boolean inRegion(double x, double y) {
+            return inRegion(new Translation2d(x, y));
         }
     }
 
@@ -211,14 +225,14 @@ public final class FieldConstants {
             this.bottomRight = bottomRight;
         }
 
-        /** field coords */
-        public RectangleRegion(double x1, double y1, double x2, double y2) {
-            this.topLeft = new Translation2d(x1, y1);
-            this.bottomRight = new Translation2d(x2, y2);
+        /** field coords max is top left and min is bottom right*/
+        public RectangleRegion(double top, double left, double bottom, double right) {
+            this.topLeft = new Translation2d(top, left);
+            this.bottomRight = new Translation2d(bottom, right);
         }
 
         @Override
-        public boolean collidesWith(Pose2d position) {
+        public boolean inRegion(Pose2d position) {
             return (position.getX() <= topLeft.getY() && position.getX() >= bottomRight.getX()) &&
                     (position.getY() <= topLeft.getY() && position.getY() >= bottomRight.getY());
         }
@@ -233,7 +247,7 @@ public final class FieldConstants {
         }
 
         @Override
-        public boolean collidesWith(Pose2d pose) {
+        public boolean inRegion(Pose2d pose) {
             return false;
         }
     }
