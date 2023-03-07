@@ -1,10 +1,12 @@
 package frc.robot.constants;
 
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
-import static frc.robot.constants.ShuffleboardConstants.VisionShuffleboardConstants.aprilTagLayouts;
+import static frc.robot.constants.ShuffleboardConstants.VisionShuffleboardConstants.*;
+import static frc.robot.constants.ShuffleboardConstants.NodeSelectorShuffleboardConstants.*;
 
 public final class ShuffleboardConstants {
     public final ShuffleboardTab robotStateTab, drivetrainTab, navXTab, pathFollowingTab;
@@ -17,8 +19,14 @@ public final class ShuffleboardConstants {
 
     private static ShuffleboardConstants instance;
 
+    public static class NodeSelectorShuffleboardConstants {
+        public static ShuffleboardTab nodeSelectorTab;
+        public static ShuffleboardLayout gridLayout;
+        public static SuppliedValueWidget<Boolean>[][] nodeWidgets = new SuppliedValueWidget[9][3];
+    }
+
     public static class VisionShuffleboardConstants {
-        public static ShuffleboardTab tab;
+        public static ShuffleboardTab visionConstantsTab;
         public static ShuffleboardLayout[] aprilTagLayouts = new ShuffleboardLayout[8];
 
         public static GenericEntry[] distValues = new GenericEntry[8];
@@ -58,9 +66,9 @@ public final class ShuffleboardConstants {
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(7, 4).withPosition(0, 0);
 
-        VisionShuffleboardConstants.tab = Shuffleboard.getTab("Vision");
+        visionConstantsTab = Shuffleboard.getTab("Vision");
         for (int i = 0; i < 8; i++) {
-            aprilTagLayouts[i] = VisionShuffleboardConstants.tab
+            aprilTagLayouts[i] = visionConstantsTab
                     .getLayout("April Tag " + (i+1), BuiltInLayouts.kList)
                     .withPosition(i, 0).withSize(1, 5);
             VisionShuffleboardConstants.distValues[i] = aprilTagLayouts[i]
@@ -70,5 +78,10 @@ public final class ShuffleboardConstants {
             VisionShuffleboardConstants.offsetValues[i] = aprilTagLayouts[i]
                     .add("offset", 0.0).getEntry();
         }
+
+        nodeSelectorTab = Shuffleboard.getTab("Node Selector");
+        var currAlliance = DriverStation.getAlliance();
+        var grid = (currAlliance == DriverStation.Alliance.Red)? FieldConstants.Grids.redAllianceGrid :
+                FieldConstants.Grids.blueAllianceGrid;
     }
 }

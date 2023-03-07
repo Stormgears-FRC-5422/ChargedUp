@@ -91,7 +91,8 @@ public final class FieldConstants {
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
                     var scoringPosition = new Pose2d(scoringX, yTranslation, Rotation2d.fromDegrees(180));
 
-                    var node = new ScoringNode(type, height, Alliance.Blue, translation, scoringPosition, region);
+                    var node = new ScoringNode(type, height, Alliance.Blue, translation,
+                            scoringPosition, region, wpiY, wpiX);
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
@@ -107,15 +108,19 @@ public final class FieldConstants {
             public final Translation3d translation;
             public final Pose2d scoringPosition;
             public final RectangleRegion gridRegion;
+            public final int coloumn, row;
 
             public ScoringNode(NodeType type, NodeHeight height, Alliance alliance,
-                               Translation3d translation, Pose2d scoringPosition, RectangleRegion gridRegion) {
+                               Translation3d translation, Pose2d scoringPosition, RectangleRegion gridRegion,
+                               int coloumn, int row) {
                 this.type = type;
                 this.height = height;
                 this.alliance = alliance;
                 this.translation = translation;
                 this.scoringPosition = scoringPosition;
                 this.gridRegion = gridRegion;
+                this.coloumn = coloumn;
+                this.row = row;
             }
 
             public static ScoringNode transformBlueToRed(ScoringNode node) {
@@ -138,7 +143,8 @@ public final class FieldConstants {
                 );
 
                 return new ScoringNode(node.type, node.height, Alliance.Red,
-                        transformedTranslation, transformedScoringPosition, transformedRegion);
+                        transformedTranslation, transformedScoringPosition, transformedRegion,
+                        node.coloumn, node.row);
             }
 
             @Override
