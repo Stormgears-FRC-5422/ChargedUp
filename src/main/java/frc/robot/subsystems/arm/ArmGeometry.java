@@ -17,17 +17,19 @@ public class ArmGeometry {
     public ArmGeometry() {
         l = kA1Length;
         m = kA2Length;
+
+        m_endPose = new Pose2d(0,0,noRotation);
     }
 
     public void setPose(Pose2d pose) {
         m_endPose = pose;
-        _updateAngles();
+        _onUpdateAngles();
     }
 
     public void setAngles(double alpha, double beta) {
         this.alpha = alpha;
         this.beta = beta;
-        _updateXY();
+        _onUpdateAngles();
     }
 
     public Pose2d getPose() {
@@ -43,14 +45,14 @@ public class ArmGeometry {
     }
 
     // Called internally when the angles have been updated
-    private void _updateAngles() {
+    private void _onUpdateAngles() {
         m_endPose = new Pose2d( m * cos(alpha + beta) + l * cos(alpha),
                                 m * sin(alpha + beta) + l * sin(alpha),
                                 noRotation);
     }
 
     // Called internally when the pose has been updated
-    private void _updateXY() {
+    private void _onUpdateXY() {
         double x = m_endPose.getX();
         double y = m_endPose.getY();
 
@@ -59,7 +61,7 @@ public class ArmGeometry {
                        (l + m * cos(beta)));
 
         beta = acos( ( x*x + y*y - l * l - m * m) /
-                     (-2.0 * l * m));
+                     (2.0 * l * m));
     }
 
 }

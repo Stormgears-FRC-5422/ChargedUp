@@ -29,8 +29,8 @@ public final class Constants {
     public static final double kNeoFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
     public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
     public static final double kPrecisionSpeedScale = StormProp.getNumber("precisionSpeedScale", 0.0);
-    public static final double kArmSpeedScale = StormProp.getNumber("armSpeedScale", 0.0);
-    public static final double kXYArmSpeedScale = StormProp.getNumber("XYarmSpeedScale", 0.0);
+    public static final double kArmSpeedScale = StormProp.getNumber("angleArmSpeedScale", 0.0);
+    public static final double kXYArmSpeedScale = StormProp.getNumber("xyArmSpeedScale", 0.0);
 
     public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
     public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);

@@ -8,6 +8,7 @@ import frc.robot.subsystems.arm.ArmJointSpeeds;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.kArmSpeedScale;
+import static frc.robot.Constants.kXYArmSpeedScale;
 
 public class XYArm extends ArmCommand {
     Arm arm;
@@ -33,7 +34,7 @@ public class XYArm extends ArmCommand {
 
     @Override
     public void execute() {
-        arm.setSpeedScale(kArmSpeedScale);
+        arm.setSpeedScale(kXYArmSpeedScale);
         arm.percentOutXYMoveArm(new ChassisSpeeds(XSpeedSupplier.getAsDouble(),
                                                   YSpeedSupplier.getAsDouble(),
                                0.0 ));
@@ -47,8 +48,6 @@ public class XYArm extends ArmCommand {
     @Override
     public void end(boolean interrupted) {
         System.out.println("XYArm Command done!");
-        // TODO - maybe this should be conditional - we don't want to undo what the interrupting command is trying to do.
-        // but for now this is safer, and I don't think we'll keep this around long term.
         arm.stopArm();
     }
 

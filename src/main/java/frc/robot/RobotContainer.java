@@ -204,10 +204,15 @@ public class RobotContainer {
 
             if (useArm) {
                 if (useXYArmMode) {
+                    System.out.println("Using XY mode for arm movement");
                     m_armCommand = new XYArm(m_arm,
-                            xboxController::getLeftJoystickY,
-                            xboxController::getRightJoystickY);
+                            xboxController::getRightJoystickX,
+                            xboxController::getLeftJoystickY);
+//                    m_armCommand = new XYArm(m_arm,
+//                            xboxController::getRightJoystickX,
+//                            xboxController::getRightJoystickY);
                 } else {
+                    System.out.println("Using Angle mode for arm movement");
                     m_armCommand = new BasicArm(m_arm,
                             xboxController::getLeftJoystickY,
                             xboxController::getRightJoystickY);
@@ -244,7 +249,6 @@ public class RobotContainer {
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(driveWithJoystick);
 
             if (useDrive && driveType.equals("SwerveDrive")) {
-                new Trigger(() -> m_controller.getRawButton(6)).onTrue(new InstantCommand(m_stormNet::getLidarDistance));
                 new Trigger(() -> m_controller.getRawButton(7)).whileTrue(new BalanceCommand(
                         () -> m_NavX.getPitch(),
                         () -> m_NavX.getRoll(),

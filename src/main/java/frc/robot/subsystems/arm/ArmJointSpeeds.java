@@ -13,4 +13,11 @@ public class ArmJointSpeeds {
         this.dBeta = dBeta;
     }
 
+    public ArmJointSpeeds scale(double scale) {
+        dAlpha *= scale;
+        dBeta *= scale;
+
+        return this;
+    }
+
 }
