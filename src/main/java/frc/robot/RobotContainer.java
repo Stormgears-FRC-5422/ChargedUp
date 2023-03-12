@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
-import frc.robot.commands.drive.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
@@ -77,7 +76,12 @@ public class RobotContainer {
     final RobotState m_robotState;
     PoseEstimator m_poseEstimator;
 
-    StormLogitechController m_controller;
+
+    // **********
+    // Controllers
+    // **********
+    StormLogitechController logitechController;
+    StormXboxController xboxController;
 
     private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
     private final Map<String, Command> autoEventMap = new HashMap<>();
@@ -145,7 +149,8 @@ public class RobotContainer {
 
         // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
         if (SubsystemToggles.useController) {
-            m_controller = new StormLogitechController(kLogitechControllerPort);
+            logitechController = new StormLogitechController(kLogitechControllerPort);
+            xboxController = new StormXboxController(kLogitechControllerPort + 1);
             System.out.println("using controller");
         } else {
             System.out.println("NOT using controller");
@@ -171,7 +176,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        StormXboxController xboxController = new StormXboxController(1);
+        xboxController = new StormXboxController(1);
 
         if (SubsystemToggles.useArm && SubsystemToggles.useController) {
             m_basicArm = new BasicArm(m_arm,
@@ -196,17 +201,17 @@ public class RobotContainer {
         if (SubsystemToggles.useDrive && SubsystemToggles.useController) {
             EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                     m_drivetrain,
-                    m_controller::getWpiXAxis,
-                    m_controller::getWpiYAxis,
-                    m_controller::getWpiZAxis,
-                    () -> m_controller.getRawButton(1),
-                    () -> m_controller.getRawButton(2)
+                    logitechController::getWpiXAxis,
+                    logitechController::getWpiYAxis,
+                    logitechController::getWpiZAxis,
+                    () -> logitechController.getRawButton(1),
+                    () -> logitechController.getRawButton(2)
             );
             m_drivetrain.setDefaultCommand(driveWithJoystick);
             // set setpoints using pov angle
-            new Trigger(() -> m_controller.getWPIPOVAngle() != -1).onTrue(new InstantCommand(
+            new Trigger(() -> logitechController.getWPIPOVAngle() != -1).onTrue(new InstantCommand(
                     () -> {
-                        double angle = m_controller.getWPIPOVAngle();
+                        double angle = logitechController.getWPIPOVAngle();
                         System.out.println("Set point angle: " + angle);
                         driveWithJoystick.setSetPoint(angle);
                     })
@@ -217,7 +222,7 @@ public class RobotContainer {
 
             // zero angle command when we are red make sure robot pointing forwards is 180
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-            new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
+            new Trigger(() -> logitechController.getRawButton(5)).onTrue(new InstantCommand(() -> {
                 m_drivetrain.getCurrentCommand().cancel();
                 driveWithJoystick.schedule();
             }));
@@ -236,16 +241,21 @@ public class RobotContainer {
                     .addString("Setpoint", driveWithJoystick::getSetpointDirection)
                     .withPosition(0, 3).withSize(2, 1);
 
+            ShuffleboardConstants.getInstance().driverTab
+                    .addDouble("Gyro Angle", () -> m_navX.getAbsoluteRotation().getDegrees())
+                    .withPosition(2, 3).withSize(2, 1);
+
+
 
             //BUTTONBOARD TRIGGERS
 //            new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand(m_navX::getPitch,
-//                    m_navX::getRoll,
+//                   m_navX::getRoll,
 //                    m_drivetrain));
 
         }
 
         if (SubsystemToggles.useController && SubsystemToggles.useNavX) {
-            new Trigger(() -> m_controller.getRawButton(8)).onTrue(new InstantCommand(() -> {
+            new Trigger(() -> logitechController.getRawButton(8)).onTrue(new InstantCommand(() -> {
                 double angle = (DriverStation.getAlliance() == DriverStation.Alliance.Red) ?
                         180.0 : 0;
                 m_navX.setAngle(angle);

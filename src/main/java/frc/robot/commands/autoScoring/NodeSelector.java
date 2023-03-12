@@ -52,10 +52,10 @@ public class NodeSelector {
     }
 
     public void moveSelectedCol(int moveDist) {
-        setSelectedCol(selectedCol - moveDist);
+        setSelectedCol(selectedCol + moveDist);
     }
 
     public void moveSelectedRow(int moveDist) {
-        setSelectedRow(selectedRow - moveDist);
+        setSelectedRow(selectedRow + moveDist);
     }
 }

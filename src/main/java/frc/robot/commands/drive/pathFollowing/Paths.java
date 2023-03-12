@@ -118,6 +118,24 @@ public final class Paths {
         return Math.atan2(aboutInitialTranslation.getY(), aboutInitialTranslation.getX());
     }
 
+    /** get path to a pose from currentPosition */
+    public static PathPlannerTrajectory generatePathToPose(Pose2d currPose, double currVel, Pose2d goalPose, double maxVel, double maxAcc) {
+        PathPoint startPoint = new PathPoint(
+                currPose.getTranslation(),
+                Rotation2d.fromRadians(calcHeading(currPose.getTranslation(), goalPose.getTranslation())),
+                currPose.getRotation(), currVel);
+
+        PathPoint endPoint = new PathPoint(
+                goalPose.getTranslation(),
+                Rotation2d.fromRadians(calcHeading(goalPose.getTranslation(), goalPose.getTranslation())),
+                goalPose.getRotation());
+
+        return PathPlanner.generatePath(
+                new PathConstraints(maxAcc,maxAcc),
+                startPoint, endPoint
+        );
+    }
+
     public static class PathWithName {
         public final String name;
         public final PathPlannerTrajectory path;

@@ -6,8 +6,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.*;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.Vision;
@@ -39,11 +37,7 @@ public class RobotState extends StormSubsystemBase {
         m_timer = new Timer();
         m_timer.stop();
 
-        ShuffleboardTab tab = ShuffleboardConstants.getInstance().robotStateTab;
-        ShuffleboardLayout layout = tab
-                .getLayout("State", BuiltInLayouts.kList)
-                .withPosition(0, 0)
-                .withSize(2, 4);
+        var layout = ShuffleboardConstants.getInstance().robotStateList;
         layout.addNumber("Pose X", () -> getCurrentPose().getX());
         layout.addNumber("Pose Y", () -> getCurrentPose().getY());
         layout.addNumber("Pose Angle", () -> getCurrentPose().getRotation().getDegrees());

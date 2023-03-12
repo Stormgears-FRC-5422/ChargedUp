@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -10,17 +9,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.AprilTagPoseEstimationStrategy;
-import frc.robot.subsystems.vision.Vision;
 import frc.utils.subsystemUtils.StormSubsystemBase;
-
-import java.util.Arrays;
-import java.util.Vector;
 
 import static frc.robot.constants.Constants.VisionConstants.*;
 
@@ -28,6 +24,7 @@ public class PoseEstimator extends StormSubsystemBase {
     private final SwerveDrivePoseEstimator m_poseEstimator;
 
     private Pose2d m_currentPose;
+    private Pose2d visionPose;
 
     private final FieldObject2d
             visionPoseSim,
@@ -58,6 +55,10 @@ public class PoseEstimator extends StormSubsystemBase {
         Field2d fieldSim = ShuffleboardConstants.getInstance().poseEstimationFieldSim;
         visionPoseSim = fieldSim.getObject("Vision Pose");
         estimatedPoseSim = fieldSim.getRobotObject();
+
+        ShuffleboardLayout layout = ShuffleboardConstants.getInstance().robotStateList;
+        layout.addDouble("Vision X", () -> getVisionPose().getX());
+        layout.addDouble("Vision Y", () -> getVisionPose().getY());
     }
 
     @Override
@@ -90,19 +91,16 @@ public class PoseEstimator extends StormSubsystemBase {
                 double time = currentVisionData.getFirst();
                 if (time != currentVisionEntryTime) {
                     var info = currentVisionData.getSecond();
-                    for (var tag : info) {
-                        System.out.println(tag.toString());
-                    }
                     // calculate camera angle by adding to the gyro angle
                     Rotation2d gyroAngle = RobotState.getInstance().getAngleAtTimeSeconds(time);
                     Rotation2d cameraAngle = gyroAngle.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
                     // just call the pose estimation strategy class
                     Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
                     // have to transform to robot pose
-                    Pose2d visionRobotPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
-                    m_poseEstimator.addVisionMeasurement(visionRobotPose, time);
+                    visionPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
+                    m_poseEstimator.addVisionMeasurement(visionPose, time);
                     // log the position
-                    visionPoseSim.setPose(visionRobotPose);
+                    visionPoseSim.setPose(visionPose);
                     currentVisionEntryTime = time;
                 }
             }
@@ -130,5 +128,9 @@ public class PoseEstimator extends StormSubsystemBase {
                 },
                 pose
         );
+    }
+
+    private Pose2d getVisionPose() {
+        return visionPose;
     }
 }

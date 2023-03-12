@@ -1,6 +1,7 @@
 package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -17,6 +18,11 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final DrivetrainBase m_drivetrain;
 
     private final DoubleSupplier txSupplier, tySupplier, omegaSupplier;
+
+    private final SlewRateLimiter txLimiter = new SlewRateLimiter(1);
+    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(1);
+    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(1);
+
     private final BooleanSupplier robotRelativeSupplier, percisionModeSupplier;
     private final ProfiledPIDController rotController =
             new ProfiledPIDController(0.01, 0.0, 0.0,
@@ -25,7 +31,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     private double omegaSpeed;
     private boolean setpointRotationMode = false;
-    private String setpointDirection = "NOTHING";
+    private String setpointDirection = "NONE";
 
     public EnhancedDriveWithJoystick(DrivetrainBase drivetrain,
                                      DoubleSupplier txSupplier, DoubleSupplier tySupplier, DoubleSupplier omegaSupplier,
@@ -48,6 +54,15 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     }
 
     @Override
+    public void initialize() {
+        txLimiter.reset(txSupplier.getAsDouble());
+        tyLimiter.reset(tySupplier.getAsDouble());
+        omegaLimiter.reset(omegaSupplier.getAsDouble());
+        setpointRotationMode = false;
+        System.out.println("Drive command starting!");
+    }
+
+    @Override
     public void execute() {
         double currentAngle = robotAngleSupplier.getAsDouble();
 
@@ -62,9 +77,15 @@ public class EnhancedDriveWithJoystick extends CommandBase {
             // FIXME: do I have to make the vel negative?
             rotController.reset(currentAngle, RobotState.getInstance().getCurrentDegPerSecVel());
             setpointRotationMode = false;
+            setpointDirection = "NONE";
         }
 
         _drive();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        System.out.println("Drive command ended!");
     }
 
     private void _drive() {
@@ -75,9 +96,9 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         }
         m_drivetrain.percentOutDrive(
                 new ChassisSpeeds(
-                        txSupplier.getAsDouble(),
-                        tySupplier.getAsDouble(),
-                        omegaSpeed),
+                        txLimiter.calculate(txSupplier.getAsDouble()),
+                        tyLimiter.calculate(tySupplier.getAsDouble()),
+                        omegaLimiter.calculate(omegaSpeed)),
                 !robotRelativeSupplier.getAsBoolean()
         );
     }
@@ -101,7 +122,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
                 setpointDirection = "RIGHT";
                 break;
             default:
-                setpointDirection = "NOTHING";
+                setpointDirection = "NONE";
                 break;
         }
         rotController.setGoal(angle);
