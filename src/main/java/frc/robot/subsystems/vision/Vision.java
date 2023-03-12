@@ -5,44 +5,45 @@ import frc.robot.RobotState;
 import frc.utils.data.StormStruct;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import static frc.robot.constants.ShuffleboardConstants.VisionShuffleboardConstants.*;
-
 import java.util.Vector;
 
 public class Vision extends StormSubsystemBase {
 
+    private int logCounter = 0;
     private final StormStruct m_struct;
     private final Vector<AprilTagData> currentAprilTags = new Vector<>();
 
     public Vision() {
         var ntInst = NetworkTableInstance.getDefault();
-        m_struct = new StormStruct(ntInst, "vision-data", "tag-data");
+        m_struct = new StormStruct(ntInst, "vision-data", "tag_data");
     }
 
     @Override
     public void stormPeriodic() {
-        currentAprilTags.clear();
+        logCounter ++;
         // grab current info list which is a vector of a hashmap which contains
         // a bunch of stuff for each april tag currently in view
-        var infoList = m_struct.get_data("april tag");
+        var infoList = m_struct.get_data("april_tag");
         // exit if there is none
         if (infoList.size() < 1) return;
+        // clear the april tag vector
+        currentAprilTags.clear();
         for (var info : infoList) {
+            System.out.println("yaw from vision" + info.get("yaw"));
             var aprilTagData = new AprilTagData(
                     info.get("id").intValue(),
                     info.get("distance"),
                     info.get("yaw"),
-                    info.get("off-center")
+                    info.get("leftright")
             );
+//            if (logCounter % 25 == 0)
+//                System.out.println(aprilTagData);
             currentAprilTags.add(aprilTagData);
         }
-        for (var aprilTagData : currentAprilTags) {
-            distValues[aprilTagData.id - 1].setDouble(aprilTagData.dist);
-            offsetValues[aprilTagData.id - 1].setDouble(aprilTagData.offCenterDegrees);
-            yawValues[aprilTagData.id - 1].setDouble(aprilTagData.yawDegrees);
-        }
         // convert timestamp to seconds
-        double timeSeconds = infoList.get(0).get("timestamp") / 0.01;
+        double timeSeconds = infoList.get(0).get("timestamp") / 1000.0;
+//        if (logCounter % 25 == 0)
+//            System.out.println("timestamp: " + timeSeconds);
         RobotState.getInstance().setVisionData(timeSeconds, currentAprilTags);
     }
 
@@ -55,6 +56,16 @@ public class Vision extends StormSubsystemBase {
             this.dist = dist;
             this.yawDegrees = yawDegrees;
             this.offCenterDegrees = offCenterDegrees;
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "id=" + id +
+                    ", dist=" + dist +
+                    ", yawDegrees=" + yawDegrees +
+                    ", offCenterDegrees=" + offCenterDegrees +
+                    '}';
         }
     }
 }

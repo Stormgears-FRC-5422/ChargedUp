@@ -23,11 +23,10 @@ public class RobotState extends StormSubsystemBase {
 
     private Pair<Double, OdometryData> currentOdometryData = null;
     private Pair<Double, Vector<Vision.AprilTagData>> currentVisionData = null;
+    private int visionLogCounter = 0;
     private TreeMap<Double, Rotation2d> gyroData = new TreeMap<>();
 
     private Pose2d currentPose, startPose, lastPose;
-
-    private final Field2d fieldSim;
 
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
@@ -51,10 +50,6 @@ public class RobotState extends StormSubsystemBase {
         layout.addNumber("Robot Time", this::getTimeSeconds);
         layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
         layout.addNumber("Rotational Velocity", this::getCurrentDegPerSecVel);
-        fieldSim = new Field2d();
-        tab.add(fieldSim).withWidget(BuiltInWidgets.kField)
-                .withPosition(2, 0)
-                .withSize(5, 4);
     }
 
     public double getTimeSeconds() {
@@ -143,8 +138,12 @@ public class RobotState extends StormSubsystemBase {
         return currentOdometryData;
     }
 
-    /** Must provide own timstamp with this function as camera will have delay*/
     public void setVisionData(double time, Vector<Vision.AprilTagData> visionData) {
+        if (++visionLogCounter % 25 == 0) {
+            System.out.println("Robot State vision data \n timestamp: " + time);
+            for (var tag : visionData)
+                System.out.println(tag);
+        }
         currentVisionData = new Pair<>(time, visionData);
     }
 
@@ -191,10 +190,6 @@ public class RobotState extends StormSubsystemBase {
 
         currentPose = null;
         lastPose = null;
-    }
-
-    public void lastPeriodic() {
-        fieldSim.setRobotPose(getCurrentPose());
     }
 
     public static class OdometryData {

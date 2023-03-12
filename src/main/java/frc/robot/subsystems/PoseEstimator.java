@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -15,7 +16,11 @@ import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.AprilTagPoseEstimationStrategy;
+import frc.robot.subsystems.vision.Vision;
 import frc.utils.subsystemUtils.StormSubsystemBase;
+
+import java.util.Arrays;
+import java.util.Vector;
 
 import static frc.robot.constants.Constants.VisionConstants.*;
 
@@ -85,6 +90,9 @@ public class PoseEstimator extends StormSubsystemBase {
                 double time = currentVisionData.getFirst();
                 if (time != currentVisionEntryTime) {
                     var info = currentVisionData.getSecond();
+                    for (var tag : info) {
+                        System.out.println(tag.toString());
+                    }
                     // calculate camera angle by adding to the gyro angle
                     Rotation2d gyroAngle = RobotState.getInstance().getAngleAtTimeSeconds(time);
                     Rotation2d cameraAngle = gyroAngle.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
@@ -107,11 +115,11 @@ public class PoseEstimator extends StormSubsystemBase {
         RobotState.getInstance().setLastPose(lastPose);
     }
 
-    private void resetEstimator(Rotation2d angle, SwerveModulePosition[] modulePositions, Pose2d pose) {
+    public void resetEstimator(Rotation2d angle, SwerveModulePosition[] modulePositions, Pose2d pose) {
         m_poseEstimator.resetPosition(angle, modulePositions, pose);
     }
 
-    private void resetEstimator(Pose2d pose) {
+    public void resetEstimator(Pose2d pose) {
         resetEstimator(
                 RobotState.getInstance().getCurrentGyroRotation(),
                 new SwerveModulePosition[] {

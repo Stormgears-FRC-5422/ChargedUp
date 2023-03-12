@@ -1,6 +1,7 @@
 package frc.utils.joysticks;
 
 import edu.wpi.first.wpilibj.Joystick;
+
 import static frc.robot.constants.Constants.kStickNullSize;
 
 public class StormLogitechController extends Joystick {
@@ -40,9 +41,18 @@ public class StormLogitechController extends Joystick {
     public double getWpiYAxis(){
         return -getXAxis();
     }
-
     public double getWpiZAxis(){
         return -getZAxis();
+    }
+
+    public double getWPIPOVAngle() {
+        int povAngle = getPOV();
+//        System.out.println("POV angle: " + povAngle);
+        if (povAngle == -1) return -1;
+        if (povAngle == 0) return 0;
+        double inverse = 360.0 - povAngle;
+        if (inverse > 180) return  (inverse % 180) - 180.0;
+        return inverse;
     }
 }
 

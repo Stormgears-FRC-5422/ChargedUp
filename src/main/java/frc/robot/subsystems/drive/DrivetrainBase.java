@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -20,11 +21,13 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
     public double m_maxVelocityMetersPerSecond;
     public double m_maxAngularVelocityRadiansPerSecond;
     protected double m_driveSpeedScale = 0;
+    private SlewRateLimiter speedScaleLimiter = new SlewRateLimiter(0.7);
 
     protected ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
     protected final ShuffleboardTab tab;
     DrivetrainBase() {
         setDriveSpeedScale(kDriveSpeedScale);
+        speedScaleLimiter.reset(m_driveSpeedScale);
         tab = ShuffleboardConstants.getInstance().drivetrainTab;
     }
 
@@ -36,9 +39,9 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
     public void drive(ChassisSpeeds speeds, boolean fieldRelative) {
         // Scale incoming speeds
         ChassisSpeeds s = new ChassisSpeeds(
-                m_driveSpeedScale * speeds.vxMetersPerSecond,
-                m_driveSpeedScale * speeds.vyMetersPerSecond,
-                m_driveSpeedScale * speeds.omegaRadiansPerSecond);
+                speedScaleLimiter.calculate(m_driveSpeedScale) * speeds.vxMetersPerSecond,
+                speedScaleLimiter.calculate(m_driveSpeedScale) * speeds.vyMetersPerSecond,
+                speedScaleLimiter.calculate(m_driveSpeedScale) * speeds.omegaRadiansPerSecond);
 
         if (fieldRelative) {
             var rotation = (usePoseEstimator)?

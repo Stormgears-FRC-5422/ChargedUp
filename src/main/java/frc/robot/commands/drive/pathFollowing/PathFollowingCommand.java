@@ -30,7 +30,7 @@ public class PathFollowingCommand extends CommandBase {
     private final GenericEntry dTranslationEntry, dRotationEntry;
 
     private static final double TRANSLATION_TOLERANCE_METERS = 0.025;
-    private static final double ROTATION_TOLERANCE_DEGREES = 1.2;
+    private static final double ROTATION_TOLERANCE_DEGREES = 1.0;
 
     public PathFollowingCommand(DrivetrainBase drivetrain, PathPlannerTrajectory path, boolean transformForAlliance) {
         m_drivetrain = drivetrain;
@@ -82,8 +82,6 @@ public class PathFollowingCommand extends CommandBase {
         totalTime = m_path.getTotalTimeSeconds();
         System.out.println("Following path starting at: " + startTime);
         System.out.println("Pose at start: " + currentPose + " to: " + endPose);
-
-        fieldSim.getRobotObject().setTrajectory(m_path);
     }
 
     @Override

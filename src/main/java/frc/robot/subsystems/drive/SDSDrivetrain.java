@@ -154,17 +154,17 @@ public class SDSDrivetrain extends DrivetrainBase {
         backLeftModuleLayout.addNumber("driveDistance()", m_backLeftModule::getDriveDistance);
         backRightModuleLayout.addNumber("driveDistance()", m_backRightModule::getDriveDistance);
 
-        var pidTesting = Shuffleboard.getTab("Drivetrain PIDS");
+//        var pidTesting = Shuffleboard.getTab("Drivetrain PIDS");
+//
+//        pidTesting.add("X PID Controller", xController)
+//                .withWidget(BuiltInWidgets.kPIDController)
+//                .withPosition(4, 1);
+//        pidTesting.add("Y PID Controller", yController)
+//                .withWidget(BuiltInWidgets.kPIDController)
+//                .withPosition(6, 1);
+//        pidTesting.add("Rotation PID Controller", rotController)
+//                .withWidget(BuiltInWidgets.kPIDController);
 
-        pidTesting.add("X PID Controller", xController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(4, 1);
-        pidTesting.add("Y PID Controller", yController)
-                .withWidget(BuiltInWidgets.kPIDController)
-                .withPosition(6, 1);
-        pidTesting.add("Rotation PID Controller", rotController)
-                .withWidget(BuiltInWidgets.kPIDController);
-        rotController.enableContinuousInput(-Math.PI, Math.PI);
         m_holonomicController.setTolerance(new Pose2d(0.04, 0.04, Rotation2d.fromDegrees(1.5)));
     }
 

@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public abstract class StormSubsystemBase extends SubsystemBase {
     public StormSubsystemBase() {
         StormSubsystemScheduler.getInstance().register(this);
+        String className = this.getClass().getSimpleName();
+        System.out.println(className + " created---");
     }
 
     /** use as periodic instead of periodic */

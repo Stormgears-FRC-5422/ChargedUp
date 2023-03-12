@@ -3,6 +3,7 @@ package frc.utils.data;
 import edu.wpi.first.networktables.*;
 
 import java.sql.Struct;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.ArrayList;
@@ -89,6 +90,7 @@ public class StormStruct {
         if (!m_data_subscribers.containsKey(name)) {
             sub = m_base_table.getRawTopic("binary_data/" + this.m_struct_name + "/" + name)
                     .subscribe(this.m_struct_name,new byte[0]);
+            m_data_subscribers.put(name, sub);
         } else {
             sub = m_data_subscribers.get(name);
         }
@@ -179,7 +181,7 @@ public class StormStruct {
          * 
     */
     private HashMap<String, Double> decode_struct(final byte[] data_stream,final int _offset) {
-        HashMap<String,Double> ret_map = new HashMap<String,Double>();
+        HashMap<String,Double> ret_map = new HashMap<>();
         // Data is big endian
         int offset = _offset;
         for (String field : m_fieldNames) {
@@ -215,5 +217,4 @@ public class StormStruct {
         }
         return(ret_map);
     }
-
 }

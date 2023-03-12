@@ -2,11 +2,9 @@ package frc.robot.constants;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import java.io.IOException;
@@ -33,13 +31,13 @@ public final class FieldConstants {
         }
     }
 
-    public static Pose2d getTagPose(int id) {
+    public static Pose3d getTagPose(int id) {
         var tagPose = APRILTAG_FIELD_LAYOUT.getTagPose(id);
         if (tagPose.isPresent()) {
-            return tagPose.get().toPose2d();
+            return tagPose.get();
         } else {
             System.out.println("Couldn't get april tag pose!");
-            return new Pose2d();
+            return new Pose3d();
         }
     }
 
@@ -68,11 +66,12 @@ public final class FieldConstants {
         private static final double thirdRegionWidth = Units.inchesToMeters(75.345);
         private static final double[] regionWidths = new double[] {firstRegionWidth, secondRegionWidth, thirdRegionWidth};
 
-        public static void initGridNodes(){
+        public static void initGridNodes() {
             double scoringX = Units.inchesToMeters(54.05) + halfRobotLengthWithBumper;
             for (int wpiY = 0; wpiY < 9; wpiY++) {
                 ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
                 double yTranslation = distToFirstNodeY + (wpiY * distBetweenNodes);
+
                 // calculating regions for blue nodes
                 int currentRegion = wpiY / 3;
                 double regionWidth = regionWidths[currentRegion];
@@ -81,6 +80,7 @@ public final class FieldConstants {
                     regionMinY += regionWidths[i];
                 double regionMaxY = regionMinY + regionWidth;
                 RectangleRegion region = new RectangleRegion(regionMaxX, regionMaxY, regionMinX, regionMinY);
+
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     var height = nodeHeights[wpiX];
@@ -96,9 +96,13 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-                    System.out.println(blueAllianceGrid[wpiY][wpiX]);
+//                    System.out.println(blueAllianceGrid[wpiY][wpiX]);
                 }
             }
+        }
+
+        public static ScoringNode[][] getCurrentGrid() {
+            return (DriverStation.getAlliance() == Alliance.Red)? redAllianceGrid : blueAllianceGrid;
         }
 
         public static class ScoringNode {
@@ -108,18 +112,18 @@ public final class FieldConstants {
             public final Translation3d translation;
             public final Pose2d scoringPosition;
             public final RectangleRegion gridRegion;
-            public final int coloumn, row;
+            public final int col, row;
 
             public ScoringNode(NodeType type, NodeHeight height, Alliance alliance,
                                Translation3d translation, Pose2d scoringPosition, RectangleRegion gridRegion,
-                               int coloumn, int row) {
+                               int col, int row) {
                 this.type = type;
                 this.height = height;
                 this.alliance = alliance;
                 this.translation = translation;
                 this.scoringPosition = scoringPosition;
                 this.gridRegion = gridRegion;
-                this.coloumn = coloumn;
+                this.col = col;
                 this.row = row;
             }
 
@@ -144,7 +148,7 @@ public final class FieldConstants {
 
                 return new ScoringNode(node.type, node.height, Alliance.Red,
                         transformedTranslation, transformedScoringPosition, transformedRegion,
-                        node.coloumn, node.row);
+                        node.col, node.row);
             }
 
             @Override

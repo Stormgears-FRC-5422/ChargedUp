@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -13,12 +15,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
 import frc.robot.commands.drive.DriveWithJoystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.arm.BasicArm;
+import frc.robot.commands.drive.EnhancedDriveWithJoystick;
 import frc.robot.commands.drive.pathFollowing.FolllowPathFromPose;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
 import frc.robot.commands.drive.pathFollowing.Paths;
@@ -56,6 +60,7 @@ public class RobotContainer {
     StormNet m_stormNet;
     NavX m_navX;
     Vision m_vision;
+    NodeSelector m_nodeSelector;
 
 
     // **********
@@ -85,6 +90,7 @@ public class RobotContainer {
         ShuffleboardConstants.getInstance();
 
         m_robotState = RobotState.getInstance();
+        m_robotState.setStartPose(new Pose2d(1, 1, new Rotation2d()));
 
         if (SubsystemToggles.useNavX) {
             m_navX = new NavX();
@@ -154,6 +160,12 @@ public class RobotContainer {
             tab.addNumber("Lidar Distance", m_stormNet::getLidarDistance);
         }
 
+        if (SubsystemToggles.useNodeSelector) {
+            m_nodeSelector = new NodeSelector();
+        } else {
+            System.out.println("NOT using node selector");
+        }
+
         // Configure the trigger bindings
         configureBindings();
     }
@@ -168,48 +180,84 @@ public class RobotContainer {
             m_arm.setDefaultCommand(m_basicArm);
         }
 
-        if (SubsystemToggles.usePneumatics && SubsystemToggles.useController) {
-            new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCone));
-            new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCube));
-            new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
-        } else {
-            System.out.println("Pneumatics or controller not operational");
+        if (SubsystemToggles.useController && SubsystemToggles.useNodeSelector) {
+            new Trigger(xboxController::getUpArrowPressed)
+                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(-1)));
+            new Trigger(xboxController::getDownArrowPressed)
+                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(1)));
+            new Trigger(xboxController::getLeftArrowPressed)
+                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(-1)));
+            new Trigger(xboxController::getRightArrowPressed)
+                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(1)));
+            System.out.println("using controller to control node selector");
         }
 
-        if (SubsystemToggles.useDrive && SubsystemToggles.useController) {
 
-            DriveWithJoystick driveWithJoystick = new DriveWithJoystick(
+        if (SubsystemToggles.useDrive && SubsystemToggles.useController) {
+            EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                     m_drivetrain,
                     m_controller::getWpiXAxis,
                     m_controller::getWpiYAxis,
                     m_controller::getWpiZAxis,
-                    () -> m_controller.getRawButton(2));
-    	    m_drivetrain.setDefaultCommand(driveWithJoystick);
+                    () -> m_controller.getRawButton(1),
+                    () -> m_controller.getRawButton(2)
+            );
+            m_drivetrain.setDefaultCommand(driveWithJoystick);
+            // set setpoints using pov angle
+            new Trigger(() -> m_controller.getWPIPOVAngle() != -1).onTrue(new InstantCommand(
+                    () -> {
+                        double angle = m_controller.getWPIPOVAngle();
+                        System.out.println("Set point angle: " + angle);
+                        driveWithJoystick.setSetPoint(angle);
+                    })
+            );
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
             m_buttonboard = new ButtonBoard(0);
 
             // zero angle command when we are red make sure robot pointing forwards is 180
-            new Trigger(() -> m_controller.getRawButton(1)).onTrue(new InstantCommand(() -> {
-                double angle = (DriverStation.getAlliance() == DriverStation.Alliance.Red)?
-                        180.0 : 0;
-                m_navX.setAngle(angle);
-            }));
-            new Trigger(() -> m_controller.getRawButton(3)).onTrue(new InstantCommand(driveWithJoystick::toggleFieldRelative));
-            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
+//            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> m_controller.getRawButton(5)).onTrue(new InstantCommand(() -> {
                 m_drivetrain.getCurrentCommand().cancel();
                 driveWithJoystick.schedule();
             }));
 
+            ShuffleboardConstants.getInstance().driverTab
+                    .addBoolean("Field Oriented On", driveWithJoystick::getFieldOriented)
+                    .withWidget(BuiltInWidgets.kBooleanBox)
+                    .withPosition(0, 2).withSize(2, 1);
+
+            ShuffleboardConstants.getInstance().driverTab
+                    .addBoolean("Percision Mode On", driveWithJoystick::getPercisionMode)
+                    .withWidget(BuiltInWidgets.kBooleanBox)
+                    .withPosition(2, 2).withSize(2, 1);
+
+            ShuffleboardConstants.getInstance().driverTab
+                    .addString("Setpoint", driveWithJoystick::getSetpointDirection)
+                    .withPosition(0, 3).withSize(2, 1);
+
+
             //BUTTONBOARD TRIGGERS
-            new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand(m_navX::getPitch,
-                    m_navX::getRoll,
-                    m_drivetrain));
+//            new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand(m_navX::getPitch,
+//                    m_navX::getRoll,
+//                    m_drivetrain));
 
         }
 
-        if (SubsystemToggles.useDrive && driveType.equals("SwerveDrive")) {
+        if (SubsystemToggles.useController && SubsystemToggles.useNavX) {
+            new Trigger(() -> m_controller.getRawButton(8)).onTrue(new InstantCommand(() -> {
+                double angle = (DriverStation.getAlliance() == DriverStation.Alliance.Red) ?
+                        180.0 : 0;
+                m_navX.setAngle(angle);
+                if (SubsystemToggles.usePoseEstimator) {
+                    m_poseEstimator.resetEstimator(m_navX.getAbsoluteRotation(), m_drivetrain.getSwerveModulePositions(),
+                            new Pose2d(RobotState.getInstance().getCurrentPose().getTranslation(),
+                                    Rotation2d.fromDegrees(angle)));
+                }
+            }));
+        }
+
+        if (SubsystemToggles.useDrive && driveType.equals("SwerveDrive") && SubsystemToggles.usePoseEstimator) {
 
             autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
             autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
@@ -221,6 +269,7 @@ public class RobotContainer {
             for (var pathWithName : Paths.listOfPaths) {
                 autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
             }
+            autoPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0));
             SmartDashboard.putData("Auto Paths", autoPathChooser);
 
             SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
@@ -239,10 +288,11 @@ public class RobotContainer {
                     .withPosition(0, 2).withSize(2, 1)
                     .withWidget(BuiltInWidgets.kCommand);
 
-            SmartDashboard.putData("Closest Blue alliance node", new AutoScore(
-                    m_drivetrain, FieldConstants.Grids.blueAllianceGrid[0][0]));
-            SmartDashboard.putData("Second Closest Blue alliance node", new AutoScore(
-                    m_drivetrain, FieldConstants.Grids.blueAllianceGrid[1][0]));
+        }
+
+        if (SubsystemToggles.useNodeSelector && SubsystemToggles.useController && SubsystemToggles.usePoseEstimator) {
+            new Trigger(xboxController::getAButtonIsHeld)
+                    .onTrue(new AutoScore(m_drivetrain, m_nodeSelector.getSelectedNode()));
         }
     }
 
@@ -255,7 +305,7 @@ public class RobotContainer {
             var selectedPath = autoPathChooser.getSelected();
             m_robotState.setStartPose(selectedPath.path.getInitialHolonomicPose());
             return new FollowPathWithEvents(
-                    getPathFollowCommand(selectedPath.path),
+                    new PathFollowingCommand(m_drivetrain, selectedPath.path, true),
                     selectedPath.path.getMarkers(),
                     autoEventMap
             );

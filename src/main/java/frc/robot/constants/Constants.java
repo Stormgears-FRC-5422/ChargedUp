@@ -117,6 +117,7 @@ public final class Constants {
         private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
         private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
         private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
+        public static final double kAprilTagYawTrustMeters = StormProp.getNumber("AprilTagYawTrustMeters", 0.5);
 
         public static final Pose3d CAMERA_POSITION = new Pose3d(
                 kCameraXTranslation, kCameraYTranslation, kCameraZTranslation,
@@ -150,6 +151,7 @@ public final class Constants {
         public static boolean useVision = StormProp.getBoolean("useVision", false);
         public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
         public static boolean usePoseEstimator = false;
+        public static boolean useNodeSelector = StormProp.getBoolean("useNodeSelector", false);
     }
     // **********
     // Don't put other variables after the usage members
