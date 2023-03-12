@@ -84,7 +84,7 @@ public class PoseEstimator extends StormSubsystemBase {
             }
         }
 
-        if (Constants.SubsystemToggles.useVision) {
+        if (Constants.Toggles.useVision) {
             var currentVisionData = RobotState.getInstance().getCurrentVisionData();
             //add the vision entry to estimator
             if (currentVisionData != null) {

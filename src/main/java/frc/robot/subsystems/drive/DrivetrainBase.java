@@ -14,14 +14,14 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import static frc.robot.constants.Constants.kDriveSpeedScale;
-import static frc.robot.constants.Constants.SubsystemToggles.usePoseEstimator;
+import static frc.robot.constants.Constants.Toggles.usePoseEstimator;
 
 public abstract class DrivetrainBase extends StormSubsystemBase {
 
     public double m_maxVelocityMetersPerSecond;
     public double m_maxAngularVelocityRadiansPerSecond;
     protected double m_driveSpeedScale = 0;
-    private SlewRateLimiter speedScaleLimiter = new SlewRateLimiter(0.7);
+    private final SlewRateLimiter speedScaleLimiter = new SlewRateLimiter(0.7);
 
     protected ChassisSpeeds m_chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
     protected final ShuffleboardTab tab;

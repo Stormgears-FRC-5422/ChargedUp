@@ -74,10 +74,6 @@ public class Robot extends TimedRobot {
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-//    if(usePneumatics) {
-//      m_robotContainer.m_compression.stopCompressor();
-//      m_robotContainer.m_compression.setPiston(false);
-//    }
     }
 
     @Override

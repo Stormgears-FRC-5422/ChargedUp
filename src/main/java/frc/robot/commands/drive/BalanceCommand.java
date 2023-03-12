@@ -23,7 +23,7 @@ public class BalanceCommand extends CommandBase {
   private ChassisSpeeds m_speed = new ChassisSpeeds(
           0.0,
           0.,
-          0.); ;
+          0.);
 
   private double balanceThresh;
 

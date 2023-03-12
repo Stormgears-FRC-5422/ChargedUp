@@ -132,7 +132,7 @@ public final class Constants {
       }
 
 
-    public static class SubsystemToggles {
+    public static class Toggles {
         // **********
         // Usage members aren't actually final. They can be overridden if the system fails to come online (etc)
         // **********
@@ -141,9 +141,11 @@ public final class Constants {
 //        public static boolean useController = StormProp.getBoolean("useController", false);
         public static boolean useLogitechController = StormProp.getBoolean("useLogitechController", false);
         public static boolean useXboxController = StormProp.getBoolean("useXboxController", false);
+        public static boolean useButtonBoard = StormProp.getBoolean("useButtonBoard", false);
         public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
         public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
         public static boolean useArm = StormProp.getBoolean("useArm", false);
+        public static boolean useXYArmMode = StormProp.getBoolean("useXYArmMode", false);
         public static boolean useVision = StormProp.getBoolean("useVision", false);
         public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
         public static boolean usePoseEstimator = false;

@@ -1,14 +1,11 @@
 package frc.robot.commands.arm;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmJointSpeeds;
 
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.kArmSpeedScale;
-import static frc.robot.Constants.kXYArmSpeedScale;
+import static frc.robot.constants.Constants.kXYArmSpeedScale;
 
 public class XYArm extends ArmCommand {
     Arm arm;

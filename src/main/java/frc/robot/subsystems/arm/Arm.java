@@ -7,25 +7,23 @@ import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
 import java.lang.Math;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.SparkMaxPIDController;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import static frc.robot.Constants.*;
-import static java.lang.Thread.sleep;
+import static frc.robot.constants.Constants.*;
 
-public class Arm extends SubsystemBase {
-    ArmGeometry m_geometry = new ArmGeometry();
-    StormSpark m_shoulder;
+public class Arm extends StormSubsystemBase {
+    final ArmGeometry m_geometry = new ArmGeometry();
+    final StormSpark m_shoulder;
     SparkMaxPIDController m_shoulderPID;
-    StormTalon m_shoulderEncoder;
-    StormSpark m_elbow;
+    final StormTalon m_shoulderEncoder;
+    final StormSpark m_elbow;
     SparkMaxPIDController m_elbowPID;
-    StormTalon m_elbowEncoder;
+    final StormTalon m_elbowEncoder;
     double m_maxDAlpha;
     double m_maxDBeta;
     double m_maxXSpeed = 1.0;
@@ -44,7 +42,7 @@ public class Arm extends SubsystemBase {
 
     protected ChassisSpeeds m_gripperSpeed = new ChassisSpeeds(0.0, 0.0, 0.0);
     protected ArmJointSpeeds m_jointSpeeds = new ArmJointSpeeds(0.0, 0.0);
-    private ArmDriveKinematics m_kinematics;
+    private final ArmDriveKinematics m_kinematics;
 
     public Arm() {
         m_maxDAlpha = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * armShoulderGearRatio);
@@ -128,7 +126,7 @@ public class Arm extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
+    public void stormPeriodic() {
         // TODO - should be a config, but it is really always 12
         double MAX_VOLTAGE = 12.0;
 

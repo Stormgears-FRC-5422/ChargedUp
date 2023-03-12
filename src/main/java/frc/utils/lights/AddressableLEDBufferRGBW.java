@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class AddressableLEDBufferRGBW extends AddressableLEDBuffer {
-  int ledLength;
+  final int ledLength;
   int start;
   int substringLength;
 

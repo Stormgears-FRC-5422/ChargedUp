@@ -6,20 +6,15 @@ package frc.robot;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
-import com.pathplanner.lib.PathPoint;
-import com.pathplanner.lib.commands.PPSwerveControllerCommand;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
@@ -35,7 +30,6 @@ import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
-import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.NeoPixel;
@@ -55,7 +49,6 @@ import frc.utils.joysticks.StormXboxController;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BooleanSupplier;
 
 import static frc.robot.constants.Constants.*;
 
@@ -71,6 +64,7 @@ public class RobotContainer {
     StormNet m_stormNet;
     NavX m_navX;
     Vision m_vision;
+    PoseEstimator m_poseEstimator;
     NodeSelector m_nodeSelector;
     NeoPixel m_neoPixel;
 
@@ -87,7 +81,6 @@ public class RobotContainer {
     // Other
     // **********
     final RobotState m_robotState;
-    PoseEstimator m_poseEstimator;
 
 
     // **********
@@ -95,11 +88,11 @@ public class RobotContainer {
     // **********
     StormLogitechController logitechController;
     StormXboxController xboxController;
-    ButtonBoardConfig m_buttonboardconfig;
+    ButtonBoard buttonBoard;
+    ButtonBoardConfig buttonBoardConfig;
 
     private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
     private final Map<String, Command> autoEventMap = new HashMap<>();
-    ButtonBoard m_buttonboard;
 
 
     public RobotContainer() throws IllegalDriveTypeException {
@@ -110,13 +103,13 @@ public class RobotContainer {
         m_robotState = RobotState.getInstance();
         m_robotState.setStartPose(new Pose2d(1, 1, new Rotation2d()));
 
-        if (SubsystemToggles.useNavX) {
+        if (Toggles.useNavX) {
             m_navX = new NavX();
         } else {
             System.out.println("NOT using navX");
         }
 
-        if (useStatusLights) {
+        if (Toggles.useStatusLights) {
             m_neoPixel = new NeoPixel();
             System.out.println("Using StatusLights");
         } else {
@@ -124,53 +117,53 @@ public class RobotContainer {
         }
 
         // Note the pattern of attempting to create the object then disabling it if that creation fails
-        if (SubsystemToggles.useDrive) {
+        if (Toggles.useDrive) {
             try {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
                 System.out.println("Successfully created Drivetrain!");
             } catch (Exception e) {
                 e.printStackTrace();
-                 SubsystemToggles.useDrive = false;
+                 Toggles.useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
         } else {
             System.out.println("NOT using drive");
         }
 
-        if (SubsystemToggles.useVision) {
+        if (Toggles.useVision) {
             m_vision = new Vision();
         } else {
             System.out.println("NOT using vision");
         }
 
-        if (SubsystemToggles.useArm) {
+        if (Toggles.useArm) {
             m_arm = new Arm();
             System.out.println("Using arm");
         } else {
             System.out.println("NOT using arm");
         }
 
-        if (SubsystemToggles.usePneumatics) {
+        if (Toggles.usePneumatics) {
             m_compression = new Compression();
         } else
             System.out.println("NOT using pneumatics");
 
-        if (SubsystemToggles.useStormNet) {
+        if (Toggles.useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
         } else
             System.out.println("NOT using stormnet");
 
-        if (SubsystemToggles.useDrive && driveType.equals("SwerveDrive")) {
+        if (Toggles.useDrive && driveType.equals("SwerveDrive")) {
             m_poseEstimator = new PoseEstimator(
                     m_drivetrain.getSwerveDriveKinematics(),
                     m_drivetrain.getSwerveModulePositions()
             );
             System.out.println("USING pose estimator");
-            SubsystemToggles.usePoseEstimator = true;
+            Toggles.usePoseEstimator = true;
         }
 
-        if (SubsystemToggles.useLogitechController) {
+        if (Toggles.useLogitechController) {
             logitechController = new StormLogitechController(kLogitechControllerPort);
             xboxController = new StormXboxController(kLogitechControllerPort + 1);
             System.out.println("using logitech controller");
@@ -178,7 +171,7 @@ public class RobotContainer {
             System.out.println("NOT using logitech controller");
         }
 
-        if (SubsystemToggles.useStormNet) {
+        if (Toggles.useStormNet) {
             System.out.println("Using StormNet");
             StormNet.init();
             m_stormNet = StormNet.getInstance();
@@ -189,7 +182,7 @@ public class RobotContainer {
             System.out.println("NOT using StormNet");
         }
 
-        if (SubsystemToggles.useNodeSelector) {
+        if (Toggles.useNodeSelector) {
             m_nodeSelector = new NodeSelector();
         } else {
             System.out.println("NOT using node selector");
@@ -200,11 +193,10 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        if (SubsystemToggles.useXboxController) {
+        if (Toggles.useXboxController) {
             xboxController = new StormXboxController(1);
-
-            if (SubsystemToggles.useArm) {
-                if (SubsystemToggles.useXYArmMode) {
+            if (Toggles.useArm) {
+                if (Toggles.useXYArmMode) {
                     System.out.println("Using XY mode for arm movement");
                     m_armCommand = new XYArm(m_arm,
                             xboxController::getRightJoystickX,
@@ -221,7 +213,7 @@ public class RobotContainer {
                 m_arm.setDefaultCommand(m_armCommand);
             }
 
-            if (SubsystemToggles.usePneumatics) {
+            if (Toggles.usePneumatics) {
                 new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
                 new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
                 new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
@@ -230,7 +222,7 @@ public class RobotContainer {
                 System.out.println("Pneumatics or controller not operational");
             }
 
-            if (SubsystemToggles.useNodeSelector) {
+            if (Toggles.useNodeSelector) {
                 new Trigger(xboxController::getUpArrowPressed)
                         .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(-1)));
                 new Trigger(xboxController::getDownArrowPressed)
@@ -241,8 +233,9 @@ public class RobotContainer {
                         .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(1)));
                 System.out.println("using controller to control node selector");
             }
+        }
 
-        if (SubsystemToggles.useDrive && SubsystemToggles.useLogitechController) {
+        if (Toggles.useDrive && Toggles.useLogitechController) {
             EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                     m_drivetrain,
                     logitechController::getWpiXAxis,
@@ -258,11 +251,10 @@ public class RobotContainer {
                         double angle = logitechController.getWPIPOVAngle();
                         System.out.println("Set point angle: " + angle);
                         driveWithJoystick.setSetPoint(angle);
-                    })
-            );
+                    }));
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
-            m_buttonboard = new ButtonBoard(0);
+            buttonBoard = new ButtonBoard(0);
 
             // zero angle command when we are red make sure robot pointing forwards is 180
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
@@ -284,26 +276,23 @@ public class RobotContainer {
             ShuffleboardConstants.getInstance().driverTab
                     .addString("Setpoint", driveWithJoystick::getSetpointDirection)
                     .withPosition(0, 3).withSize(2, 1);
-
-            ShuffleboardConstants.getInstance().driverTab
-                    .addDouble("Gyro Angle", () -> m_navX.getAbsoluteRotation().getDegrees())
-                    .withPosition(2, 3).withSize(2, 1);
-
-            if (SubsystemToggles.useStatusLights) {
-                new Trigger(() -> logitechController.getRawButton(9)).whileTrue(new InstantCommand(() -> m_neoPixel.setAll(m_neoPixel.fullColor)));
-            }
-
-        //BUTTONBOARD TRIGGERS
-        if (useButtonBoard) {
-            m_buttonboardconfig = new ButtonBoardConfig();
         }
 
-        if (SubsystemToggles.useLogitechController && SubsystemToggles.useNavX) {
+        if (Toggles.useLogitechController && Toggles.useStatusLights) {
+            new Trigger(() -> logitechController.getRawButton(9)).whileTrue(new InstantCommand(() -> m_neoPixel.setAll(NeoPixel.fullColor)));
+        }
+
+        //BUTTONBOARD TRIGGERS
+        if (Toggles.useButtonBoard) {
+            buttonBoardConfig = new ButtonBoardConfig();
+        }
+
+        if (Toggles.useLogitechController && Toggles.useNavX) {
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(new InstantCommand(() -> {
                 double angle = (DriverStation.getAlliance() == DriverStation.Alliance.Red) ?
                         180.0 : 0;
                 m_navX.setAngle(angle);
-                if (SubsystemToggles.usePoseEstimator) {
+                if (Toggles.usePoseEstimator) {
                     m_poseEstimator.resetEstimator(m_navX.getAbsoluteRotation(), m_drivetrain.getSwerveModulePositions(),
                             new Pose2d(RobotState.getInstance().getCurrentPose().getTranslation(),
                                     Rotation2d.fromDegrees(angle)));
@@ -311,7 +300,7 @@ public class RobotContainer {
             }));
         }
 
-        if (SubsystemToggles.useDrive && driveType.equals("SwerveDrive") && SubsystemToggles.usePoseEstimator) {
+        if (Toggles.useDrive && driveType.equals("SwerveDrive") && Toggles.usePoseEstimator) {
 
             autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
             autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
@@ -344,7 +333,7 @@ public class RobotContainer {
 
         }
 
-        if (SubsystemToggles.useNodeSelector && SubsystemToggles.useXboxController && SubsystemToggles.usePoseEstimator) {
+        if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
             new Trigger(xboxController::getAButtonIsHeld)
                     .onTrue(new AutoScore(m_drivetrain, m_nodeSelector.getSelectedNode()));
         }
@@ -355,7 +344,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        if (SubsystemToggles.useDrive && driveType.equals("SwerveDrive")) {
+        if (Toggles.useDrive && driveType.equals("SwerveDrive")) {
             var selectedPath = autoPathChooser.getSelected();
             m_robotState.setStartPose(selectedPath.path.getInitialHolonomicPose());
             return new FollowPathWithEvents(

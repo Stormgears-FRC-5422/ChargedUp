@@ -21,11 +21,6 @@ public class DriveWithJoystick extends CommandBase {
     /**
      * USE WPILIB COORDINATES X DRIVES FORWARDS, Y DRIVES LEFT
      * using percentage inputs (-1, 1)
-     * @param drive
-     * @param translationXSupplier
-     * @param translationYSupplier
-     * @param rotationSupplier
-     * @param precisionModeSupplier
      */
     public DriveWithJoystick(DrivetrainBase drive,
                              DoubleSupplier translationXSupplier,

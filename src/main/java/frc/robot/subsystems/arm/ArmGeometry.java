@@ -3,13 +3,10 @@ package frc.robot.subsystems.arm;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 
-import static frc.robot.Constants.*;
+import static frc.robot.constants.Constants.*;
 import static java.lang.Math.*;
 public class ArmGeometry {
-    double alpha;
-    double beta;
-    double l;
-    double m;
+    double alpha, beta, l, m;
     // Pose in arm-based coordinates. The shoulder joint is at (0,0)
     Pose2d m_endPose;
     Rotation2d noRotation = new Rotation2d(0.0);

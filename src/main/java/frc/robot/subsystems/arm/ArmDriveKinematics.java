@@ -5,7 +5,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import static java.lang.Math.*;
 
 public class ArmDriveKinematics {
-    private ArmGeometry geometry;
+    private final ArmGeometry geometry;
 
     public ArmDriveKinematics(ArmGeometry geometry) {
         this.geometry = geometry;

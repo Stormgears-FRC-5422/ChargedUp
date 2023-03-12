@@ -41,41 +41,6 @@ public final class AprilTagPoseEstimationStrategy {
         }
     }
 
-//    public static Pose2d fromAprilTagData(Vector<AprilTagData> dataList, Rotation2d cameraAngle) {
-//        if (dataList.size() < 1) {
-//            System.out.println("Gave data list of nothing to April tag pose estimator!!!");
-//            return CAMERA_POSITION.toPose2d();
-//        }
-//        if (dataList.size() == 1) return _oneAprilTagCameraAngle(dataList.get(0), cameraAngle);
-//        if (dataList.size() == 2) return new Pose2d(
-//                _triangulateTranslation(dataList.get(0), dataList.get(1)),
-//                cameraAngle);
-//
-//        //TODO: there is def a quicker way to do this
-//        AprilTagData closest = null;
-//        double closestDist = Double.MAX_VALUE;
-//        for (var data : dataList) {
-//            if (data.dist < closestDist) {
-//                closest = data;
-//                closestDist = data.dist;
-//            }
-//        }
-//        dataList.remove(closest);
-//        AprilTagData secondClosest = null;
-//        closestDist = Double.MAX_VALUE;
-//        for (var data : dataList) {
-//            if (data.dist < closestDist) {
-//                secondClosest = data;
-//                closestDist = data.dist;
-//            }
-//        }
-//        if (closest == null || secondClosest == null) return CAMERA_POSITION.toPose2d();
-//        return new Pose2d(
-//                _triangulateTranslation(closest, secondClosest),
-//                cameraAngle
-//        );
-//    }
-
     /** get camera pose from one tag data */
     private static Pose2d _oneAprilTagYaw(AprilTagData tag) {
         // get x transform and y transform known angle made by camera and apriltag

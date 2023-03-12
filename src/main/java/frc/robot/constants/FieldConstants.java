@@ -43,8 +43,8 @@ public final class FieldConstants {
 
     /** Grid arrays [0][0] are the highest and the farthest from substation */
     public final static class Grids {
-        public static ScoringNode[][] blueAllianceGrid = new ScoringNode[9][3];
-        public static ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
+        public static final ScoringNode[][] blueAllianceGrid = new ScoringNode[9][3];
+        public static final ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
 
         private static final double halfRobotLengthWithBumper = (ROBOT_LENGTH / 2.0) + BUMPER_THICKNESS;
         private static final double distBetweenNodes = Units.inchesToMeters(22.0);
@@ -189,7 +189,7 @@ public final class FieldConstants {
                 HYBRID(Units.inchesToMeters(0.0));
 
                 private final double height;
-                private NodeHeight(double height) {
+                NodeHeight(double height) {
                     this.height = height;
                 }
                 public double getHeight() {

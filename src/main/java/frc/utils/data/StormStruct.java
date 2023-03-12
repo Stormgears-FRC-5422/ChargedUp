@@ -2,11 +2,8 @@ package frc.utils.data;
 
 import edu.wpi.first.networktables.*;
 
-import java.sql.Struct;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
-import java.util.ArrayList;
 
 public class StormStruct {
     // Describes a data structure that has been published and described in network tables

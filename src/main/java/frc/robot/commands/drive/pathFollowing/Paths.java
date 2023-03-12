@@ -97,19 +97,6 @@ public final class Paths {
         return getPathToPose(currentPose, endFieldPose, maxVel, maxAcc);
     }
 
-//    public static SequentialCommandGroup getTeamNumberPathCommand(DrivetrainBase drivetrain) {
-//        return new SequentialCommandGroup(
-//                new PrintCommand("Starting team number command at position: " + RobotState.getInstance().getCurrentPose()),
-//                new FollowPathCommand(fivePath, drivetrain),
-//                new FollowPathCommand(fiveToFourTransition, drivetrain),
-//                new FollowPathCommand(fourPath, drivetrain),
-//                new FollowPathCommand(fourToTwoTransition, drivetrain),
-//                new FollowPathCommand(twoPath, drivetrain),
-//                new FollowPathCommand(twoToTwoTransition, drivetrain),
-//                new FollowPathCommand(twoPath, drivetrain)
-//        );
-//    }
-
     /** gives desired heading in radians pointing from A to B */
     public static double calcHeading(Translation2d translationA, Translation2d translationB) {
         //Move the ending about the initial

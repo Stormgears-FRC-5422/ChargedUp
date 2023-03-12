@@ -46,7 +46,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         rotController.enableContinuousInput(-180.0, 180.0);
         rotController.setTolerance(1.5);
 
-        robotAngleSupplier = () -> (Constants.SubsystemToggles.usePoseEstimator)?
+        robotAngleSupplier = () -> (Constants.Toggles.usePoseEstimator)?
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees() :
                 RobotState.getInstance().getCurrentGyroRotation().getDegrees();
 

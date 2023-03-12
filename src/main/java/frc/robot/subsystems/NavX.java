@@ -34,6 +34,9 @@ public class NavX extends StormSubsystemBase {
         ShuffleboardTab tab = ShuffleboardConstants.getInstance().navXTab;
         tab.addNumber("yaw", this::getYaw);
         tab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees());
+        ShuffleboardConstants.getInstance().driverTab
+                .addDouble("Gyro Angle", () -> getAbsoluteRotation().getDegrees())
+                .withPosition(2, 3).withSize(2, 1);
     }
 
 

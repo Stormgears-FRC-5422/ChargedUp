@@ -19,7 +19,7 @@ public class StormTalon extends WPI_TalonSRX {
   public enum AngleRangeType {
     rangeAbsolute,
     range0to1,
-    rangeNegToPos;
+    rangeNegToPos
   }
 
   public StormTalon(int deviceID) {

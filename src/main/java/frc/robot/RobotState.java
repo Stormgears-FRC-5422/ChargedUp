@@ -51,7 +51,7 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getCurrentPose() {
-        if (!Constants.SubsystemToggles.usePoseEstimator) {
+        if (!Constants.Toggles.usePoseEstimator) {
 //            System.out.println("NOT using pose estimator. Can't get current pose!");
             return getStartPose();
         }
@@ -79,7 +79,7 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getLastPose() {
-        if (!Constants.SubsystemToggles.usePoseEstimator) {
+        if (!Constants.Toggles.usePoseEstimator) {
 //            System.out.println("NOT using pose estimator. Can't get last pose!");
             return getCurrentPose();
         }
@@ -102,10 +102,6 @@ public class RobotState extends StormSubsystemBase {
         var floorEntry = gyroData.floorEntry(time);
         var ceilEntry = gyroData.ceilingEntry(time);
         double timeFromFloor = time - floorEntry.getKey();
-        if (floorEntry == null) {
-            System.out.println("Don't have gyro data for time: " + time);
-            return getStartPose().getRotation();
-        }
         if (ceilEntry == null) {
             double rotationalVel = getCurrentDegPerSecVel();
             Rotation2d rotationFromFloor = Rotation2d.fromDegrees(rotationalVel * timeFromFloor);
@@ -116,7 +112,7 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Rotation2d getCurrentGyroRotation() {
-        if (!Constants.SubsystemToggles.useNavX) {
+        if (!Constants.Toggles.useNavX) {
             System.out.println("NOT using gyro. Can't get current gyro rotation!");
             return Rotation2d.fromDegrees(0);
         }
