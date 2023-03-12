@@ -1,24 +1,23 @@
 package frc.robot.commands.arm;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmJointSpeeds;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.constants.Constants.*;
+import static frc.robot.Constants.*;
 
-public class BasicArm extends CommandBase {
+public class BasicArm extends ArmCommand {
     Arm arm;
-    DoubleSupplier shoulderOmegaSupplier;
-    DoubleSupplier elbowOmegaSupplier;
+    DoubleSupplier dAphaSupplier;
+    DoubleSupplier dBetaSupplier;
 
     public BasicArm(Arm arm,
-                    DoubleSupplier shoulderOmegaSupplier,
-                    DoubleSupplier elbowOmegaSupplier) {
+                    DoubleSupplier dAphaSupplier,
+                    DoubleSupplier dBetaSupplier) {
 
         this.arm = arm;
-        this.shoulderOmegaSupplier = shoulderOmegaSupplier;
-        this.elbowOmegaSupplier = elbowOmegaSupplier;
+        this.dAphaSupplier = dAphaSupplier;
+        this.dBetaSupplier = dBetaSupplier;
 
         addRequirements(arm);
     }
@@ -32,7 +31,7 @@ public class BasicArm extends CommandBase {
     @Override
     public void execute() {
         arm.setSpeedScale(kArmSpeedScale);
-        arm.percentOutMoveArm(new ArmJointSpeeds(shoulderOmegaSupplier.getAsDouble(), elbowOmegaSupplier.getAsDouble()));
+        arm.percentOutMoveArm(new ArmJointSpeeds(dAphaSupplier.getAsDouble(), dBetaSupplier.getAsDouble()));
     }
 
     @Override
@@ -43,10 +42,7 @@ public class BasicArm extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         System.out.println("BasicArm Command done!");
-        // TODO - maybe this should be conditional - we don't want to undo what the interrupting command is trying to do.
-        // but for now this is safer, and I don't think we'll keep this around long term.
-        if (!interrupted)
-            arm.stopArm();
+        arm.stopArm();
     }
 
 }

@@ -8,15 +8,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import frc.utils.configfile.StormProp;
 
-
-/**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
- * globally (i.e. public static). Do not put anything functional in this class.
- *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
- * constants are needed, to reduce verbosity.
- */
 public final class Constants {
 
     public static final String robotName = StormProp.getString("robotName", "");
@@ -31,7 +22,8 @@ public final class Constants {
     public static final double kNeoFreeSpeedRPM = StormProp.getNumber("SparkMaxFreeSpeedRPM", 0.0);
     public static final double kDriveSpeedScale = StormProp.getNumber("driveSpeedScale", 0.0);
     public static final double kPrecisionSpeedScale = StormProp.getNumber("precisionSpeedScale", 0.0);
-    public static final double kArmSpeedScale = StormProp.getNumber("armSpeedScale", 0.0);
+    public static final double kArmSpeedScale = StormProp.getNumber("angleArmSpeedScale", 0.0);
+    public static final double kXYArmSpeedScale = StormProp.getNumber("xyArmSpeedScale", 0.0);
 
     public static final int frontLeftDriveID = StormProp.getInt("frontLeftDriveID", 0);
     public static final int frontRightDriveID = StormProp.getInt("frontRightDriveID", 0);
@@ -101,7 +93,8 @@ public final class Constants {
     public static final int kMagEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
     public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
     public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
-
+    public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
+    public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
     public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
@@ -111,32 +104,33 @@ public final class Constants {
     public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
     public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
 
-    public static class VisionConstants {
-        private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiX", 0.0));
-        private static final double kCameraYTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiY", 0.0));
-        private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
-        private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
-        private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
-        public static final double kAprilTagYawTrustMeters = StormProp.getNumber("AprilTagYawTrustMeters", 0.5);
+      public static class VisionConstants {
+          private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiX", 0.0));
+          private static final double kCameraYTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiY", 0.0));
+          private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
+          private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
+          private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
+          public static final double kAprilTagYawTrustMeters = StormProp.getNumber("AprilTagYawTrustMeters", 0.5);
 
-        public static final Pose3d CAMERA_POSITION = new Pose3d(
-                kCameraXTranslation, kCameraYTranslation, kCameraZTranslation,
-                new Rotation3d(0,
-                        Math.toRadians(kCameraPitch),
-                        Math.toRadians(kCameraYaw))
-        );
+          public static final Pose3d CAMERA_POSITION = new Pose3d(
+                  kCameraXTranslation, kCameraYTranslation, kCameraZTranslation,
+                  new Rotation3d(0,
+                          Math.toRadians(kCameraPitch),
+                          Math.toRadians(kCameraYaw))
+          );
 
-        // could be done a lot easier
-        public static final Transform3d CAMERA_ROBOT_TRANSFORM = new Transform3d(
-                CAMERA_POSITION,
-                new Pose3d()
-        );
-        public static final Transform2d CAMERA_ROBOT_TRANSFORM2D = new Transform2d(
-                CAMERA_POSITION.toPose2d(),
-                new Pose2d()
-        );
+          // could be done a lot easier
+          public static final Transform3d CAMERA_ROBOT_TRANSFORM = new Transform3d(
+                  CAMERA_POSITION,
+                  new Pose3d()
+          );
+          public static final Transform2d CAMERA_ROBOT_TRANSFORM2D = new Transform2d(
+                  CAMERA_POSITION.toPose2d(),
+                  new Pose2d()
+          );
 
-    }
+      }
+
 
     public static class SubsystemToggles {
         // **********
@@ -144,7 +138,9 @@ public final class Constants {
         // **********
         public static boolean useDrive = StormProp.getBoolean("useDrive", false);
         public static boolean useNavX = StormProp.getBoolean("useNavX", false);
-        public static boolean useController = StormProp.getBoolean("useController", false);
+//        public static boolean useController = StormProp.getBoolean("useController", false);
+        public static boolean useLogitechController = StormProp.getBoolean("useLogitechController", false);
+        public static boolean useXboxController = StormProp.getBoolean("useXboxController", false);
         public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
         public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
         public static boolean useArm = StormProp.getBoolean("useArm", false);

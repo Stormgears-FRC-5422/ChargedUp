@@ -6,20 +6,27 @@ package frc.robot;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
+import com.pathplanner.lib.PathPoint;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.LidarIndicatorCommand;
+import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.drive.EnhancedDriveWithJoystick;
 import frc.robot.commands.drive.pathFollowing.FolllowPathFromPose;
@@ -27,8 +34,11 @@ import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
 import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
+import frc.robot.commands.arm.XYArm;
+import frc.robot.commands.trajectory.FollowPathCommand;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
+import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
@@ -39,11 +49,13 @@ import frc.robot.subsystems.drive.DrivetrainFactory;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.joysticks.ButtonBoard;
+import frc.utils.joysticks.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 import static frc.robot.constants.Constants.*;
 
@@ -60,15 +72,16 @@ public class RobotContainer {
     NavX m_navX;
     Vision m_vision;
     NodeSelector m_nodeSelector;
-
+    NeoPixel m_neoPixel;
 
     // **********
     // COMMANDS
     // **********
     BalanceCommand m_balancecommand;
     GyroCommand m_gyrocommand;
-    BasicArm m_basicArm;
-
+    LidarIndicatorCommand m_lidarIndicatorCommand;
+    ArmCommand m_armCommand;
+    //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
     // Other
@@ -82,6 +95,7 @@ public class RobotContainer {
     // **********
     StormLogitechController logitechController;
     StormXboxController xboxController;
+    ButtonBoardConfig m_buttonboardconfig;
 
     private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
     private final Map<String, Command> autoEventMap = new HashMap<>();
@@ -102,10 +116,18 @@ public class RobotContainer {
             System.out.println("NOT using navX");
         }
 
+        if (useStatusLights) {
+            m_neoPixel = new NeoPixel();
+            System.out.println("Using StatusLights");
+        } else {
+            System.out.println("NOT using StatusLights");
+        }
+
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (SubsystemToggles.useDrive) {
             try {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
+                System.out.println("Successfully created Drivetrain!");
             } catch (Exception e) {
                 e.printStackTrace();
                  SubsystemToggles.useDrive = false;
@@ -123,6 +145,7 @@ public class RobotContainer {
 
         if (SubsystemToggles.useArm) {
             m_arm = new Arm();
+            System.out.println("Using arm");
         } else {
             System.out.println("NOT using arm");
         }
@@ -147,13 +170,12 @@ public class RobotContainer {
             SubsystemToggles.usePoseEstimator = true;
         }
 
-        // TODO - how do we know that this worked? e.g. what fails if the joystick is unplugged?
-        if (SubsystemToggles.useController) {
+        if (SubsystemToggles.useLogitechController) {
             logitechController = new StormLogitechController(kLogitechControllerPort);
             xboxController = new StormXboxController(kLogitechControllerPort + 1);
-            System.out.println("using controller");
+            System.out.println("using logitech controller");
         } else {
-            System.out.println("NOT using controller");
+            System.out.println("NOT using logitech controller");
         }
 
         if (SubsystemToggles.useStormNet) {
@@ -163,6 +185,8 @@ public class RobotContainer {
             m_stormNet.test();
             var tab = Shuffleboard.getTab("Storm Net");
             tab.addNumber("Lidar Distance", m_stormNet::getLidarDistance);
+        } else {
+            System.out.println("NOT using StormNet");
         }
 
         if (SubsystemToggles.useNodeSelector) {
@@ -176,29 +200,49 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        xboxController = new StormXboxController(1);
+        if (SubsystemToggles.useXboxController) {
+            xboxController = new StormXboxController(1);
 
-        if (SubsystemToggles.useArm && SubsystemToggles.useController) {
-            m_basicArm = new BasicArm(m_arm,
-                    xboxController::getLeftJoystickY,
-                    xboxController::getRightJoystickY);
-            m_arm.setDefaultCommand(m_basicArm);
-        }
+            if (SubsystemToggles.useArm) {
+                if (SubsystemToggles.useXYArmMode) {
+                    System.out.println("Using XY mode for arm movement");
+                    m_armCommand = new XYArm(m_arm,
+                            xboxController::getRightJoystickX,
+                            xboxController::getLeftJoystickY);
+//                    m_armCommand = new XYArm(m_arm,
+//                            xboxController::getRightJoystickX,
+//                            xboxController::getRightJoystickY);
+                } else {
+                    System.out.println("Using Angle mode for arm movement");
+                    m_armCommand = new BasicArm(m_arm,
+                            xboxController::getLeftJoystickY,
+                            xboxController::getRightJoystickY);
+                }
+                m_arm.setDefaultCommand(m_armCommand);
+            }
 
-        if (SubsystemToggles.useController && SubsystemToggles.useNodeSelector) {
-            new Trigger(xboxController::getUpArrowPressed)
-                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(-1)));
-            new Trigger(xboxController::getDownArrowPressed)
-                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(1)));
-            new Trigger(xboxController::getLeftArrowPressed)
-                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(-1)));
-            new Trigger(xboxController::getRightArrowPressed)
-                    .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(1)));
-            System.out.println("using controller to control node selector");
-        }
+            if (SubsystemToggles.usePneumatics) {
+                new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
+                new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
+                new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
+                new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::startCompressor));
+            } else {
+                System.out.println("Pneumatics or controller not operational");
+            }
 
+            if (SubsystemToggles.useNodeSelector) {
+                new Trigger(xboxController::getUpArrowPressed)
+                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(-1)));
+                new Trigger(xboxController::getDownArrowPressed)
+                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(1)));
+                new Trigger(xboxController::getLeftArrowPressed)
+                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(-1)));
+                new Trigger(xboxController::getRightArrowPressed)
+                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(1)));
+                System.out.println("using controller to control node selector");
+            }
 
-        if (SubsystemToggles.useDrive && SubsystemToggles.useController) {
+        if (SubsystemToggles.useDrive && SubsystemToggles.useLogitechController) {
             EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                     m_drivetrain,
                     logitechController::getWpiXAxis,
@@ -245,16 +289,16 @@ public class RobotContainer {
                     .addDouble("Gyro Angle", () -> m_navX.getAbsoluteRotation().getDegrees())
                     .withPosition(2, 3).withSize(2, 1);
 
+            if (SubsystemToggles.useStatusLights) {
+                new Trigger(() -> logitechController.getRawButton(9)).whileTrue(new InstantCommand(() -> m_neoPixel.setAll(m_neoPixel.fullColor)));
+            }
 
-
-            //BUTTONBOARD TRIGGERS
-//            new Trigger(m_buttonboard::ChargeStationBalance).onTrue(new BalanceCommand(m_navX::getPitch,
-//                   m_navX::getRoll,
-//                    m_drivetrain));
-
+        //BUTTONBOARD TRIGGERS
+        if (useButtonBoard) {
+            m_buttonboardconfig = new ButtonBoardConfig();
         }
 
-        if (SubsystemToggles.useController && SubsystemToggles.useNavX) {
+        if (SubsystemToggles.useLogitechController && SubsystemToggles.useNavX) {
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(new InstantCommand(() -> {
                 double angle = (DriverStation.getAlliance() == DriverStation.Alliance.Red) ?
                         180.0 : 0;
@@ -300,7 +344,7 @@ public class RobotContainer {
 
         }
 
-        if (SubsystemToggles.useNodeSelector && SubsystemToggles.useController && SubsystemToggles.usePoseEstimator) {
+        if (SubsystemToggles.useNodeSelector && SubsystemToggles.useXboxController && SubsystemToggles.usePoseEstimator) {
             new Trigger(xboxController::getAButtonIsHeld)
                     .onTrue(new AutoScore(m_drivetrain, m_nodeSelector.getSelectedNode()));
         }
