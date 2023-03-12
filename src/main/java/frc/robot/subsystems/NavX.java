@@ -27,7 +27,7 @@ public class NavX extends StormSubsystemBase {
                 break;
             default:
                 m_gyro = new AHRS(SPI.Port.kMXP);
-                 System.out.println("NO NavX Connection Given. Default NavX connection used: SPI");
+                System.out.println("NO NavX Connection Given. Default NavX connection used: SPI");
                 break;
         }
 
@@ -35,8 +35,8 @@ public class NavX extends StormSubsystemBase {
         tab.addNumber("yaw", this::getYaw);
         tab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees());
         ShuffleboardConstants.getInstance().driverTab
-                .addDouble("Gyro Angle", () -> getAbsoluteRotation().getDegrees())
-                .withPosition(2, 3).withSize(2, 1);
+                .addDouble("Gyro", () -> getAbsoluteRotation().getDegrees())
+                .withPosition(3, 2).withSize(1, 1);
     }
 
 

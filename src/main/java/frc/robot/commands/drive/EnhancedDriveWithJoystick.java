@@ -5,11 +5,14 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 import frc.robot.constants.Constants;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -49,6 +52,21 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         robotAngleSupplier = () -> (Constants.Toggles.usePoseEstimator)?
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees() :
                 RobotState.getInstance().getCurrentGyroRotation().getDegrees();
+
+        ShuffleboardConstants.getInstance().driverTab
+                .addBoolean("Robot Relative", robotRelativeSupplier::getAsBoolean)
+                .withWidget(BuiltInWidgets.kBooleanBox)
+                .withPosition(0, 2).withSize(1, 1);
+
+        ShuffleboardConstants.getInstance().driverTab
+                .addBoolean("Percision Mode", percisionModeSupplier::getAsBoolean)
+                .withWidget(BuiltInWidgets.kBooleanBox)
+                .withPosition(1, 2).withSize(1, 1);
+
+        ShuffleboardConstants.getInstance().driverTab
+                .addString("Setpoint", () -> setpointDirection)
+                .withProperties(Map.of("Label position", "HIDDEN"))
+                .withPosition(2, 2).withSize(1, 1);
 
         addRequirements(m_drivetrain);
     }
@@ -127,17 +145,5 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         }
         rotController.setGoal(angle);
         setpointRotationMode = true;
-    }
-
-    public boolean getFieldOriented() {
-        return !robotRelativeSupplier.getAsBoolean();
-    }
-
-    public boolean getPercisionMode() {
-        return percisionModeSupplier.getAsBoolean();
-    }
-
-    public String getSetpointDirection() {
-        return setpointDirection;
     }
 }

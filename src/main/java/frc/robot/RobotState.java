@@ -5,7 +5,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.Vision;
@@ -26,6 +28,8 @@ public class RobotState extends StormSubsystemBase {
 
     private Pose2d currentPose, startPose, lastPose;
 
+    private GenericEntry xStartEntry, yStartEntry, rotStartEntry;
+
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
 
@@ -44,6 +48,22 @@ public class RobotState extends StormSubsystemBase {
         layout.addNumber("Robot Time", this::getTimeSeconds);
         layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
         layout.addNumber("Rotational Velocity", this::getCurrentDegPerSecVel);
+
+        var startPoseSetter = ShuffleboardConstants.getInstance().driverTab
+                .getLayout("Set Start Pose", BuiltInLayouts.kGrid)
+                .withPosition(0, 3).withSize(3, 1);
+
+        xStartEntry = startPoseSetter
+                .add("X", getStartPose().getX())
+                .withPosition(0, 0).getEntry();
+
+        yStartEntry = startPoseSetter
+                .add("Y", getStartPose().getY())
+                .withPosition(1, 0).getEntry();
+
+        rotStartEntry = startPoseSetter
+                .add("Rot", getStartPose().getRotation().getDegrees())
+                .withPosition(2, 0).getEntry();
     }
 
     public double getTimeSeconds() {
@@ -169,6 +189,13 @@ public class RobotState extends StormSubsystemBase {
 
         currentPose = null;
         lastPose = null;
+
+        setStartPose(
+                new Pose2d(
+                    xStartEntry.getDouble(0.0),
+                    yStartEntry.getDouble(0.0),
+                    Rotation2d.fromDegrees(rotStartEntry.getDouble(0.0)))
+        );
     }
 
     public void disabledInit() {

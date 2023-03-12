@@ -101,7 +101,6 @@ public class RobotContainer {
         ShuffleboardConstants.getInstance();
 
         m_robotState = RobotState.getInstance();
-        m_robotState.setStartPose(new Pose2d(1, 1, new Rotation2d()));
 
         if (Toggles.useNavX) {
             m_navX = new NavX();
@@ -262,20 +261,6 @@ public class RobotContainer {
                 m_drivetrain.getCurrentCommand().cancel();
                 driveWithJoystick.schedule();
             }));
-
-            ShuffleboardConstants.getInstance().driverTab
-                    .addBoolean("Field Oriented On", driveWithJoystick::getFieldOriented)
-                    .withWidget(BuiltInWidgets.kBooleanBox)
-                    .withPosition(0, 2).withSize(2, 1);
-
-            ShuffleboardConstants.getInstance().driverTab
-                    .addBoolean("Percision Mode On", driveWithJoystick::getPercisionMode)
-                    .withWidget(BuiltInWidgets.kBooleanBox)
-                    .withPosition(2, 2).withSize(2, 1);
-
-            ShuffleboardConstants.getInstance().driverTab
-                    .addString("Setpoint", driveWithJoystick::getSetpointDirection)
-                    .withPosition(0, 3).withSize(2, 1);
         }
 
         if (Toggles.useLogitechController && Toggles.useStatusLights) {
