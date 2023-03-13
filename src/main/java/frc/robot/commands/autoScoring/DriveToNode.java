@@ -47,6 +47,12 @@ public class DriveToNode extends PathFollowingCommand {
             Translation2d alignedToGrid = new Translation2d(alignedX, currentPose.getY());
             Translation2d alignedToNode = new Translation2d(alignedX, scorePose.getY());
 
+            double distToAlignedToGrid = currentPose.getTranslation().getDistance(alignedToGrid);
+            double distToAlignedToNode = alignedToGrid.getDistance(alignedToNode) + distToAlignedToGrid;
+
+            Rotation2d scoreRotation = scorePose.getRotation();
+            Rotation2d firstRotation = currentPose.getRotation().interpolate(scoreRotation, distToAlignedToGrid / distToAlignedToNode);
+
             PathPoint startPoint = new PathPoint(
                     currentPose.getTranslation(),
                     Rotation2d.fromRadians(calcHeading(currentPose.getTranslation(), alignedToGrid)),
@@ -55,17 +61,17 @@ public class DriveToNode extends PathFollowingCommand {
             PathPoint alignToGrids = new PathPoint(
                     alignedToGrid,
                     Rotation2d.fromRadians(calcHeading(alignedToGrid, alignedToNode)),
-                    scorePose.getRotation()).withPrevControlLength(0.05);
+                    firstRotation).withPrevControlLength(0.05);
 
             PathPoint alignToNode = new PathPoint(
                     alignedToNode,
                     Rotation2d.fromRadians(calcHeading(alignedToNode, scorePose.getTranslation())),
-                    scorePose.getRotation()).withPrevControlLength(0.05);
+                    scoreRotation).withPrevControlLength(0.05);
 
             PathPoint scoringPose = new PathPoint(
                     scorePose.getTranslation(),
                     scorePose.getRotation(),
-                    scorePose.getRotation()).withPrevControlLength(Units.inchesToMeters(10));
+                    scoreRotation).withPrevControlLength(Units.inchesToMeters(10));
 
             path = PathPlanner.generatePath(
                     new PathConstraints(2, 0.5),

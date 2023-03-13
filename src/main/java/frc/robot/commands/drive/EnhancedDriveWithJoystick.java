@@ -22,6 +22,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     private final DoubleSupplier txSupplier, tySupplier, omegaSupplier;
 
+    // FIXME: tune these slew rates
     private final SlewRateLimiter txLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter tyLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(2);
@@ -51,15 +52,15 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
         robotAngleSupplier = () -> (Constants.Toggles.usePoseEstimator)?
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees() :
-                RobotState.getInstance().getCurrentGyroRotation().getDegrees();
+                RobotState.getInstance().getCurrentGyroData().getDegrees();
 
         ShuffleboardConstants.getInstance().driverTab
-                .addBoolean("Robot Relative", robotRelativeSupplier::getAsBoolean)
+                .addBoolean("Robot Relative", robotRelativeSupplier)
                 .withWidget(BuiltInWidgets.kBooleanBox)
                 .withPosition(0, 2).withSize(1, 1);
 
         ShuffleboardConstants.getInstance().driverTab
-                .addBoolean("Percision Mode", percisionModeSupplier::getAsBoolean)
+                .addBoolean("Percision Mode", percisionModeSupplier)
                 .withWidget(BuiltInWidgets.kBooleanBox)
                 .withPosition(1, 2).withSize(1, 1);
 
@@ -116,8 +117,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
                 new ChassisSpeeds(
                         txLimiter.calculate(txSupplier.getAsDouble()),
                         tyLimiter.calculate(tySupplier.getAsDouble()),
-                        (setpointRotationMode)? omegaSpeed :
-                        omegaLimiter.calculate(omegaSpeed)),
+                        (setpointRotationMode)? omegaSpeed : omegaLimiter.calculate(omegaSpeed)),
                 !robotRelativeSupplier.getAsBoolean()
         );
     }

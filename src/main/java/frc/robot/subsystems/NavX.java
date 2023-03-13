@@ -83,17 +83,7 @@ public class NavX extends StormSubsystemBase {
 
     @Override
     public void enabledPeriodic() {
-        RobotState.getInstance().addGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
-
-        double currentRotation = RobotState.getInstance().getCurrentPose().getRotation().getDegrees();
-        double degreeDiff = Math.abs(currentRotation - getAbsoluteRotation().getDegrees());
-
-//        if (RobotState.getInstance().getCurrentDegPerSecVel() <= 20.0 &&
-//            RobotState.getInstance().getCurrentLinearVel() <= 0.2 &&
-//            degreeDiff >= 50.0) {
-//            System.out.println("Current rotation being set to gyro: " + currentRotation);
-//            setAngle(currentRotation);
-//        }
+        RobotState.getInstance().setGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
     }
 
     public void enabledInit() {

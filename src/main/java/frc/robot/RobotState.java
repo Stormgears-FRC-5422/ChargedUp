@@ -23,8 +23,10 @@ public class RobotState extends StormSubsystemBase {
 
     private Pair<Double, OdometryData> currentOdometryData = null;
     private Pair<Double, Vector<Vision.AprilTagData>> currentVisionData = null;
+    private Pair<Double, Rotation2d> currentGyroData = null;
     private int visionLogCounter = 0;
-    private TreeMap<Double, Rotation2d> gyroData = new TreeMap<>();
+
+    private TreeMap<Double, Pose2d> poseMap = new TreeMap<>();
 
     private Pose2d currentPose, startPose, lastPose;
 
@@ -70,20 +72,26 @@ public class RobotState extends StormSubsystemBase {
         return m_timer.get();
     }
 
+    public void addPose(double time, Pose2d pose) {
+        poseMap.put(time, pose);
+    }
+
     public Pose2d getCurrentPose() {
         if (!Constants.Toggles.usePoseEstimator) {
 //            System.out.println("NOT using pose estimator. Can't get current pose!");
             return getStartPose();
         }
-        if (currentPose == null) {
-//            System.out.println("Using start pose for current pose: " + getStartPose());
-            return getStartPose();
-        }
-        return currentPose;
+        return poseMap.lastEntry().getValue();
     }
 
-    public void setCurrentPose(Pose2d pose) {
-        currentPose = pose;
+    public Pose2d getLastPose() {
+        if (!Constants.Toggles.usePoseEstimator) {
+//            System.out.println("NOT using pose estimator. Can't get last pose!");
+            return getStartPose();
+        }
+        Double key = poseMap.floorKey(poseMap.lastKey());
+        if (key == null) return getCurrentPose();
+        return poseMap.get(key);
     }
 
     public Pose2d getStartPose() {
@@ -98,61 +106,44 @@ public class RobotState extends StormSubsystemBase {
         startPose = pose;
     }
 
-    public Pose2d getLastPose() {
-        if (!Constants.Toggles.usePoseEstimator) {
-//            System.out.println("NOT using pose estimator. Can't get last pose!");
-            return getCurrentPose();
-        }
-        if (lastPose == null) {
-//            System.out.println("Using current pose for last pose: " + getCurrentPose());
-            return getCurrentPose();
-        }
-        return lastPose;
-    }
-
-    public void setLastPose(Pose2d lastPose) {
-        this.lastPose = lastPose;
-    }
-
-    public void addGyroData(double time, Rotation2d angle) {
-        gyroData.put(time, angle);
-    }
-
-    public Rotation2d getAngleAtTimeSeconds(double time) {
-        var floorEntry = gyroData.floorEntry(time);
-        var ceilEntry = gyroData.ceilingEntry(time);
+    /** returns rotation at that time in seconds */
+    public Rotation2d getRotationAtTime(double time) {
+        var floorEntry = poseMap.floorEntry(time);
+        var ceilEntry = poseMap.ceilingEntry(time);
         if (floorEntry == null) {
-            if (ceilEntry != null) return ceilEntry.getValue();
-            return getCurrentGyroRotation();
+            if (ceilEntry != null) return ceilEntry.getValue().getRotation();
+            return getCurrentPose().getRotation();
         }
-        double timeFromFloor = time - floorEntry.getKey();
         if (ceilEntry == null) {
-            double rotationalVel = getCurrentDegPerSecVel();
-            Rotation2d rotationFromFloor = Rotation2d.fromDegrees(rotationalVel * timeFromFloor);
-            return floorEntry.getValue().plus(rotationFromFloor);
+            return getCurrentPose().getRotation();
         }
-        if (Math.abs(ceilEntry.getValue().getDegrees() - floorEntry.getValue().getDegrees()) >= 50) {
-            return ceilEntry.getValue();
-        }
-        double timeFloorToCeiling = ceilEntry.getKey() - floorEntry.getKey();
-        return floorEntry.getValue().interpolate(ceilEntry.getValue(), timeFromFloor / timeFloorToCeiling);
+        Rotation2d floorAngle = floorEntry.getValue().getRotation();
+        Rotation2d ceilAngle = ceilEntry.getValue().getRotation();
+        if (Math.abs(floorAngle.getDegrees() - ceilAngle.getDegrees()) >= 10) return getCurrentPose().getRotation();
+        double timeFromFloor = Timer.getFPGATimestamp() - floorEntry.getKey();
+        double timeBetween = ceilEntry.getKey() - floorEntry.getKey();
+        return floorAngle.interpolate(ceilAngle, timeFromFloor / timeBetween);
     }
 
-    public Rotation2d getCurrentGyroRotation() {
-        if (!Constants.Toggles.useNavX) {
-            System.out.println("NOT using gyro. Can't get current gyro rotation!");
-            return Rotation2d.fromDegrees(0);
-        }
-        var entry = gyroData.lastEntry();
-        return (entry != null)? entry.getValue() : new Rotation2d();
-    }
 
     public void setOdometryData(double time, OdometryData odometryData) {
         currentOdometryData = new Pair<>(time, odometryData);
     }
 
     public Pair<Double, OdometryData> getCurrentOdometryData() {
-        return currentOdometryData;
+        return (currentOdometryData != null)? currentOdometryData : new Pair<>(0.0, new OdometryData());
+    }
+
+    public void setGyroData(double time, Rotation2d angle) {
+        currentGyroData = new Pair<>(time, angle);
+    }
+
+    public Rotation2d getCurrentGyroData() {
+        if (!Constants.Toggles.useNavX) {
+            System.out.println("NOT using gyro. Can't get current gyro rotation!");
+            return new Rotation2d();
+        }
+        return (currentGyroData != null)? currentGyroData.getSecond() : new Rotation2d();
     }
 
     public void setVisionData(double time, Vector<Vision.AprilTagData> visionData) {
@@ -193,10 +184,11 @@ public class RobotState extends StormSubsystemBase {
 
         currentOdometryData = null;
         currentVisionData = null;
-        gyroData = new TreeMap<>();
+        currentGyroData = null;
 
         currentPose = null;
         lastPose = null;
+        poseMap = new TreeMap<>();
 
         setStartPose(
                 new Pose2d(
@@ -211,10 +203,11 @@ public class RobotState extends StormSubsystemBase {
 
         currentOdometryData = null;
         currentVisionData = null;
-        gyroData = new TreeMap<>();
+        currentGyroData = null;
 
         currentPose = null;
         lastPose = null;
+        poseMap = new TreeMap<>();
     }
 
     public static class OdometryData {
@@ -224,6 +217,15 @@ public class RobotState extends StormSubsystemBase {
         public OdometryData(SwerveModulePosition[] modulePositions, Rotation2d gyroAngle) {
             this.modulePositions = modulePositions;
             this.gyroAngle = gyroAngle;
+        }
+
+        public OdometryData() {
+            this(new SwerveModulePosition[]{
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition()
+            }, new Rotation2d());
         }
 
         public Rotation2d getGyroAngle() {

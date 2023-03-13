@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
@@ -39,14 +40,14 @@ public class PoseEstimator extends StormSubsystemBase {
 
     private double currentOdometryEntryTime, currentVisionEntryTime;
 
-    public PoseEstimator(SwerveDriveKinematics kinematics,
-                         SwerveModulePosition[] modulePositions) {
+    public PoseEstimator(SwerveDriveKinematics kinematics) {
         var startPose = RobotState.getInstance().getStartPose();
 
+        var data = RobotState.getInstance().getCurrentOdometryData().getSecond();
         m_poseEstimator = new SwerveDrivePoseEstimator(
                 kinematics,
-                RobotState.getInstance().getCurrentGyroRotation(),
-                modulePositions,
+                data.getGyroAngle(),
+                data.getModulePositions(),
                 startPose,
                 stateStdDevs,
                 visionMeasurementStdDevs
@@ -94,8 +95,8 @@ public class PoseEstimator extends StormSubsystemBase {
                 if (time != currentVisionEntryTime) {
                     var info = currentVisionData.getSecond();
                     // calculate camera angle by adding to the gyro angle
-                    Rotation2d gyroAngle = RobotState.getInstance().getAngleAtTimeSeconds(time);
-                    Rotation2d cameraAngle = gyroAngle.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
+                    Rotation2d robotRotation = RobotState.getInstance().getRotationAtTime(time);
+                    Rotation2d cameraAngle = robotRotation.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
                     // just call the pose estimation strategy class
                     Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
                     // have to transform to robot pose
@@ -109,11 +110,10 @@ public class PoseEstimator extends StormSubsystemBase {
             }
         }
 
-        //set pose in state object
+        //add pose to state object
         currentPose = m_poseEstimator.getEstimatedPosition();
         estimatedPoseSim.setPose(currentPose);
-        RobotState.getInstance().setCurrentPose(currentPose);
-        RobotState.getInstance().setLastPose(lastPose);
+        RobotState.getInstance().addPose(Timer.getFPGATimestamp(), currentPose);
     }
 
     public void resetEstimator(Rotation2d angle, SwerveModulePosition[] modulePositions, Pose2d pose) {
@@ -121,14 +121,10 @@ public class PoseEstimator extends StormSubsystemBase {
     }
 
     public void resetEstimator(Pose2d pose) {
+        var data = RobotState.getInstance().getCurrentOdometryData().getSecond();
         resetEstimator(
-                RobotState.getInstance().getCurrentGyroRotation(),
-                new SwerveModulePosition[] {
-                        new SwerveModulePosition(),
-                        new SwerveModulePosition(),
-                        new SwerveModulePosition(),
-                        new SwerveModulePosition()
-                },
+                data.getGyroAngle(),
+                data.getModulePositions(),
                 pose
         );
     }
