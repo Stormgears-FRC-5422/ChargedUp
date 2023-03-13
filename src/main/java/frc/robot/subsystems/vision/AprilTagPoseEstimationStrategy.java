@@ -112,18 +112,18 @@ public final class AprilTagPoseEstimationStrategy {
         double closerDist = _get2dDist(closerTag.id, closerTag.dist);
         double fartherDist = _get2dDist(fartherTag.id, fartherTag.dist);
         // calculate transformations
-        double angleMadeByCloseTagAndWall = _getAngleFromTriangle(fartherDist, distBetween, closerDist);
+        double angleMadeByCloseTagAndWall = _getAngleFromTriangle(closerDist, distBetween, fartherDist);
         double xTransform = Math.sin(angleMadeByCloseTagAndWall) * closerDist;
         double yTransform = Math.cos(angleMadeByCloseTagAndWall) * closerDist;
         // should add or subtract transformations based on their position on the field
         // if wpi y is less than the other one then we should add otherwise we should subtract
-        double signedY = (closerTagTranslation.getY() < fartherTagTranslation.getY())? 1.0 : -1.0;
+        double signY = (closerTagTranslation.getY() < fartherTagTranslation.getY())? 1.0 : -1.0;
         // if it is on the red side of the field then we should subtract the x transformation
-        double signedX = (closerTagTranslation.getX() < FIELD_LENGTH / 2.0)? 1.0 : -1.0;
+        double signX = (closerTagTranslation.getX() < FIELD_LENGTH / 2.0)? 1.0 : -1.0;
         // add the transforms onto the closer tag
         return new Translation2d(
-                closerTagTranslation.getX() + xTransform * signedX,
-                closerTagTranslation.getY() + yTransform * signedY
+                closerTagTranslation.getX() + xTransform * signX,
+                closerTagTranslation.getY() + yTransform * signY
         );
     }
 
@@ -147,10 +147,10 @@ public final class AprilTagPoseEstimationStrategy {
         return (dist3d * dist3d) - (heightDiff * heightDiff);
     }
 
-    /** @return angle in radians opposite side a given triangle lengths <br>
-     * (b^2 + c^2 - a^2)/(2bc) --> A */
+    /** @return angle in radians made by a and b given side lengths <br>
+     * (a^2 + b^2 - c^2)/(2ab) --> A */
     private static double _getAngleFromTriangle(double a, double b, double c) {
-        double x = (b*b + c*c - a*a) / (2.0 * b * c);
+        double x = (a*a + b*b - c*c) / (2.0 * a * b);
         return Math.acos(x);
     }
 }
