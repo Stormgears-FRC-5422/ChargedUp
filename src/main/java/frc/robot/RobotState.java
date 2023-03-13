@@ -89,9 +89,7 @@ public class RobotState extends StormSubsystemBase {
 //            System.out.println("NOT using pose estimator. Can't get last pose!");
             return getStartPose();
         }
-        Double key = poseMap.floorKey(poseMap.lastKey());
-        if (key == null) return getCurrentPose();
-        return poseMap.get(key);
+        return poseMap.lowerEntry(poseMap.lastKey()).getValue();
     }
 
     public Pose2d getStartPose() {
@@ -176,6 +174,15 @@ public class RobotState extends StormSubsystemBase {
 
     public double getCurrentDegPerSecVel() {
         return getDeltaDegrees() / 0.02;
+    }
+
+    @Override
+    public void lastPeriodic() {
+        // clear map
+        while (poseMap.size() > 1 &&
+                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
+            poseMap.pollFirstEntry();
+        }
     }
 
     public void enabledInit() {
