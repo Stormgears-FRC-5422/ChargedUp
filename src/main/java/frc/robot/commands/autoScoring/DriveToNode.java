@@ -37,21 +37,36 @@ public class DriveToNode extends PathFollowingCommand {
         Pose2d scorePose = goalNode.scoringPosition;
         boolean isRed = goalNode.alliance == DriverStation.Alliance.Red;
         boolean inRegion = goalNode.gridRegion.inRegion(currentPose);
+        
+        double distForAligned = Units.inchesToMeters(10);
 
         PathPlannerTrajectory path;
         if (inRegion) {
-            path = Paths.generatePathToPose(currentPose, currentVel, scorePose, 1, 1);
+            PathPoint startPoint = new PathPoint(
+                    currentPose.getTranslation(),
+                    Rotation2d.fromRadians(calcHeading(currentPose.getTranslation(), scorePose.getTranslation())),
+                    currentPose.getRotation(), currentVel);
+                    
+            PathPoint endPoint = new PathPoint(
+                    scorePose.getTranslation(),
+                    scorePose.getRotation(),
+                    scorePose.getRotation()).withPrevControlLength(distForAligned);
+                    
+            path = PathPlanner.generatePath(
+                    new PathConstraints(1.0, 1.0),
+                    startPoint, endPoint);
         } else {
-            double alignedX = scorePose.getX() + (isRed? -1.0 : 1.0) * Units.inchesToMeters(10);
-
-            Translation2d alignedToGrid = new Translation2d(alignedX, currentPose.getY());
+            double alignedX = scorePose.getX() + (isRed? -1.0 : 1.0) * distForAligned;
+            
             Translation2d alignedToNode = new Translation2d(alignedX, scorePose.getY());
+            Translation2d alignedToGrid = new Translation2d(alignedX, currentPose.getY());
 
             double distToAlignedToGrid = currentPose.getTranslation().getDistance(alignedToGrid);
             double distToAlignedToNode = alignedToGrid.getDistance(alignedToNode) + distToAlignedToGrid;
 
             Rotation2d scoreRotation = scorePose.getRotation();
-            Rotation2d firstRotation = currentPose.getRotation().interpolate(scoreRotation, distToAlignedToGrid / distToAlignedToNode);
+            Rotation2d firstRotation = currentPose.getRotation()
+                    .interpolate(scoreRotation, distToAlignedToGrid / distToAlignedToNode);
 
             PathPoint startPoint = new PathPoint(
                     currentPose.getTranslation(),
