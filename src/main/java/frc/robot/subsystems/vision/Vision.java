@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotState;
 import frc.utils.data.StormStruct;
@@ -29,7 +30,7 @@ public class Vision extends StormSubsystemBase {
         // clear the april tag vector
         currentAprilTags.clear();
         for (var info : infoList) {
-            System.out.println("yaw from vision" + info.get("yaw"));
+//            System.out.println("yaw from vision" + info.get("yaw"));
             var aprilTagData = new AprilTagData(
                     info.get("id").intValue(),
                     info.get("distance"),
@@ -41,9 +42,11 @@ public class Vision extends StormSubsystemBase {
             currentAprilTags.add(aprilTagData);
         }
         // convert timestamp to seconds
-        double timeSeconds = infoList.get(0).get("timestamp") / 1000.0;
-//        if (logCounter % 25 == 0)
+        double timeSeconds = infoList.get(0).get("timestamp") / Math.pow(10, 6);
+        if (logCounter % 25 == 0) {
 //            System.out.println("timestamp: " + timeSeconds);
+//            System.out.println(AprilTagPoseEstimationStrategy.fromAprilTagData(currentAprilTags, new Rotation2d()));
+        }
         RobotState.getInstance().setVisionData(timeSeconds, currentAprilTags);
     }
 

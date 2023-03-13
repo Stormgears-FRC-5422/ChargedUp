@@ -23,7 +23,7 @@ import static frc.robot.constants.Constants.VisionConstants.*;
 public class PoseEstimator extends StormSubsystemBase {
     private final SwerveDrivePoseEstimator m_poseEstimator;
 
-    private Pose2d m_currentPose;
+    private Pose2d currentPose;
     private Pose2d visionPose;
 
     private final FieldObject2d
@@ -57,8 +57,10 @@ public class PoseEstimator extends StormSubsystemBase {
         estimatedPoseSim = fieldSim.getRobotObject();
 
         ShuffleboardLayout layout = ShuffleboardConstants.getInstance().robotStateList;
-        layout.addDouble("Vision X", () -> getVisionPose().getX());
-        layout.addDouble("Vision Y", () -> getVisionPose().getY());
+        layout.addDouble("Vision X", () -> getVisionPose().getX()).withPosition(0, 0);
+        layout.addDouble("Vision Y", () -> getVisionPose().getY()).withPosition(0, 1);
+        layout.addDouble("Vision Rotation", () -> getVisionPose().getRotation().getDegrees())
+                .withPosition(0, 2);
     }
 
     @Override
@@ -71,7 +73,7 @@ public class PoseEstimator extends StormSubsystemBase {
     @Override
     public void enabledPeriodic() {
         //set last pose to uncalculated current pose
-        Pose2d lastPose = m_currentPose;
+        Pose2d lastPose = currentPose;
 
         var currentOdometryData = RobotState.getInstance().getCurrentOdometryData();
         //drive data
@@ -98,6 +100,7 @@ public class PoseEstimator extends StormSubsystemBase {
                     Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
                     // have to transform to robot pose
                     visionPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
+//                    System.out.println(visionPose);
                     m_poseEstimator.addVisionMeasurement(visionPose, time);
                     // log the position
                     visionPoseSim.setPose(visionPose);
@@ -107,9 +110,9 @@ public class PoseEstimator extends StormSubsystemBase {
         }
 
         //set pose in state object
-        m_currentPose = m_poseEstimator.getEstimatedPosition();
-        estimatedPoseSim.setPose(m_currentPose);
-        RobotState.getInstance().setCurrentPose(m_currentPose);
+        currentPose = m_poseEstimator.getEstimatedPosition();
+        estimatedPoseSim.setPose(currentPose);
+        RobotState.getInstance().setCurrentPose(currentPose);
         RobotState.getInstance().setLastPose(lastPose);
     }
 
@@ -131,6 +134,8 @@ public class PoseEstimator extends StormSubsystemBase {
     }
 
     private Pose2d getVisionPose() {
+        if (visionPose == null)
+            return new Pose2d();
         return visionPose;
     }
 }

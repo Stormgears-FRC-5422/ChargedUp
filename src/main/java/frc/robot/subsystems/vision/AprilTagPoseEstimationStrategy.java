@@ -16,58 +16,70 @@ import java.util.Vector;
 //TODO: see if yaw angles reported by vision can be used
 public final class AprilTagPoseEstimationStrategy {
 
+    private static int logCounter = 0;
+
     /** @return camera pose from list of april tag data */
     public static Pose2d fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle) {
         if (data.size() == 0) {
             DriverStation.reportWarning("Can't ask pose estimation strategy with no data!", true);
             return new Pose2d();
         }
+        if (data.size() > 1)
+            data.sort(Comparator.comparingDouble(tag -> tag.dist));
+
+        if (++logCounter % 50 == 0) {
+            for (var tag : data) {
+                System.out.println("Using tags at poses: ");
+                System.out.println(getTagPose(tag.id));
+            }
+        }
+
+        AprilTagData closest = data.get(0);
 
         boolean useYaw = data.get(0).dist <= kAprilTagYawTrustMeters;
+        useYaw = true;
+//        System.out.println("Using yaw values from april tags: " + useYaw);
+
+        var tagRotation = getTagPose(closest.id).getRotation().toRotation2d();
+        Rotation2d camAngleYaw = _getCamAngleFromYaw(tagRotation, closest.yawDegrees);
+
         if (data.size() == 1) {
-            if (useYaw) return _oneAprilTagYaw(data.get(0));
-            return _oneAprilTagCameraAngle(data.get(0), camAngle);
+            return _oneAprilTagCameraAngle(closest, useYaw? camAngleYaw : camAngle);
         } else {
-            data.sort(Comparator.comparingDouble(tag -> tag.dist));
-            var closer = data.get(0);
-            var farther = data.get(1);
-            Translation2d translation = _triangulateTranslation(data.get(0), data.get(1));
-            if (useYaw) {
-                var tagRotation = getTagPose(closer.id).getRotation().toRotation2d();
-                Rotation2d camRotation = _getAngleFromYaw(tagRotation, closer.yawDegrees);
-                return new Pose2d(translation, camRotation);
-            }
-            return new Pose2d(translation, camAngle);
+            AprilTagData secondClosest = data.get(1);
+            Translation2d translation = _triangulateTranslation(closest, secondClosest);
+            return new Pose2d(translation, useYaw? camAngleYaw : camAngle);
         }
     }
 
-    /** get camera pose from one tag data */
-    private static Pose2d _oneAprilTagYaw(AprilTagData tag) {
-        // get x transform and y transform known angle made by camera and apriltag
-        double xTransform = Math.sin(Math.toRadians(tag.yawDegrees)) * tag.dist;
-        double yTransform = Math.cos(Math.toRadians(tag.yawDegrees)) * tag.dist;
-        // add transforms
-        var tagPose = getTagPose(tag.id).toPose2d();
-        return new Pose2d(
-                tagPose.getX() + xTransform,
-                tagPose.getY() + yTransform,
-                _getAngleFromYaw(tagPose.getRotation(), tag.yawDegrees)
-        );
-    }
+//    /** get camera pose from one tag data */
+//    private static Pose2d _oneAprilTagYaw(AprilTagData tag) {
+//        // get x transform and y transform known angle made by camera and apriltag
+//        double xTransform = Math.sin(Math.toRadians(tag.yawDegrees)) * tag.dist;
+//        double yTransform = Math.cos(Math.toRadians(tag.yawDegrees)) * tag.dist;
+//        // add transforms
+//        var tagPose = getTagPose(tag.id).toPose2d();
+//        return new Pose2d(
+//                tagPose.getX() + xTransform,
+//                tagPose.getY() + yTransform,
+//                _getCamAngleFromYaw(tagPose.getRotation(), tag.yawDegrees)
+//        );
+//    }
 
     /** gives camera pose based on one tag and camera angle derived from gyro */
     private static Pose2d _oneAprilTagCameraAngle(AprilTagData tag, Rotation2d cameraAngle) {
         // shift gyro over 90 so when its positive when looking at blue and negative when looking at red
-        double cameraAngleDeg = cameraAngle.rotateBy(Rotation2d.fromDegrees(90)).getDegrees();
+        double shiftedAngle = cameraAngle.rotateBy(Rotation2d.fromDegrees(90)).getDegrees();
         // get angle made by hypot. (distance) and adjacent leg (wpiY)
         // all assuming that when april tag is left of center the off center is negative
         // and that when it is in right it is positive
         // this all works out so that the transformations are the correct sign
-        double angleTagAndWall = cameraAngleDeg + tag.offCenterDegrees;
+        double angleTagAndWall = shiftedAngle + tag.offCenterDegrees;
+        System.out.println("theta: " + angleTagAndWall);
         // in terms of field coordinates wpi
         double dist = _get2dDist(tag.id, tag.dist);
-        double xTransform = Math.cos(Math.toRadians(angleTagAndWall)) * dist;
-        double yTransform = Math.sin(Math.toRadians(angleTagAndWall)) * dist;
+        double xTransform = Math.cos(Math.toRadians(angleTagAndWall)) * -dist;
+        double yTransform = Math.sin(Math.toRadians(angleTagAndWall)) * -dist;
 
         var aprilTagPose = getTagPose(tag.id);
         return new Pose2d(
@@ -101,8 +113,9 @@ public final class AprilTagPoseEstimationStrategy {
         );
     }
 
-    private static Rotation2d _getAngleFromYaw(Rotation2d tagAngle, double yaw) {
-        return Rotation2d.fromDegrees(yaw - tagAngle.getDegrees());
+    /** get angle of camera from yaw value */
+    private static Rotation2d _getCamAngleFromYaw(Rotation2d tagAngle, double yaw) {
+        return Rotation2d.fromDegrees(yaw + tagAngle.getDegrees() - 180.0);
     }
 
     /** get distance to tag in 2d field positions */

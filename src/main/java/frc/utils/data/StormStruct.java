@@ -51,11 +51,11 @@ public class StormStruct {
         this.m_encodings_sub = encodings_topic.subscribe(new long[0]);
         this.m_type_sub = type_topic.subscribe(-1);
 
-        this.intialize();
+        this.initialize();
     }
 
     /** Call this when the data structure has been published to network tables */
-    public boolean intialize() {
+    public boolean initialize() {
         if (!m_initialized) {
             this.m_typeid = (int) this.m_type_sub.get();
             if (this.m_typeid != -1) {
@@ -81,6 +81,7 @@ public class StormStruct {
      * @return Vector<HashMap<String,Double>>
      */
     public Vector<HashMap<String,Double>> get_data(String name) {
+        if (!initialize()) return new Vector<>();
         // Create subscriber if it doesn't exist
         RawSubscriber sub;
         Vector<HashMap<String,Double>> data_list;
@@ -170,15 +171,15 @@ public class StormStruct {
     }
 
     /**
-         * Unpack a binary byte stream using this structure definition starting at a given offset
-         * 
-         * @param data_stream The binary data
-         * @param _offset The offset in the binary data stream to extract from
-         * @return Returns a HashMap of field,value pairs, values are always doubles
-         * 
-    */
+     * Unpack a binary byte stream using this structure definition starting at a given offset
+     *
+     * @param data_stream The binary data
+     * @param _offset The offset in the binary data stream to extract from
+     * @return Returns a HashMap of field,value pairs, values are always doubles
+     *
+     */
     private HashMap<String, Double> decode_struct(final byte[] data_stream,final int _offset) {
-        HashMap<String,Double> ret_map = new HashMap<>();
+        HashMap<String,Double> ret_map = new HashMap<String,Double>();
         // Data is big endian
         int offset = _offset;
         for (String field : m_fieldNames) {
@@ -193,22 +194,25 @@ public class StormStruct {
             int size = (encoding & 0x3) + 1;
 
             boolean signed = (encoding & 0x80) != 0;
+            // Extend sign on signed int. ints are 4 bytes in java.
+            if (signed && size < 4) {
+                if ((data_stream[offset] & 0x80) != 0) {  // negative number, big endian
+                    data = 0xFFFFFFFF;  // sign extend, this bits will be shifted up as we grab bytes from the stream
+                }
+            }
+
+
             //System.out.println("unpack " + field + "; size=" + size);
             for (int i = 0; i < size; i++) {
-                data = data << 8;           
+                data = data << 8;
                 data |= data_stream[offset + i] & 0xFF;
             }
 
-            // Extend sign on signed int. ints are 4 bytes in java
-            if (signed && size < 4) {
-                data = data << (4 - size);
-                data = data >> (4 - size);
-            }
             offset += size;
 
             double ddata = data * 1.0;
             if (precision > 0) {
-                ddata = ddata/(precision*10);
+                ddata = ddata/Math.pow(10,precision);
             }
             ret_map.put(field,ddata);
         }

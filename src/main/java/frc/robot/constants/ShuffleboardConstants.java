@@ -56,13 +56,13 @@ public final class ShuffleboardConstants {
                 .withSize(7, 4).withPosition(2, 0);
 
         robotStateTab
-                .add("Pose Estimation", poseEstimationFieldSim)
+                .add("Field Sim", poseEstimationFieldSim)
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(7, 4).withPosition(2, 0);
 
         driverTab
                 .add("Field Sim", poseEstimationFieldSim).withWidget(BuiltInWidgets.kField)
-                .withSize(4, 2).withPosition(4, 0);
+                .withSize(4, 3).withPosition(4, 0);
 
 //        VisionShuffleboardConstants.visionConstantsTab = Shuffleboard.getTab("Vision");
 //        for (int i = 0; i < 8; i++) {

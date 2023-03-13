@@ -121,11 +121,18 @@ public class RobotState extends StormSubsystemBase {
     public Rotation2d getAngleAtTimeSeconds(double time) {
         var floorEntry = gyroData.floorEntry(time);
         var ceilEntry = gyroData.ceilingEntry(time);
+        if (floorEntry == null) {
+            if (ceilEntry != null) return ceilEntry.getValue();
+            return getCurrentGyroRotation();
+        }
         double timeFromFloor = time - floorEntry.getKey();
         if (ceilEntry == null) {
             double rotationalVel = getCurrentDegPerSecVel();
             Rotation2d rotationFromFloor = Rotation2d.fromDegrees(rotationalVel * timeFromFloor);
             return floorEntry.getValue().plus(rotationFromFloor);
+        }
+        if (Math.abs(ceilEntry.getValue().getDegrees() - floorEntry.getValue().getDegrees()) >= 50) {
+            return ceilEntry.getValue();
         }
         double timeFloorToCeiling = ceilEntry.getKey() - floorEntry.getKey();
         return floorEntry.getValue().interpolate(ceilEntry.getValue(), timeFromFloor / timeFloorToCeiling);
@@ -150,9 +157,10 @@ public class RobotState extends StormSubsystemBase {
 
     public void setVisionData(double time, Vector<Vision.AprilTagData> visionData) {
         if (++visionLogCounter % 25 == 0) {
-            System.out.println("Robot State vision data \n timestamp: " + time);
-            for (var tag : visionData)
-                System.out.println(tag);
+//            System.out.println("Robot State vision data \n timestamp: " + time);
+//            for (var tag : visionData) {
+//                System.out.println(tag);
+//            }
         }
         currentVisionData = new Pair<>(time, visionData);
     }

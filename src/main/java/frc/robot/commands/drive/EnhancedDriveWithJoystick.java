@@ -22,9 +22,9 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     private final DoubleSupplier txSupplier, tySupplier, omegaSupplier;
 
-    private final SlewRateLimiter txLimiter = new SlewRateLimiter(1);
-    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(1);
-    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(1);
+    private final SlewRateLimiter txLimiter = new SlewRateLimiter(2);
+    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(2);
+    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(2);
 
     private final BooleanSupplier robotRelativeSupplier, percisionModeSupplier;
     private final ProfiledPIDController rotController =
@@ -47,7 +47,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         this.percisionModeSupplier = percisionModeSupplier;
 
         rotController.enableContinuousInput(-180.0, 180.0);
-        rotController.setTolerance(1.5);
+        rotController.setTolerance(0.5);
 
         robotAngleSupplier = () -> (Constants.Toggles.usePoseEstimator)?
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees() :
@@ -107,15 +107,16 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     }
 
     private void _drive() {
-        if (percisionModeSupplier.getAsBoolean()) {
+        if (percisionModeSupplier.getAsBoolean())
             m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
-        } else {
+        else
             m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
-        }
+
         m_drivetrain.percentOutDrive(
                 new ChassisSpeeds(
                         txLimiter.calculate(txSupplier.getAsDouble()),
                         tyLimiter.calculate(tySupplier.getAsDouble()),
+                        (setpointRotationMode)? omegaSpeed :
                         omegaLimiter.calculate(omegaSpeed)),
                 !robotRelativeSupplier.getAsBoolean()
         );
