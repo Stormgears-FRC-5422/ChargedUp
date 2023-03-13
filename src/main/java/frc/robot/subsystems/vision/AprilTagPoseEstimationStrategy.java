@@ -117,13 +117,13 @@ public final class AprilTagPoseEstimationStrategy {
         double yTransform = Math.cos(angleMadeByCloseTagAndWall) * closerDist;
         // should add or subtract transformations based on their position on the field
         // if wpi y is less than the other one then we should add otherwise we should subtract
-        double signX = (closerTagTranslation.getY() < fartherTagTranslation.getY())? 1.0 : -1.0;
+        double signedY = (closerTagTranslation.getY() < fartherTagTranslation.getY())? 1.0 : -1.0;
         // if it is on the red side of the field then we should subtract the x transformation
-        double signY = (closerTagTranslation.getX() < FIELD_LENGTH / 2.0)? 1.0 : -1.0;
+        double signedX = (closerTagTranslation.getX() < FIELD_LENGTH / 2.0)? 1.0 : -1.0;
         // add the transforms onto the closer tag
         return new Translation2d(
-                closerTagTranslation.getX() + xTransform * signX,
-                closerTagTranslation.getY() + yTransform * signY
+                closerTagTranslation.getX() + xTransform * signedX,
+                closerTagTranslation.getY() + yTransform * signedY
         );
     }
 
