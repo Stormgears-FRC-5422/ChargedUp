@@ -116,10 +116,10 @@ public final class AprilTagPoseEstimationStrategy {
         double xTransform = Math.sin(angleMadeByCloseTagAndWall) * closerDist;
         double yTransform = Math.cos(angleMadeByCloseTagAndWall) * closerDist;
         // should add or subtract transformations based on their position on the field
-        // if wpi X is less than the other one then we should add otherwise we should subtract
-        double signX = (closerTagTranslation.getX() < fartherTagTranslation.getX())? 1.0 : -1.0;
-        // if it is on the red side of the field then we should subtract the y transformation
-        double signY = (closerTagTranslation.getY() < FIELD_LENGTH / 2.0)? 1.0 : -1.0;
+        // if wpi y is less than the other one then we should add otherwise we should subtract
+        double signX = (closerTagTranslation.getY() < fartherTagTranslation.getY())? 1.0 : -1.0;
+        // if it is on the red side of the field then we should subtract the x transformation
+        double signY = (closerTagTranslation.getX() < FIELD_LENGTH / 2.0)? 1.0 : -1.0;
         // add the transforms onto the closer tag
         return new Translation2d(
                 closerTagTranslation.getX() + xTransform * signX,
@@ -148,7 +148,7 @@ public final class AprilTagPoseEstimationStrategy {
     }
 
     /** @return angle in radians opposite side a given triangle lengths <br>
-     * (c^2 + b^2 - a^2)/(2bc) --> A */
+     * (b^2 + c^2 - a^2)/(2bc) --> A */
     private static double _getAngleFromTriangle(double a, double b, double c) {
         double x = (b*b + c*c - a*a) / (2.0 * b * c);
         return Math.acos(x);
