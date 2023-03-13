@@ -119,7 +119,7 @@ public class RobotContainer {
         if (Toggles.useDrive) {
             try {
                 m_drivetrain = DrivetrainFactory.getInstance(driveType);
-                System.out.println("Successfully created Drivetrain!");
+//                System.out.println("Successfully created Drivetrain!");
             } catch (Exception e) {
                 e.printStackTrace();
                  Toggles.useDrive = false;
@@ -154,21 +154,11 @@ public class RobotContainer {
             System.out.println("NOT using stormnet");
 
         if (Toggles.useDrive && driveType.equals("SwerveDrive")) {
-            m_poseEstimator = new PoseEstimator(
-                    m_drivetrain.getSwerveDriveKinematics(),
-                    m_drivetrain.getSwerveModulePositions()
-            );
+            m_poseEstimator = new PoseEstimator(m_drivetrain.getSwerveDriveKinematics());
             System.out.println("USING pose estimator");
             Toggles.usePoseEstimator = true;
         }
 
-        if (Toggles.useLogitechController) {
-            logitechController = new StormLogitechController(kLogitechControllerPort);
-            xboxController = new StormXboxController(kLogitechControllerPort + 1);
-            System.out.println("using logitech controller");
-        } else {
-            System.out.println("NOT using logitech controller");
-        }
 
         if (Toggles.useStormNet) {
             System.out.println("Using StormNet");
@@ -187,22 +177,35 @@ public class RobotContainer {
             System.out.println("NOT using node selector");
         }
 
+        // create controllers
+        if (Toggles.useLogitechController) {
+            logitechController = new StormLogitechController(kLogitechControllerPort);
+            System.out.println("using logitech controller");
+        } else {
+            System.out.println("NOT using logitech controller");
+        }
+
+        if (Toggles.useXboxController) {
+            xboxController = new StormXboxController(kLogitechControllerPort + 1);
+            System.out.println("using xbox controller");
+        } else
+            System.out.println("NOT using xbox controller");
+
         // Configure the trigger bindings
         configureBindings();
     }
 
     private void configureBindings() {
         if (Toggles.useXboxController) {
-            xboxController = new StormXboxController(1);
             if (Toggles.useArm) {
                 if (Toggles.useXYArmMode) {
                     System.out.println("Using XY mode for arm movement");
-                    m_armCommand = new XYArm(m_arm,
-                            xboxController::getRightJoystickX,
-                            xboxController::getLeftJoystickY);
 //                    m_armCommand = new XYArm(m_arm,
 //                            xboxController::getRightJoystickX,
-//                            xboxController::getRightJoystickY);
+//                            xboxController::getLeftJoystickY);
+                    m_armCommand = new XYArm(m_arm,
+                            xboxController::getRightJoystickX,
+                            xboxController::getRightJoystickY);
                 } else {
                     System.out.println("Using Angle mode for arm movement");
                     m_armCommand = new BasicArm(m_arm,
@@ -215,8 +218,8 @@ public class RobotContainer {
             if (Toggles.usePneumatics) {
                 new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
                 new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
-                new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
-                new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::startCompressor));
+//                new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
+//                new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::startCompressor));
             } else {
                 System.out.println("Pneumatics or controller not operational");
             }
@@ -245,22 +248,26 @@ public class RobotContainer {
             );
             m_drivetrain.setDefaultCommand(driveWithJoystick);
             // set setpoints using pov angle
-            new Trigger(() -> logitechController.getWPIPOVAngle() != -1).onTrue(new InstantCommand(
-                    () -> {
-                        double angle = logitechController.getWPIPOVAngle();
-                        System.out.println("Set point angle: " + angle);
-                        driveWithJoystick.setSetPoint(angle);
-                    }));
+            new Trigger(() -> logitechController.getWPIPOVAngle() != -1).onTrue(
+                    new InstantCommand(
+                        () -> {
+                            double angle = logitechController.getWPIPOVAngle();
+                            System.out.println("Set point angle: " + angle);
+                            driveWithJoystick.setSetPoint(angle);
+                        })
+            );
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
             buttonBoard = new ButtonBoard(0);
 
             // zero angle command when we are red make sure robot pointing forwards is 180
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
-            new Trigger(() -> logitechController.getRawButton(5)).onTrue(new InstantCommand(() -> {
-                m_drivetrain.getCurrentCommand().cancel();
-                driveWithJoystick.schedule();
-            }));
+            new Trigger(() -> logitechController.getRawButton(5)).onTrue(
+                    new InstantCommand(() -> {
+                        m_drivetrain.getCurrentCommand().cancel();
+                        driveWithJoystick.schedule();
+                    })
+            );
         }
 
         if (Toggles.useLogitechController && Toggles.useStatusLights) {
@@ -278,9 +285,9 @@ public class RobotContainer {
                         180.0 : 0;
                 m_navX.setAngle(angle);
                 if (Toggles.usePoseEstimator) {
-                    m_poseEstimator.resetEstimator(m_navX.getAbsoluteRotation(), m_drivetrain.getSwerveModulePositions(),
-                            new Pose2d(RobotState.getInstance().getCurrentPose().getTranslation(),
-                                    Rotation2d.fromDegrees(angle)));
+                    m_poseEstimator.resetEstimator(new Pose2d(
+                            RobotState.getInstance().getCurrentPose().getTranslation(),
+                            Rotation2d.fromDegrees(angle)));
                 }
             }));
         }

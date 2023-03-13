@@ -46,7 +46,7 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
         if (fieldRelative) {
             var rotation = (usePoseEstimator)?
                     RobotState.getInstance().getCurrentPose().getRotation() :
-                    RobotState.getInstance().getCurrentGyroRotation();
+                    RobotState.getInstance().getCurrentGyroData();
             // if we are on the red team make sure field relative is the other way
             if (DriverStation.getAlliance() == DriverStation.Alliance.Red)
                 rotation.rotateBy(new Rotation2d(Math.PI));
@@ -72,7 +72,7 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
     }
 
     protected Rotation2d getGyroscopeRotation() {
-        return RobotState.getInstance().getCurrentGyroRotation();
+        return RobotState.getInstance().getCurrentGyroData();
     }
 
     public ChassisSpeeds getCurrentChassisSpeeds() {

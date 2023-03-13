@@ -18,15 +18,6 @@ public final class ShuffleboardConstants {
 
     private static ShuffleboardConstants instance;
 
-//    public static class VisionShuffleboardConstants {
-//        public static ShuffleboardTab visionConstantsTab;
-//        public static ShuffleboardLayout[] aprilTagLayouts = new ShuffleboardLayout[8];
-//
-//        public static GenericEntry[] distValues = new GenericEntry[8];
-//        public static GenericEntry[] yawValues = new GenericEntry[8];
-//        public static GenericEntry[] offsetValues = new GenericEntry[8];
-//    }
-
     public static ShuffleboardConstants getInstance() {
         if (instance != null) return instance;
         instance = new ShuffleboardConstants();
@@ -62,22 +53,7 @@ public final class ShuffleboardConstants {
 
         driverTab
                 .add("Field Sim", poseEstimationFieldSim).withWidget(BuiltInWidgets.kField)
-                .withSize(4, 3).withPosition(4, 0);
-
-//        VisionShuffleboardConstants.visionConstantsTab = Shuffleboard.getTab("Vision");
-//        for (int i = 0; i < 8; i++) {
-//            aprilTagLayouts[i] = visionConstantsTab
-//                    .getLayout("April Tag " + (i+1), BuiltInLayouts.kList)
-//                    .withPosition(i, 0).withSize(1, 5);
-//            VisionShuffleboardConstants.distValues[i] = aprilTagLayouts[i]
-//                    .add("dist", 0.0).getEntry();
-//            VisionShuffleboardConstants.yawValues[i] = aprilTagLayouts[i]
-//                    .add("yaw", 0.0).getEntry();
-//            VisionShuffleboardConstants.offsetValues[i] = aprilTagLayouts[i]
-//                    .add("offset", 0.0).getEntry();
-//        }
-
-//        nodeSelectorTab = Shuffleboard.getTab("Node Selector");
+                .withSize(5, 3).withPosition(4, 0);
 
         robotStateList = robotStateTab
                 .getLayout("State", BuiltInLayouts.kList)
