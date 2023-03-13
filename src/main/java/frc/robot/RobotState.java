@@ -108,17 +108,22 @@ public class RobotState extends StormSubsystemBase {
     public Rotation2d getRotationAtTime(double time) {
         var floorEntry = poseMap.floorEntry(time);
         var ceilEntry = poseMap.ceilingEntry(time);
+
         if (floorEntry == null) {
-            if (ceilEntry != null) return ceilEntry.getValue().getRotation();
+            if (ceilEntry != null) 
+                return ceilEntry.getValue().getRotation();
             return getCurrentPose().getRotation();
         }
-        if (ceilEntry == null) {
+        if (ceilEntry == null)
             return getCurrentPose().getRotation();
-        }
+
         Rotation2d floorAngle = floorEntry.getValue().getRotation();
         Rotation2d ceilAngle = ceilEntry.getValue().getRotation();
-        if (Math.abs(floorAngle.getDegrees() - ceilAngle.getDegrees()) >= 10) return getCurrentPose().getRotation();
-        double timeFromFloor = Timer.getFPGATimestamp() - floorEntry.getKey();
+
+        if (Math.abs(floorAngle.getDegrees() - ceilAngle.getDegrees()) >= 10)
+            return getCurrentPose().getRotation();
+
+        double timeFromFloor = time - floorEntry.getKey();
         double timeBetween = ceilEntry.getKey() - floorEntry.getKey();
         return floorAngle.interpolate(ceilAngle, timeFromFloor / timeBetween);
     }
