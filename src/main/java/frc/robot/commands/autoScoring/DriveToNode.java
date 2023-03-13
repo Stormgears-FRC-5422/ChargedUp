@@ -11,7 +11,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotState;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
-import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 import java.util.List;
@@ -36,7 +35,7 @@ public class DriveToNode extends PathFollowingCommand {
 
         Pose2d scorePose = goalNode.scoringPosition;
         boolean isRed = goalNode.alliance == DriverStation.Alliance.Red;
-        boolean inRegion = goalNode.gridRegion.inRegion(currentPose);
+        boolean inRegion = goalNode.gridRegion.contains(currentPose);
         
         double distForAligned = Units.inchesToMeters(10);
 

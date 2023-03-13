@@ -9,12 +9,18 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 
 import static frc.robot.constants.Constants.*;
 
 public final class FieldConstants {
+
+    public static void init() {
+        Grids.initGridNodes();
+
+    }
+
     public final static double FIELD_LENGTH = Units.feetToMeters(54) + Units.inchesToMeters(3.25);
     public final static double FIELD_WIDTH = Units.feetToMeters(26) + Units.inchesToMeters(3.5);
 
@@ -74,12 +80,13 @@ public final class FieldConstants {
 
                 // calculating regions for blue nodes
                 int currentRegion = wpiY / 3;
-                double regionWidth = regionWidths[currentRegion];
                 double regionMinY = 0.0;
-                for (int i = 0; i <= currentRegion; i++)
+                for (int i = 0; i < currentRegion; i++)
                     regionMinY += regionWidths[i];
+
+                double regionWidth = regionWidths[currentRegion];
                 double regionMaxY = regionMinY + regionWidth;
-                RectangleRegion region = new RectangleRegion(regionMaxX, regionMaxY, regionMinX, regionMinY);
+                Regions.RectangleRegion region = new Regions.RectangleRegion(regionMaxY, regionMaxX, regionMinY, regionMinX);
 
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
@@ -111,11 +118,11 @@ public final class FieldConstants {
             public final Alliance alliance;
             public final Translation3d translation;
             public final Pose2d scoringPosition;
-            public final RectangleRegion gridRegion;
+            public final Regions.RectangleRegion gridRegion;
             public final int col, row;
 
             public ScoringNode(NodeType type, NodeHeight height, Alliance alliance,
-                               Translation3d translation, Pose2d scoringPosition, RectangleRegion gridRegion,
+                               Translation3d translation, Pose2d scoringPosition, Regions.RectangleRegion gridRegion,
                                int col, int row) {
                 this.type = type;
                 this.height = height;
@@ -141,10 +148,8 @@ public final class FieldConstants {
                 Pose2d transformedScoringPosition = mirrorPose(node.scoringPosition);
 
                 var region = node.gridRegion;
-                RectangleRegion transformedRegion = new RectangleRegion(
-                        mirrorTranslation(region.topLeft),
-                        mirrorTranslation(region.bottomRight)
-                );
+                Regions.RectangleRegion transformedRegion = new Regions.RectangleRegion(region.maxY, mirrorXPosition(region.maxX),
+                        region.minY, mirrorXPosition(region.minX));
 
                 return new ScoringNode(node.type, node.height, Alliance.Red,
                         transformedTranslation, transformedScoringPosition, transformedRegion,
@@ -199,6 +204,108 @@ public final class FieldConstants {
         }
     }
 
+    public static class Regions {
+        public static RectangleRegion blueChargingStation = new RectangleRegion(
+                Units.inchesToMeters(152), Units.inchesToMeters(115),
+                Units.inchesToMeters(60), Units.inchesToMeters(189));
+        public static RectangleRegion redChargingStation = blueChargingStation.getMirrored();
+
+        public RectangleRegion getCurrentChargingStation() {
+            return (DriverStation.getAlliance() == Alliance.Red)? redChargingStation : blueChargingStation;
+        }
+
+        public interface Region {
+            /** all field coords */
+            boolean contains(Pose2d pose);
+            /** all field coords */
+            default boolean contains(Translation2d translation) {
+                return contains(new Pose2d(translation, new Rotation2d()));
+            }
+            /** all field coords */
+            default boolean contains(double x, double y) {
+                return contains(new Translation2d(x, y));
+            }
+
+            Translation2d getCenter();
+
+            Region getMirrored();
+        }
+
+        public static class RectangleRegion implements Region {
+            public final double maxY, minY, maxX, minX;
+
+            /** field coords */
+            public RectangleRegion(Translation2d topRight, Translation2d bottomLeft) {
+                this(topRight.getY(), topRight.getX(), bottomLeft.getY(), bottomLeft.getX());
+            }
+
+            public RectangleRegion(double maxY, double maxX, double minY, double minX) {
+                this.maxY = maxY;
+                this.minY = minY;
+                this.maxX = maxX;
+                this.minX = minX;
+            }
+
+            @Override
+            public boolean contains(Pose2d pose) {
+                return (pose.getX() <= maxX && pose.getX() >= minX) &&
+                        (pose.getY() <= maxY && pose.getY() >= minY);
+            }
+
+            @Override
+            public Translation2d getCenter() {
+                return new Translation2d((maxX + minX) / 2.0, (maxY + minY) / 2.0);
+            }
+
+            @Override
+            public RectangleRegion getMirrored() {
+                return new RectangleRegion(maxY, mirrorXPosition(maxX),
+                        minY, mirrorXPosition(minX));
+            }
+        }
+
+        public static class PolyShapeRegion implements Region {
+            public ArrayList<Region> regions = new ArrayList<>();
+
+            public PolyShapeRegion(Region... regions) {
+                Collections.addAll(this.regions, regions);
+            }
+
+            @Override
+            public boolean contains(Pose2d pose) {
+                for (var region : regions) {
+                    if (region.contains(pose)) return true;
+                }
+                return false;
+            }
+
+            @Override
+            public Translation2d getCenter() {
+                double totalX = 0;
+                double totalY = 0;
+                for (var region : regions) {
+                    var center = region.getCenter();
+                    totalX += center.getX();
+                    totalY += center.getY();
+                }
+                double avgX =  totalX / (double) regions.size();
+                double avgY =  totalY / (double) regions.size();
+                return new Translation2d(avgX, avgY);
+            }
+
+            @Override
+            public PolyShapeRegion getMirrored() {
+                ArrayList<Region> transformedRegions = new ArrayList<>();
+                for (var region : regions) {
+                    transformedRegions.add(region.getMirrored());
+                }
+                return new PolyShapeRegion(transformedRegions.toArray(new Region[transformedRegions.size()]));
+            }
+
+
+        }
+    }
+
     public static double mirrorXPosition(double xToBeMirrored) {
         return (HALF_FIELDLENGTH - xToBeMirrored) + HALF_FIELDLENGTH;
     }
@@ -211,54 +318,5 @@ public final class FieldConstants {
         double xMirrored = mirrorXPosition(pose.getX());
         var rotationMirrored = pose.getRotation().times(-1.0);
         return new Pose2d(xMirrored, pose.getY(), rotationMirrored);
-    }
-
-    public interface Region {
-        /** all field coords */
-        boolean inRegion(Pose2d pose);
-        /** all field coords */
-        default boolean inRegion(Translation2d translation) {
-            return inRegion(new Pose2d(translation, new Rotation2d()));
-        }
-        /** all field coords */
-        default boolean inRegion(double x, double y) {
-            return inRegion(new Translation2d(x, y));
-        }
-    }
-
-    public static class RectangleRegion implements Region {
-        public final Translation2d topLeft, bottomRight;
-
-        /** field coords */
-        public RectangleRegion(Translation2d topLeft, Translation2d bottomRight) {
-            this.topLeft = topLeft;
-            this.bottomRight = bottomRight;
-        }
-
-        /** field coords max is top left and min is bottom right*/
-        public RectangleRegion(double top, double left, double bottom, double right) {
-            this.topLeft = new Translation2d(top, left);
-            this.bottomRight = new Translation2d(bottom, right);
-        }
-
-        @Override
-        public boolean inRegion(Pose2d position) {
-            return (position.getX() <= topLeft.getY() && position.getX() >= bottomRight.getX()) &&
-                    (position.getY() <= topLeft.getY() && position.getY() >= bottomRight.getY());
-        }
-    }
-
-    public static class PolyRectangleRegion implements Region {
-
-        public ArrayList<RectangleRegion> rectangleRegions;
-
-        public PolyRectangleRegion(RectangleRegion... rectangleRegions) {
-            this.rectangleRegions.addAll(Arrays.asList(rectangleRegions));
-        }
-
-        @Override
-        public boolean inRegion(Pose2d pose) {
-            return false;
-        }
     }
 }

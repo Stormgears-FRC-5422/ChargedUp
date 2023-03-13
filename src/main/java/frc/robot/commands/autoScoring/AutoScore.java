@@ -11,7 +11,7 @@ public class AutoScore extends SequentialCommandGroup {
         addCommands(
                 new ParallelCommandGroup(
                         new DriveToNode(drivetrain, node),
-                        new WaitUntilCommand(() -> node.gridRegion.inRegion(RobotState.getInstance().getCurrentPose()))
+                        new WaitUntilCommand(() -> node.gridRegion.contains(RobotState.getInstance().getCurrentPose()))
                                 .andThen(new PrintCommand("Moving arm to " + node.height))
                 ),
                 new PrintCommand("Dropping " + node.type + " in " + node.height + " node")

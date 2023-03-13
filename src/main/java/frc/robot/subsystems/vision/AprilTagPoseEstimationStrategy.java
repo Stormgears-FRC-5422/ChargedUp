@@ -44,7 +44,7 @@ public final class AprilTagPoseEstimationStrategy {
             translation = _twoAprilTags(closest, secondClosest);
             // if both tags are in range then we can average their yaw values for rotation
             if (useYaw && secondClosest.dist <= kAprilTagYawTrustMeters) {
-                var secondCloseTagRotation = getTagPose(secondClosest.id).getRotation.toRotationd2d();
+                var secondCloseTagRotation = getTagPose(secondClosest.id).getRotation().toRotation2d();
                 Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
                 double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
                 rotation = Rotation2d.fromDegrees(averageRotation);

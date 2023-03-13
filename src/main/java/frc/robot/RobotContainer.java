@@ -4,17 +4,14 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.commands.FollowPathWithEvents;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import frc.robot.commands.auto.AutoCommand;
+import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
@@ -24,9 +21,6 @@ import frc.robot.commands.LidarIndicatorCommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.drive.EnhancedDriveWithJoystick;
-import frc.robot.commands.drive.pathFollowing.FolllowPathFromPose;
-import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
-import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
@@ -47,9 +41,6 @@ import frc.utils.joysticks.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static frc.robot.constants.Constants.*;
 
 
@@ -65,7 +56,6 @@ public class RobotContainer {
     NavX m_navX;
     Vision m_vision;
     PoseEstimator m_poseEstimator;
-    NodeSelector m_nodeSelector;
     NeoPixel m_neoPixel;
 
     // **********
@@ -75,6 +65,7 @@ public class RobotContainer {
     GyroCommand m_gyrocommand;
     LidarIndicatorCommand m_lidarIndicatorCommand;
     ArmCommand m_armCommand;
+    NodeSelector m_nodeSelector;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
@@ -91,13 +82,12 @@ public class RobotContainer {
     ButtonBoard buttonBoard;
     ButtonBoardConfig buttonBoardConfig;
 
-    private final SendableChooser<Paths.PathWithName> autoPathChooser = new SendableChooser<>();
-    private final Map<String, Command> autoEventMap = new HashMap<>();
+    private final SendableChooser<AutoCommand> autoCommandChooser = new SendableChooser<>();
 
 
     public RobotContainer() throws IllegalDriveTypeException {
         //init constants
-        FieldConstants.Grids.initGridNodes();
+        FieldConstants.init();
         ShuffleboardConstants.getInstance();
 
         m_robotState = RobotState.getInstance();
@@ -287,63 +277,65 @@ public class RobotContainer {
                 if (Toggles.usePoseEstimator) {
                     m_poseEstimator.resetEstimator(new Pose2d(
                             RobotState.getInstance().getCurrentPose().getTranslation(),
-                            Rotation2d.fromDegrees(angle)));
+                            m_navX.getAbsoluteRotation()));
                 }
             }));
-        }
-
-        if (Toggles.useDrive && driveType.equals("SwerveDrive") && Toggles.usePoseEstimator) {
-
-            autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
-            autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
-            autoEventMap.put("LiftArm", new PrintCommand("Lifting the arm!"));
-            autoEventMap.put("PlaceGamePiece", new PrintCommand("Placing the game piece!"));
-            autoEventMap.put("Balance", new PrintCommand("Balancing on charging station!"));
-
-            //add paths to chooser
-            for (var pathWithName : Paths.listOfPaths) {
-                autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
-            }
-            autoPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0));
-            SmartDashboard.putData("Auto Paths", autoPathChooser);
-
-            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
-            for (var path : Paths.listOfPaths) {
-                testPathChooser.addOption(path.name, path.path);
-            }
-            testPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0).path);
-
-            ShuffleboardConstants.getInstance().pathFollowingTab
-                    .add("Path Command", testPathChooser)
-                    .withPosition(0, 3).withSize(2, 1);
-
-            ShuffleboardConstants.getInstance().pathFollowingTab
-                    .add("Run Selected Command",
-                            new FolllowPathFromPose(m_drivetrain, testPathChooser.getSelected()))
-                    .withPosition(0, 2).withSize(2, 1)
-                    .withWidget(BuiltInWidgets.kCommand);
-
         }
 
         if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
             new Trigger(xboxController::getAButtonIsHeld)
                     .onTrue(new AutoScore(m_drivetrain, m_nodeSelector.getSelectedNode()));
         }
-    }
 
-    private Command getPathFollowCommand(PathPlannerTrajectory path) {
-        return new PathFollowingCommand(m_drivetrain).withPath(path);
+
+        if (Toggles.usePoseEstimator) {
+            if (AutoRoutines.autoCommands.size() > 0) {
+                for (var command : AutoRoutines.autoCommands) {
+                    autoCommandChooser.addOption(command.name, command);
+                }
+                var firstCommand = AutoRoutines.autoCommands.get(0);
+                autoCommandChooser.setDefaultOption(firstCommand.name, firstCommand);
+            }
+        }
+
+
+//            autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
+//            autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
+//            autoEventMap.put("LiftArm", new PrintCommand("Lifting the arm!"));
+//            autoEventMap.put("PlaceGamePiece", new PrintCommand("Placing the game piece!"));
+//            autoEventMap.put("Balance", new PrintCommand("Balancing on charging station!"));
+//
+//            //add paths to chooser
+//            for (var pathWithName : Paths.listOfPaths) {
+//                autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
+//            }
+//            autoPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0));
+//            SmartDashboard.putData("Auto Paths", autoPathChooser);
+//
+//            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
+//            for (var path : Paths.listOfPaths) {
+//                testPathChooser.addOption(path.name, path.path);
+//            }
+//            testPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0).path);
+//
+//            ShuffleboardConstants.getInstance().pathFollowingTab
+//                    .add("Path Command", testPathChooser)
+//                    .withPosition(0, 3).withSize(2, 1);
+//
+//            ShuffleboardConstants.getInstance().pathFollowingTab
+//                    .add("Run Selected Command",
+//                            new FolllowPathFromPose(m_drivetrain, testPathChooser.getSelected()))
+//                    .withPosition(0, 2).withSize(2, 1)
+//                    .withWidget(BuiltInWidgets.kCommand);
+
     }
 
     public Command getAutonomousCommand() {
-        if (Toggles.useDrive && driveType.equals("SwerveDrive")) {
-            var selectedPath = autoPathChooser.getSelected();
-            m_robotState.setStartPose(selectedPath.path.getInitialHolonomicPose());
-            return new FollowPathWithEvents(
-                    new PathFollowingCommand(m_drivetrain, selectedPath.path, true),
-                    selectedPath.path.getMarkers(),
-                    autoEventMap
-            );
+        if (Toggles.usePoseEstimator) {
+            AutoCommand selected = autoCommandChooser.getSelected();
+            System.out.println("Auto: " + selected.name);
+            m_robotState.setStartPose(selected.startPose);
+            return selected.autoCommand;
         }
         return new PrintCommand("Autonomous! -----");
     }
