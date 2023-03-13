@@ -78,6 +78,7 @@ public class DriveToNode extends PathFollowingCommand {
                     List.of(startPoint, alignToGrids, alignToNode, scoringPose));
         }
 
+        withTransformForAlliance(true);
         withPath(path);
         super.initialize();
     }
