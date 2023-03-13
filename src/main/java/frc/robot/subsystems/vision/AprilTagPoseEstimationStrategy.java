@@ -32,10 +32,23 @@ public final class AprilTagPoseEstimationStrategy {
         boolean useYaw = closest.dist <= kAprilTagYawTrustMeters;
         Pose3d closeTag = getTagPose(closest.id);
 
+        
+        // rotation is either the state as is or new one based on yaw
+        Rotation2d rotation = camAngle;
+        if (useYaw)
+            rotation = _getCamAngleFromYaw(closeTag.getRotation().toRotation2d(), closest.yawDegrees);
+        
         Translation2d translation;
         if (data.size() > 2) {
             AprilTagData secondClosest = data.get(1);
             translation = _twoAprilTags(closest, secondClosest);
+            // if both tags are in range then we can average their yaw values for rotation
+            if (useYaw && secondClosest.dist <= kAprilTagYawTrustMeters) {
+                var secondCloseTagRotation = getTagPose(secondClosest.id).getRotation.toRotationd2d();
+                Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
+                double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
+                rotation = Rotation2d.fromDegrees(averageRotation);
+            }
         } else {
             double dist2d = _get2dDist(closeTag, closest.dist);
             if (useYaw)
@@ -45,12 +58,6 @@ public final class AprilTagPoseEstimationStrategy {
                 translation = _oneAprilTag(yaw, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
             }
         }
-
-        Rotation2d rotation;
-        if (useYaw)
-            rotation = _getCamAngleFromYaw(closeTag.getRotation().toRotation2d(), closest.yawDegrees);
-        else
-            rotation = camAngle;
 
         return new Pose2d(translation, rotation);
     }
