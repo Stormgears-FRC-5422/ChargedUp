@@ -1,120 +1,60 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.utils.lights.AddressableLEDBufferRGBW;
+import frc.utils.lights.LEDLightStrip;
+import frc.utils.lights.LightType;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
 
 public class NeoPixel extends SubsystemBase {
-  private final AddressableLED lightStrip = new AddressableLED(9);
-  private final AddressableLEDBufferRGBW buffer = new AddressableLEDBufferRGBW(19);
-  public static final Color8Bit fullColor = new Color8Bit(211, 0, 211);//purple
-  public static final Color8Bit blankColor = new Color8Bit(0, 0, 0);
-  public static final Color8Bit fullColorY = new Color8Bit(200, 200, 0);//yellow
 
-  public static final Color8Bit fullColorR = new Color8Bit(200, 0, 0);//yellow
+  public static final Color8Bit PURPLE_COLOR = new Color8Bit(211, 0, 211);//purple
+  public static final Color8Bit BLACK_COLOR = new Color8Bit(0, 0, 0);
+  public static final Color8Bit YELLOW_COLOR = new Color8Bit(200, 200, 0);//yellow
+  public static final Color8Bit RED_COLOR = new Color8Bit(200, 0, 0);//yellow
+  public static final Color8Bit GREEN_COLOR = new Color8Bit(0, 200, 0);//yellow
 
-  public static final Color8Bit fullColorG = new Color8Bit(0, 200, 0);//yellow
-  private int rainbowHue = 0;
-  public int countLED = 0;
-  public int ring = buffer.getEffectiveLength() / 4;
-  public int segment = buffer.getEffectiveLength() / 2;
-  public int total = buffer.getEffectiveLength();
+
+  LEDLightStrip ledLightStrip;
+
+  boolean ledColorRequested;
 
   public NeoPixel() {
-    lightStrip.setLength(buffer.getEffectiveLength());
-    lightStrip.setData(buffer);
-    lightStrip.start();
+    ledLightStrip = new LEDLightStrip();
+    ledLightStrip.addSegment(12, LightType.RGB);
+    ledLightStrip.addSegment(12, LightType.RGB);
+    ledLightStrip.addSegment(12, LightType.RGB);
+    ledLightStrip.addSegment(12, LightType.RGB);
+    ledLightStrip.addSegment(19, LightType.RGBW);
+    ledLightStrip.addSegment(8, LightType.RGBW);
+    ledLightStrip.setUp(9);
   }
 
-  public void setAll(Color8Bit color) {
-//    System.out.println("SETALL RUNNING");
-    lightStrip.setData(buffer);
-    if (color != null) {
-      for (int i = 0; i < buffer.getLength(); i++) {
-        buffer.setLED(i, color);
-      }
+  public void setColor(int segmentNumber, Color8Bit color) {
+    System.out.println("setting color " + color.toString() + " for segment:" + segmentNumber);
+    ledLightStrip.setLEDColor(segmentNumber, color);
+    ledColorRequested = true;
+  }
+
+  public void setAllColor(Color8Bit color) {
+    for (int segment = 0; segment < ledLightStrip.numOfSegments(); segment++) {
+      setColor(segment, color);
+    }
+  }
+
+  public void setSpecificSegmentColor(int[] segments, Color8Bit color) {
+    for (int segment : segments) {
+      setColor(segment, color);
     }
   }
 
   @Override
   public void periodic() {
-//setThirdRing(fullColorY);
-
-//        setFirstHalf(fullColor);
-//        setSecondHalf(fullColorY);
+    if (ledColorRequested) {
+      ledLightStrip.setLEDData();
+    }
+    ledColorRequested = false;
   }
-
-  //    public Color8Bit getFullColor() {
-//        return fullColor;
-//    }
-  private void blink() {
-    countLED++;
-    if (countLED % 50 > 25) {
-      setAll(blankColor);
-    }
-    if (countLED % 50 < 25) {
-      setAll(fullColorY);
-    }
-    if (countLED == 50) {
-      countLED = 0;
-    }
-  }
-
-
-
-  public void setSecondHalf(Color8Bit color) {
-    for (int i = 0; i < segment; i++) {
-      buffer.setLED(i + segment, color);
-    }
-    lightStrip.setData(buffer);
-  }
-
-  public void setFirstHalf(Color8Bit color) {
-    for (int i = 0; i < segment; i++) {
-      buffer.setLED(i, color);
-    }
-    lightStrip.setData(buffer);
-  }
-
-  //for light tower
-  public void setFirstRing(Color8Bit color) {
-    for (int i = 0; i < ring; i++) {
-      buffer.setLED(i, color);
-    }
-    lightStrip.setData(buffer);
-  }
-
-  public void setSecondRing(Color8Bit color) {
-    for (int i = 0; i < ring; i++) {
-      buffer.setLED(i + ring, color);
-    }
-    lightStrip.setData(buffer);
-  }
-
-  public void setThirdRing(Color8Bit color) {
-    for (int i = 0; i < ring; i++) {
-      buffer.setLED(i + (ring * 2), color);
-    }
-    lightStrip.setData(buffer);
-  }
-
-  public void setFourthRing(Color8Bit color) {
-    for (int i = 0; i < ring; i++) {
-      buffer.setLED(i + (2 * ring), color);
-    }
-    lightStrip.setData(buffer);
-  }
-
-  private void rainbow() {
-    for (int i = 0; i < buffer.getLength(); i++) {
-      final int hue = (rainbowHue + (i * 180 / buffer.getLength())) % 180;
-      buffer.setHSV(i, hue, 255, 128);
-    }
-    rainbowHue += 3;
-    rainbowHue %= 180;
-  }
-
 }

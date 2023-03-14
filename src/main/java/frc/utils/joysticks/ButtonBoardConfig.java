@@ -3,6 +3,7 @@ package frc.utils.joysticks;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.NeoPixel;
 
 import static frc.robot.Constants.useButtonBoard;
 
@@ -13,17 +14,21 @@ public class ButtonBoardConfig {
 
   Exception killSwitch;
 
+  NeoPixel neoPixel;
+
   private int grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8, grid9;
   int[] gridState = {grid1, grid2, grid3, grid4, grid5, grid6, grid7, grid8, grid9};
 
-  public ButtonBoardConfig() {
+  public ButtonBoardConfig(NeoPixel neoPixel) {
     m_buttonboard1 = new ButtonBoard(1);
     m_buttonboard2 = new ButtonBoard(2);
+    this.neoPixel = neoPixel;
   }
 
 
   public void buttonBoardSetup(){
-     killSwitch =  new Exception("Kill Switch");
+    int[] segments = {1, 3, 4};
+    killSwitch =  new Exception("Kill Switch");
     System.out.println("buttonBoardSetup starting");
 
 
@@ -65,10 +70,13 @@ public class ButtonBoardConfig {
     new Trigger(m_buttonboard2::grid8).onTrue(new InstantCommand(() -> grid8 = 8));
     new Trigger(m_buttonboard2::grid9).onTrue(new InstantCommand(() -> grid9 = 9));
     new Trigger(m_buttonboard1::kill).onTrue(new InstantCommand(() -> System.exit(0)));
+
+
+
     /*
     new Trigger(m_buttonboard1::floor).onTrue(new InstantCommand(() -> System.out.println("Floor Selected")));
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
-<<<<<<< HEAD
+
     new Trigger(m_buttonboard4::grid1).onTrue(new InstantCommand(() -> System.out.println("Grid1 Selected")));
     new Trigger(m_buttonboard4::grid2).onTrue(new InstantCommand(() -> System.out.println("Grid2 Selected")));
     new Trigger(m_buttonboard4::grid3).onTrue(new InstantCommand(() -> System.out.println("Grid3 Selected")));
@@ -79,53 +87,53 @@ public class ButtonBoardConfig {
     new Trigger(m_buttonboard4::grid8).onTrue(new InstantCommand(() -> System.out.println("Grid8 Selected")));
     new Trigger(m_buttonboard4::grid9).onTrue(new InstantCommand(() -> System.out.println("Grid9 Selected")));
     */
-    new Trigger(m_buttonboard1::confirm).onTrue(new InstantCommand(() ->(
-    for(int i = 0; i < 9; i++){
-      if(gridState[i] == 1){
-        new InstantCommand(() -> System.out.println("Grid1 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 2){
-        new InstantCommand(() -> System.out.println("Grid2 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 3){
-        new InstantCommand(() -> System.out.println("Grid3 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 4){
-        new InstantCommand(() -> System.out.println("Grid4 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 5){
-        new InstantCommand(() -> System.out.println("Grid5 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 6){
-        new InstantCommand(() -> System.out.println("Grid6 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 7){
-        new InstantCommand(() -> System.out.println("Grid7 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 8){
-        new InstantCommand(() -> System.out.println("Grid8 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 9){
-        new InstantCommand(() -> System.out.println("Grid9 Running"));
-        gridState[i] = 0;
-      }
-      else if(gridState[i] == 0){
-        new InstantCommand(() -> System.out.println("Nothing Running"));
-      }
-    }
-    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() ->
-            for(int i = 0; i < 9; i++) {
-              gridState[i] = 0;
-            }
-    }
+//    new Trigger(m_buttonboard1::confirm).onTrue(new InstantCommand(() ->(
+//    for(int i = 0; i < 9; i++){
+//      if(gridState[i] == 1){
+//        new InstantCommand(() -> System.out.println("Grid1 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 2){
+//        new InstantCommand(() -> System.out.println("Grid2 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 3){
+//        new InstantCommand(() -> System.out.println("Grid3 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 4){
+//        new InstantCommand(() -> System.out.println("Grid4 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 5){
+//        new InstantCommand(() -> System.out.println("Grid5 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 6){
+//        new InstantCommand(() -> System.out.println("Grid6 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 7){
+//        new InstantCommand(() -> System.out.println("Grid7 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 8){
+//        new InstantCommand(() -> System.out.println("Grid8 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 9){
+//        new InstantCommand(() -> System.out.println("Grid9 Running"));
+//        gridState[i] = 0;
+//      }
+//      else if(gridState[i] == 0){
+//        new InstantCommand(() -> System.out.println("Nothing Running"));
+//      }
+//    }
+//    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() ->
+//            for(int i = 0; i < 9; i++) {
+//              gridState[i] = 0;
+//            }
+//    }
 
 
     /*

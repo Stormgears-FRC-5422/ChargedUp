@@ -257,12 +257,12 @@ public class RobotContainer {
         }
 
         if (useStatusLights) {
-            new Trigger(() -> m_controller.getRawButton(9)).whileTrue(new InstantCommand(() -> m_neoPixel.setAll(m_neoPixel.fullColor)));
         }
 
         //BUTTONBOARD TRIGGERS
         if (useButtonBoard) {
-            m_buttonboardconfig = new ButtonBoardConfig();
+            m_buttonboardconfig = new ButtonBoardConfig(m_neoPixel);
+            m_buttonboardconfig.buttonBoardSetup();
         }
 
 //        new Trigger(m_buttonboard1::leftSub).onTrue();
@@ -402,7 +402,7 @@ public class RobotContainer {
         m_robotState.onEnable();
 
 
-//        m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet);
+//        m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
 //        m_lidarIndicatorCommand.schedule();
 
         if (useDrive) {
