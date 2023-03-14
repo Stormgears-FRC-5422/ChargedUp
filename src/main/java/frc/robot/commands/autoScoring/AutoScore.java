@@ -22,4 +22,8 @@ public class AutoScore extends SequentialCommandGroup {
         );
         addRequirements(drivetrain);
     }
+
+    public AutoScore(DrivetrainBase drivetrain, ScoringNode node) {
+        this(drivetrain, () -> node);
+    }
 }
