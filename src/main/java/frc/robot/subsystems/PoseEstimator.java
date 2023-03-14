@@ -19,7 +19,8 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.AprilTagPoseEstimationStrategy;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import static frc.robot.constants.Constants.VisionConstants.*;
+import static frc.robot.constants.Constants.VisionConstants.CAMERA_POSITION;
+import static frc.robot.constants.Constants.VisionConstants.CAMERA_ROBOT_TRANSFORM2D;
 
 public class PoseEstimator extends StormSubsystemBase {
     private final SwerveDrivePoseEstimator m_poseEstimator;

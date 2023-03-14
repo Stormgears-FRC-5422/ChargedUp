@@ -1,11 +1,8 @@
 package frc.utils.joysticks;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.NeoPixel;
-
-import static frc.robot.Constants.useButtonBoard;
 
 public class ButtonBoardConfig {
 
