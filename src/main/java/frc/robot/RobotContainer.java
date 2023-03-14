@@ -264,13 +264,10 @@ public class RobotContainer {
             );
         }
 
-        if (Toggles.useLogitechController && Toggles.useStatusLights) {
-            new Trigger(() -> logitechController.getRawButton(9)).whileTrue(new InstantCommand(() -> m_neoPixel.setAll(NeoPixel.fullColor)));
-        }
-
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
-            buttonBoardConfig = new ButtonBoardConfig();
+            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel);
+            buttonBoardConfig.buttonBoardSetup();
         }
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
@@ -285,6 +282,21 @@ public class RobotContainer {
                 }
             }));
         }
+//        new Trigger(m_buttonboard1::leftSub).onTrue();
+//        new Trigger(m_buttonboard1::rightSub).onTrue();
+//        new Trigger(m_buttonboard1::floor).onTrue();
+//        new Trigger(m_buttonboard1::store).onTrue();
+//        new Trigger(m_buttonboard1::grid1).onTrue();
+//        new Trigger(m_buttonboard1::grid2).onTrue();
+//        new Trigger(m_buttonboard1::grid3).onTrue();
+//        new Trigger(m_buttonboard1::grid4).onTrue();
+//        new Trigger(m_buttonboard1::grid5).onTrue();
+//        new Trigger(m_buttonboard1::grid6).onTrue();
+//        new Trigger(m_buttonboard1::grid7).onTrue();
+//        new Trigger(m_buttonboard2::grid8).onTrue();
+//        new Trigger(m_buttonboard2::grid9).onTrue();
+//        new Trigger(m_buttonboard2::confirm).onTrue();
+//        new Trigger(m_buttonboard2::cancel).onTrue();
 
 //        if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
 //            new Trigger(xboxController::getAButtonIsHeld)

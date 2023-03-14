@@ -9,13 +9,14 @@ import frc.robot.subsystems.stormnet.StormNet;
 
 public class LidarIndicatorCommand extends CommandBase {
 
-  NeoPixel m_neoPixel = new NeoPixel();
+  NeoPixel neoPixel;
 
   StormNet m_stormNet;
 
 
 
-  public LidarIndicatorCommand(StormNet stormNet) {
+  public LidarIndicatorCommand(StormNet stormNet, NeoPixel neoPixel) {
+    this.neoPixel = neoPixel;
     m_stormNet = stormNet;
   }
 
@@ -30,13 +31,13 @@ public class LidarIndicatorCommand extends CommandBase {
     double distance = m_stormNet.getLidarDistance();
     System.out.println(distance);
     if (distance >= 0.1 && distance <= 0.2) {
-      m_neoPixel.setAll(NeoPixel.fullColorG);
+      neoPixel.setColor(5, NeoPixel.PURPLE_COLOR);
     }
     if (distance < 0.1) {
-      m_neoPixel.setAll(NeoPixel.fullColorR);
+      neoPixel.setColor(5, NeoPixel.RED_COLOR);
     }
     if (distance > 0.3) {
-      m_neoPixel.setAll(NeoPixel.fullColorY);
+      neoPixel.setColor(5, NeoPixel.YELLOW_COLOR);
     }
   }
 
