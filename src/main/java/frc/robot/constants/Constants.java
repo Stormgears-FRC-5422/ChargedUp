@@ -49,6 +49,8 @@ public final class Constants {
     public static final String kMK4iModuleKind = StormProp.getString("mk4iModuleKind", "");
     public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
     public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
+    public static final double TURN_RADIUS = Math.sqrt(
+            Math.pow(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, 2) + Math.pow(DRIVETRAIN_WHEELBASE_METERS / 2.0, 2));
     public static final double ROBOT_WIDTH = StormProp.getNumber("robotWidth", 0.);
     public static final double ROBOT_LENGTH = StormProp.getNumber("robotLength", 0.);
     public static final double BUMPER_THICKNESS = StormProp.getNumber("bumperThickness", 0.);
@@ -128,7 +130,6 @@ public final class Constants {
                   CAMERA_POSITION.toPose2d(),
                   new Pose2d()
           );
-
       }
 
 

@@ -64,9 +64,9 @@ public final class FieldConstants {
         private static final double[] nodeXs = {Units.inchesToMeters(14.32), Units.inchesToMeters(31.35), Units.inchesToMeters(47.0)};
 
         // Calaculate regions for every 3 by 3 of nodes
-        private static final double distBetweenChargingStationGrid = Units.inchesToMeters(59.0);
-        private static final double regionMaxX = distBetweenChargingStationGrid - halfRobotLengthWithBumper;
         private static final double regionMinX = Units.inchesToMeters(54.05);
+        private static final double distBetweenChargingStationGrid = Units.inchesToMeters(59.0);
+        private static final double regionMaxX = regionMinX + distBetweenChargingStationGrid - halfRobotLengthWithBumper;
         private static final double firstRegionWidth = Units.inchesToMeters(75.185);
         private static final double secondRegionWidth = Units.inchesToMeters(65.55);
         private static final double thirdRegionWidth = Units.inchesToMeters(75.345);
@@ -83,7 +83,6 @@ public final class FieldConstants {
                 double regionMinY = 0.0;
                 for (int i = 0; i < currentRegion; i++)
                     regionMinY += regionWidths[i];
-
                 double regionWidth = regionWidths[currentRegion];
                 double regionMaxY = regionMinY + regionWidth;
                 Regions.RectangleRegion region = new Regions.RectangleRegion(regionMaxY, regionMaxX, regionMinY, regionMinX);
@@ -103,7 +102,7 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-//                    System.out.println(blueAllianceGrid[wpiY][wpiX]);
+                    System.out.println(blueAllianceGrid[wpiY][wpiX]);
                 }
             }
         }
@@ -158,25 +157,28 @@ public final class FieldConstants {
 
             @Override
             public String toString() {
-                return String.format(
-                        "ScoringNode(%1$s, %2$s, %3$s," +
-                        " node(x: %4$s y: %5$s z: %6$s)" +
-                        " scoring pose(x: %7$s y: %8$s heading: %9$s)",
-                        type, height, alliance,
-                        translation.getX(), translation.getY(), translation.getZ(),
-                        scoringPosition.getX(), scoringPosition.getY(), scoringPosition.getRotation().getDegrees());
+                return "ScoringNode{" +
+                        "type=" + type +
+                        ", height=" + height +
+                        ", alliance=" + alliance +
+                        ", translation=" + translation +
+                        ", scoringPosition=" + scoringPosition +
+                        ", gridRegion=" + gridRegion +
+                        ", col=" + col +
+                        ", row=" + row +
+                        '}';
             }
 
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
+                if (!(o instanceof ScoringNode)) return false;
                 ScoringNode that = (ScoringNode) o;
-                return type == that.type &&
-                        height == that.height &&
-                        alliance == that.alliance &&
+                return col == that.col && row == that.row && type == that.type &&
+                        height == that.height && alliance == that.alliance &&
                         translation.equals(that.translation) &&
-                        scoringPosition.equals(that.scoringPosition);
+                        scoringPosition.equals(that.scoringPosition) &&
+                        gridRegion.equals(that.gridRegion);
             }
 
             @Override
@@ -210,7 +212,7 @@ public final class FieldConstants {
                 Units.inchesToMeters(60), Units.inchesToMeters(189));
         public static RectangleRegion redChargingStation = blueChargingStation.getMirrored();
 
-        public RectangleRegion getCurrentChargingStation() {
+        public static RectangleRegion getCurrentChargingStation() {
             return (DriverStation.getAlliance() == Alliance.Red)? redChargingStation : blueChargingStation;
         }
 
@@ -229,6 +231,8 @@ public final class FieldConstants {
             Translation2d getCenter();
 
             Region getMirrored();
+
+            String toString();
         }
 
         public static class RectangleRegion implements Region {
@@ -261,6 +265,16 @@ public final class FieldConstants {
             public RectangleRegion getMirrored() {
                 return new RectangleRegion(maxY, mirrorXPosition(maxX),
                         minY, mirrorXPosition(minX));
+            }
+
+            @Override
+            public String toString() {
+                return "RectangleRegion{" +
+                        "maxY=" + maxY +
+                        ", minY=" + minY +
+                        ", maxX=" + maxX +
+                        ", minX=" + minX +
+                        '}';
             }
         }
 
@@ -302,7 +316,12 @@ public final class FieldConstants {
                 return new PolyShapeRegion(transformedRegions.toArray(new Region[transformedRegions.size()]));
             }
 
-
+            @Override
+            public String toString() {
+                return "PolyShapeRegion{" +
+                        "regions=" + regions +
+                        '}';
+            }
         }
     }
 

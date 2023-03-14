@@ -1,17 +1,13 @@
 package frc.robot.commands.auto;
 
-import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.drive.BalancePitchCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
-public class AutoBalance extends PathFollowingCommand {
+import java.util.function.DoubleSupplier;
 
-    public AutoBalance(DrivetrainBase drivetrain) {
-        super(drivetrain);
-    }
-
-    @Override
-    public void initialize() {
-
-        super.initialize();
+public class AutoBalance extends SequentialCommandGroup {
+    public AutoBalance(DrivetrainBase drivetrain, DoubleSupplier pitchSupplier) {
+        addCommands(new DriveToChargingStation(drivetrain), new BalancePitchCommand(drivetrain, pitchSupplier));
     }
 }

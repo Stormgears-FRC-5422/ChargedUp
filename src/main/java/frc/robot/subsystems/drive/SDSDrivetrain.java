@@ -164,8 +164,6 @@ public class SDSDrivetrain extends DrivetrainBase {
 //                .withPosition(6, 1);
 //        pidTesting.add("Rotation PID Controller", rotController)
 //                .withWidget(BuiltInWidgets.kPIDController);
-
-        m_holonomicController.setTolerance(new Pose2d(0.04, 0.04, Rotation2d.fromDegrees(1.5)));
     }
 
     @Override

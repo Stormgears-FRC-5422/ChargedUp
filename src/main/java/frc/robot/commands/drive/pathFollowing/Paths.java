@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.RobotState;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.pathplanner.lib.PathPlanner.*;
@@ -64,6 +65,24 @@ public final class Paths {
 //            new PathWithName("Test", testPath),
 //            new PathWithName("Diagonal", diagonalPath),
 //            new PathWithName("Double Cone Charging Station", doubleConeChargingStationPath));
+
+    public static PathPlannerTrajectory getPathFromHolonomicPoses(double maxVel, double maxAcc, Pose2d... poses) {
+        ArrayList<PathPoint> points = new ArrayList<>();
+        for (int i = 0; i < poses.length; i++) {
+            double heading;
+            if (i == poses.length - 1)
+                heading = calcHeading(poses[i-1].getTranslation(), poses[i].getTranslation());
+            else
+                heading = calcHeading(poses[i].getTranslation(), poses[i+1].getTranslation());
+            points.add(new PathPoint(
+                    poses[i].getTranslation(),
+                    new Rotation2d(heading),
+                    poses[i].getRotation()
+            ));
+        }
+        return PathPlanner.generatePath(
+                new PathConstraints(maxVel, maxAcc), points);
+    }
 
     public static PathPlannerTrajectory getPathToPose(Pose2d startPose, Pose2d endPose, double maxVel, double maxAcc) {
         double firstHeading = calcHeading(startPose.getTranslation(), endPose.getTranslation());

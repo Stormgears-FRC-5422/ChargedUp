@@ -13,6 +13,7 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -28,7 +29,7 @@ public class RobotState extends StormSubsystemBase {
 
     private TreeMap<Double, Pose2d> poseMap = new TreeMap<>();
 
-    private Pose2d currentPose, startPose, lastPose;
+    private Pose2d startPose;
 
     private GenericEntry xStartEntry, yStartEntry, rotStartEntry;
 
@@ -53,7 +54,8 @@ public class RobotState extends StormSubsystemBase {
 
         var startPoseSetter = ShuffleboardConstants.getInstance().driverTab
                 .getLayout("Set Start Pose", BuiltInLayouts.kGrid)
-                .withPosition(0, 3).withSize(3, 1);
+                .withProperties(Map.of("number of columns", 3, "number of rows", 1))
+                .withPosition(0, 3).withSize(2, 1);
 
         xStartEntry = startPoseSetter
                 .add("X", getStartPose().getX())
@@ -77,7 +79,8 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getCurrentPose() {
-        if (!Constants.Toggles.usePoseEstimator) {
+        if (!Constants.Toggles.usePoseEstimator ||
+                poseMap.lastEntry() == null) {
 //            System.out.println("NOT using pose estimator. Can't get current pose!");
             return getStartPose();
         }
@@ -85,10 +88,11 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public Pose2d getLastPose() {
-        if (!Constants.Toggles.usePoseEstimator) {
+        if (!Constants.Toggles.usePoseEstimator ||
+                poseMap.size() < 1) {
 //            System.out.println("NOT using pose estimator. Can't get last pose!");
-            return getStartPose();
-        }
+            return getCurrentPose();
+        } else if (poseMap.lowerEntry(poseMap.lastKey()) == null) return getCurrentPose();
         return poseMap.lowerEntry(poseMap.lastKey()).getValue();
     }
 
@@ -184,10 +188,10 @@ public class RobotState extends StormSubsystemBase {
     @Override
     public void lastPeriodic() {
         // clear map
-        while (poseMap.size() > 1 &&
-                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
-            poseMap.pollFirstEntry();
-        }
+//        while (poseMap.size() > 1 &&
+//                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
+//            poseMap.pollFirstEntry();
+//        }
     }
 
     public void enabledInit() {
@@ -198,16 +202,14 @@ public class RobotState extends StormSubsystemBase {
         currentVisionData = null;
         currentGyroData = null;
 
-        currentPose = null;
-        lastPose = null;
         poseMap = new TreeMap<>();
 
-//        setStartPose(
-//                new Pose2d(
-//                    xStartEntry.getDouble(0.0),
-//                    yStartEntry.getDouble(0.0),
-//                    Rotation2d.fromDegrees(rotStartEntry.getDouble(0.0)))
-//        );
+        setStartPose(
+                new Pose2d(
+                    xStartEntry.getDouble(0.0),
+                    yStartEntry.getDouble(0.0),
+                    Rotation2d.fromDegrees(rotStartEntry.getDouble(0.0)))
+        );
     }
 
     public void disabledInit() {
@@ -217,8 +219,6 @@ public class RobotState extends StormSubsystemBase {
         currentVisionData = null;
         currentGyroData = null;
 
-        currentPose = null;
-        lastPose = null;
         poseMap = new TreeMap<>();
     }
 

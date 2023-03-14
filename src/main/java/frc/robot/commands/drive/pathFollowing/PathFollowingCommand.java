@@ -29,9 +29,6 @@ public class PathFollowingCommand extends CommandBase {
     private final FieldObject2d goalRobotPoseSim;
     private final GenericEntry dTranslationEntry, dRotationEntry;
 
-    private static final double TRANSLATION_TOLERANCE_METERS = 0.025;
-    private static final double ROTATION_TOLERANCE_DEGREES = 1.0;
-
     public PathFollowingCommand(DrivetrainBase drivetrain, PathPlannerTrajectory path, boolean transformForAlliance) {
         m_drivetrain = drivetrain;
         m_path = path;
@@ -106,9 +103,7 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (currentTime >= totalTime) && m_drivetrain.atReferenceState() &&
-                (currentPose.getTranslation().getDistance(endPose.getTranslation()) <= TRANSLATION_TOLERANCE_METERS) &&
-                (Math.abs(currentPose.getRotation().getDegrees() - endPose.getRotation().getDegrees()) <= ROTATION_TOLERANCE_DEGREES);
+        return currentTime >= totalTime;
     }
 
     @Override

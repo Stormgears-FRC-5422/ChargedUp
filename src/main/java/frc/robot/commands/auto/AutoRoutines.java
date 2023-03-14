@@ -13,9 +13,10 @@ public final class AutoRoutines {
     public static ArrayList<AutoCommand> autoCommands = new ArrayList<>();
 
     public static AutoCommand highConeBumpSide(DrivetrainBase drivetrain) {
+        var node = FieldConstants.Grids.getCurrentGrid()[0][0];
         return new AutoCommand(
-                new AutoScore(drivetrain, FieldConstants.Grids.getCurrentGrid()[0][0]),
-                new Pose2d(1.5, 1.4, Rotation2d.fromDegrees(180)),
+                new AutoScore(drivetrain, () -> node),
+                node.scoringPosition,
                 "HIGH CONE BUMP SIDE"
         );
     }

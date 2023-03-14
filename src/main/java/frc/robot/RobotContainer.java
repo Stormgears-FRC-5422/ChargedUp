@@ -7,11 +7,13 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
+import frc.robot.commands.autoScoring.DriveToNode;
 import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
@@ -40,6 +42,8 @@ import frc.utils.joysticks.ButtonBoard;
 import frc.utils.joysticks.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
+
+import java.util.function.Supplier;
 
 import static frc.robot.constants.Constants.*;
 
@@ -282,9 +286,21 @@ public class RobotContainer {
             }));
         }
 
+//        if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
+//            new Trigger(xboxController::getAButtonIsHeld)
+//                    .onTrue(new DriveToNode(m_drivetrain, m_nodeSelector::getSelectedNode));
+//        }
         if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
-            new Trigger(xboxController::getAButtonIsHeld)
-                    .onTrue(new AutoScore(m_drivetrain, m_nodeSelector.getSelectedNode()));
+//            AutoScore[][] autoScoreCommands = new AutoScore[9][3];
+//            for (int i = 0; i < 8; i++) {
+//                for (int j = 0; j < 2; j++) {
+//                    autoScoreCommands[i][j] = new AutoScore(m_drivetrain,
+//                            FieldConstants.Grids.getCurrentGrid()[i][j]);
+//                }
+//            }
+            new Trigger(xboxController::getAButtonIsHeld).onTrue(
+                    new AutoScore(m_drivetrain, m_nodeSelector::getSelectedNode)
+            );
         }
 
 
@@ -296,6 +312,11 @@ public class RobotContainer {
                 var firstCommand = AutoRoutines.autoCommands.get(0);
                 autoCommandChooser.setDefaultOption(firstCommand.name, firstCommand);
             }
+
+            ShuffleboardConstants.getInstance().driverTab
+                    .add("Auto", autoCommandChooser)
+                    .withWidget(BuiltInWidgets.kComboBoxChooser)
+                    .withPosition(3, 3).withSize(2, 1);
         }
 
 

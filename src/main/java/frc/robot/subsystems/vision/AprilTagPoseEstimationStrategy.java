@@ -12,12 +12,20 @@ import static frc.robot.subsystems.vision.Vision.AprilTagData;
 import static frc.robot.constants.Constants.VisionConstants.*;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Vector;
 
 //TODO: see if yaw angles reported by vision can be used
 public final class AprilTagPoseEstimationStrategy {
 
     private static int logCounter = 0;
+
+    private static HashMap<Integer, Double> heightDiffs = new HashMap<>();
+    static {
+        for (int i = 1; i <= 8; i++) {
+            heightDiffs.put(i, Math.abs(getTagPose(i).getZ() - CAMERA_POSITION.getZ()));
+        }
+    }
 
     /** @return camera pose from list of april tag data */
     public static Pose2d fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle) {
@@ -31,7 +39,6 @@ public final class AprilTagPoseEstimationStrategy {
         AprilTagData closest = data.get(0);
         boolean useYaw = closest.dist <= kAprilTagYawTrustMeters;
         Pose3d closeTag = getTagPose(closest.id);
-
         
         // rotation is either the state as is or new one based on yaw
         Rotation2d rotation = camAngle;
@@ -50,7 +57,7 @@ public final class AprilTagPoseEstimationStrategy {
                 rotation = Rotation2d.fromDegrees(averageRotation);
             }
         } else {
-            double dist2d = _get2dDist(closeTag, closest.dist);
+            double dist2d = _get2dDist(closest.id, closest.dist);
             if (useYaw)
                 translation = _oneAprilTag(closest.yawDegrees, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
             else {
@@ -146,13 +153,14 @@ public final class AprilTagPoseEstimationStrategy {
 
     /** get distance to tag in 2d field positions */
     private static double _get2dDist(int tagID, double dist3d) {
-        return _get2dDist(getTagPose(tagID), dist3d);
+        double heightDiff = heightDiffs.get(tagID);
+        return Math.sqrt((dist3d*dist3d) - (heightDiff*heightDiff));
     }
 
-    private static double _get2dDist(Pose3d tagPose, double dist3d) {
-        double heightDiff = Math.abs(CAMERA_POSITION.getZ() - tagPose.getZ());
-        return (dist3d * dist3d) - (heightDiff * heightDiff);
-    }
+//    private static double _get2dDist(Pose3d tagPose, double dist3d) {
+//        double heightDiff = Math.abs(CAMERA_POSITION.getZ() - tagPose.getZ());
+//        return Math.sqrt((dist3d * dist3d) - (heightDiff * heightDiff));
+//    }
 
     /** @return angle in radians made by a and b given side lengths <br>
      * (a^2 + b^2 - c^2)/(2ab) --> A */
