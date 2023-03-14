@@ -63,6 +63,8 @@ public class SDSDrivetrain extends DrivetrainBase {
     public SDSDrivetrain() {
         initEncoders();
 
+        m_holonomicController.setTolerance(new Pose2d(0.05,  0.05, Rotation2d.fromDegrees(2.5)));
+
         Mk4iSwerveModuleHelper.GearRatio theGearRatio;
         ModuleConfiguration moduleConfiguration;
 

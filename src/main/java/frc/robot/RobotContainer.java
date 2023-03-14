@@ -84,7 +84,6 @@ public class RobotContainer {
 
     private final SendableChooser<AutoCommand> autoCommandChooser = new SendableChooser<>();
 
-
     public RobotContainer() throws IllegalDriveTypeException {
         //init constants
         FieldConstants.init();
@@ -183,6 +182,9 @@ public class RobotContainer {
 
         // Configure the trigger bindings
         configureBindings();
+        if (Toggles.usePoseEstimator && Toggles.useNavX) {
+            AutoRoutines.highConeBumpSideChargingStation(m_drivetrain, m_navX);
+        }
     }
 
     private void configureBindings() {
@@ -248,7 +250,6 @@ public class RobotContainer {
             );
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
-            buttonBoard = new ButtonBoard(0);
 
             // zero angle command when we are red make sure robot pointing forwards is 180
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
@@ -300,23 +301,6 @@ public class RobotContainer {
             );
         }
 
-
-        if (Toggles.usePoseEstimator) {
-            if (AutoRoutines.autoCommands.size() > 0) {
-                for (var command : AutoRoutines.autoCommands) {
-                    autoCommandChooser.addOption(command.name, command);
-                }
-                var firstCommand = AutoRoutines.autoCommands.get(0);
-                autoCommandChooser.setDefaultOption(firstCommand.name, firstCommand);
-            }
-
-            ShuffleboardConstants.getInstance().driverTab
-                    .add("Auto", autoCommandChooser)
-                    .withWidget(BuiltInWidgets.kComboBoxChooser)
-                    .withPosition(3, 3).withSize(2, 1);
-        }
-
-//
 //            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
 //            for (var path : Paths.listOfPaths) {
 //                testPathChooser.addOption(path.name, path.path);

@@ -46,13 +46,14 @@ public final class ShuffleboardConstants {
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(7, 4).withPosition(2, 0);
 
-        robotStateTab
-                .add("Field Sim", poseEstimationFieldSim)
-                .withWidget(BuiltInWidgets.kField)
-                .withSize(7, 4).withPosition(2, 0);
+//        robotStateTab
+//                .add("Field Sim", poseEstimationFieldSim)
+//                .withWidget(BuiltInWidgets.kField)
+//                .withSize(7, 4).withPosition(2, 0);
 
         driverTab
-                .add("Field Sim", poseEstimationFieldSim).withWidget(BuiltInWidgets.kField)
+                .add("Field Sim", poseEstimationFieldSim)
+                .withWidget(BuiltInWidgets.kField)
                 .withSize(5, 3).withPosition(4, 0);
 
         robotStateList = robotStateTab

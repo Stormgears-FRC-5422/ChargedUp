@@ -27,7 +27,7 @@ public class BalancePitchCommand extends CommandBase {
     public void execute() {
         // test to see if we should negate
         double pidOut = controller.calculate(pitchSupplier.getAsDouble(), 0);
-        m_drivetrain.drive(new ChassisSpeeds(pidOut, 0.0, 0.0), true);
+        m_drivetrain.drive(new ChassisSpeeds(-pidOut, 0.0, 0.0), true);
     }
 
     // do we need this

@@ -40,7 +40,7 @@ public class DriveToNode extends PathFollowingCommand {
         boolean isRed = goalNode.alliance == DriverStation.Alliance.Red;
         boolean inRegion = goalNode.gridRegion.contains(currentPose);
         
-        double distForAligned = Constants.TURN_RADIUS + Constants.BUMPER_THICKNESS;
+        double distForAligned = Constants.TURN_RADIUS + Constants.BUMPER_THICKNESS + Units.inchesToMeters(7.0);
 
         PathPlannerTrajectory path;
         if (inRegion) {

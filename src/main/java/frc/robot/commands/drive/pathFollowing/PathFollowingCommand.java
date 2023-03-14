@@ -21,8 +21,6 @@ public class PathFollowingCommand extends CommandBase {
     private PathPlannerTrajectory m_path;
     private boolean transformForAlliance = false;
 
-    private Pose2d currentPose, endPose;
-
     private double startTime, currentTime, totalTime;
 
     private final Field2d fieldSim;
@@ -70,8 +68,8 @@ public class PathFollowingCommand extends CommandBase {
                 PathPlannerTrajectory.transformTrajectoryForAlliance(m_path, DriverStation.getAlliance()) :
                 m_path;
 
-        currentPose = RobotState.getInstance().getCurrentPose();
-        endPose = new Pose2d(
+        Pose2d currentPose = RobotState.getInstance().getCurrentPose();
+        Pose2d endPose = new Pose2d(
                 m_path.getEndState().poseMeters.getTranslation(),
                 m_path.getEndState().holonomicRotation
         );
@@ -85,16 +83,15 @@ public class PathFollowingCommand extends CommandBase {
     public void execute() {
         currentTime = RobotState.getInstance().getTimeSeconds() - startTime;
         var goalState = (PathPlannerTrajectory.PathPlannerState) m_path.sample(currentTime);
-        var currentPose = RobotState.getInstance().getCurrentPose();
+        Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         //Path Planner states are different to trajectory states
-        var goalPose = new Pose2d(
+        Pose2d goalPose = new Pose2d(
                 goalState.poseMeters.getTranslation(),
                 goalState.holonomicRotation);
 
         //log error
         dTranslationEntry.setDouble(currentPose.getTranslation().getDistance(goalPose.getTranslation()));
         dRotationEntry.setDouble(currentPose.getRotation().minus(goalPose.getRotation()).getDegrees());
-        //put it on field???
         fieldSim.setRobotPose(currentPose);
         goalRobotPoseSim.setPose(goalPose);
 
@@ -103,7 +100,7 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return currentTime >= totalTime;
+        return currentTime >= totalTime && m_drivetrain.atReferenceState();
     }
 
     @Override

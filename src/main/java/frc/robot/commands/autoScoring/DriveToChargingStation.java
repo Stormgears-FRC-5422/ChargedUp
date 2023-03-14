@@ -1,4 +1,4 @@
-package frc.robot.commands.auto;
+package frc.robot.commands.autoScoring;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,8 +17,8 @@ import static frc.robot.constants.FieldConstants.Regions.*;
 public class DriveToChargingStation extends PathFollowingCommand {
 
     RectangleRegion chargingStation = getCurrentChargingStation();
-    private static final double DISTANCE_TO_ENGAGE_STATION = Units.inchesToMeters(10);
-    private static final double MARGIN = Units.inchesToMeters(30.0);
+    private static final double DISTANCE_TO_ENGAGE_STATION = Units.inchesToMeters(25.0);
+    private static final double MARGIN = Units.inchesToMeters(3.0);
 
     public DriveToChargingStation(DrivetrainBase drivetrain) {
         super(drivetrain);
@@ -33,26 +33,38 @@ public class DriveToChargingStation extends PathFollowingCommand {
         super.initialize();
     }
 
-    private static Pose2d[] getNextPoses(Pose2d currentPose, RectangleRegion chargingStation) {
+    private static Pose2d[] getNextPoses(Pose2d currentPose, RectangleRegion station) {
         double halfRobotWidth = (Constants.ROBOT_WIDTH + Constants.BUMPER_THICKNESS) / 2.0 + MARGIN;
-        double halfRobotLength = (Constants.ROBOT_LENGTH + Constants.BUMPER_THICKNESS) / 2.0 + MARGIN
-                + Constants.TURN_RADIUS;
+        double ALIGN_MARGIN = Constants.TURN_RADIUS + MARGIN;
 
-        double minY = chargingStation.minY + halfRobotLength;
-        double maxY = chargingStation.maxY - halfRobotWidth;
+        // get the y coordinate of our robot our if it is not aligned with chargin station
+        // get the minimum or maximum field y we have to be at
+        double minY = station.minY + halfRobotWidth;
+        double maxY = station.maxY - halfRobotWidth;
         double alignedY = MathUtil.clamp(currentPose.getY(), minY, maxY);
 
-        boolean isRightOfStation = currentPose.getX() >= chargingStation.getCenter().getX();
-        double alignedX = isRightOfStation?
-                chargingStation.maxX + halfRobotLength : chargingStation.minX - halfRobotLength;
+        // either get onto the charging station forwards or backwards
+        // depending on which is closer
+        double currentDegrees = currentPose.getRotation().getDegrees();
+        Rotation2d rotation;
+        if (currentDegrees < 0)
+            rotation = (currentDegrees < -90.0)? new Rotation2d(Math.PI) : new Rotation2d();
+        else
+            rotation = (currentDegrees > 90.0)? new Rotation2d(Math.PI) : new Rotation2d();
 
-        Rotation2d rotation = isRightOfStation? new Rotation2d(Math.PI) : new Rotation2d();
-
+        // give an array of poses
         ArrayList<Pose2d> poses = new ArrayList<>();
-        if (currentPose.getX() <= chargingStation.maxX && currentPose.getX() >= chargingStation.minX) {
+        // find which sid eof station we are on
+        boolean isRightOfStation = currentPose.getX() >= station.getCenter().getX();
+        double alignedX = isRightOfStation?
+                station.maxX + ALIGN_MARGIN : station.minX - ALIGN_MARGIN;
+        // if we are somewhere in the middle the first step should be to go to one of the sides
+        if (currentPose.getX() <= station.maxX && currentPose.getX() >= station.minX) {
             poses.add(new Pose2d(alignedX, currentPose.getY(), currentPose.getRotation()));
         }
+        // aligned position
         poses.add(new Pose2d(alignedX, alignedY, rotation));
+        // determine which way to travel for engagement with station
         double engagedX = (isRightOfStation? -1.0 : 1.0) * DISTANCE_TO_ENGAGE_STATION + alignedX;
         poses.add(new Pose2d(engagedX, alignedY, rotation));
 
