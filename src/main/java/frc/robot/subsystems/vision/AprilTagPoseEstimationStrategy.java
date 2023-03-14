@@ -157,11 +157,6 @@ public final class AprilTagPoseEstimationStrategy {
         return Math.sqrt((dist3d*dist3d) - (heightDiff*heightDiff));
     }
 
-//    private static double _get2dDist(Pose3d tagPose, double dist3d) {
-//        double heightDiff = Math.abs(CAMERA_POSITION.getZ() - tagPose.getZ());
-//        return Math.sqrt((dist3d * dist3d) - (heightDiff * heightDiff));
-//    }
-
     /** @return angle in radians made by a and b given side lengths <br>
      * (a^2 + b^2 - c^2)/(2ab) --> A */
     private static double _getAngleFromTriangle(double a, double b, double c) {

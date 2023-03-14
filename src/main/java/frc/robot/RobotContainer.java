@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -13,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
-import frc.robot.commands.autoScoring.DriveToNode;
 import frc.robot.commands.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.autoScoring.AutoScore;
@@ -43,8 +41,6 @@ import frc.utils.joysticks.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
-import java.util.function.Supplier;
-
 import static frc.robot.constants.Constants.*;
 
 
@@ -69,7 +65,6 @@ public class RobotContainer {
     GyroCommand m_gyrocommand;
     LidarIndicatorCommand m_lidarIndicatorCommand;
     ArmCommand m_armCommand;
-    NodeSelector m_nodeSelector;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
@@ -82,6 +77,7 @@ public class RobotContainer {
     // Controllers
     // **********
     StormLogitechController logitechController;
+    NodeSelector nodeSelector;
     StormXboxController xboxController;
     ButtonBoard buttonBoard;
     ButtonBoardConfig buttonBoardConfig;
@@ -166,7 +162,7 @@ public class RobotContainer {
         }
 
         if (Toggles.useNodeSelector) {
-            m_nodeSelector = new NodeSelector();
+            nodeSelector = new NodeSelector();
         } else {
             System.out.println("NOT using node selector");
         }
@@ -220,13 +216,13 @@ public class RobotContainer {
 
             if (Toggles.useNodeSelector) {
                 new Trigger(xboxController::getUpArrowPressed)
-                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(-1)));
+                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedRow(-1)));
                 new Trigger(xboxController::getDownArrowPressed)
-                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedRow(1)));
+                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedRow(1)));
                 new Trigger(xboxController::getLeftArrowPressed)
-                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(-1)));
+                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedCol(-1)));
                 new Trigger(xboxController::getRightArrowPressed)
-                        .onTrue(new InstantCommand(() -> m_nodeSelector.moveSelectedCol(1)));
+                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedCol(1)));
                 System.out.println("using controller to control node selector");
             }
         }
@@ -298,20 +294,9 @@ public class RobotContainer {
 //        new Trigger(m_buttonboard2::confirm).onTrue();
 //        new Trigger(m_buttonboard2::cancel).onTrue();
 
-//        if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
-//            new Trigger(xboxController::getAButtonIsHeld)
-//                    .onTrue(new DriveToNode(m_drivetrain, m_nodeSelector::getSelectedNode));
-//        }
         if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
-//            AutoScore[][] autoScoreCommands = new AutoScore[9][3];
-//            for (int i = 0; i < 8; i++) {
-//                for (int j = 0; j < 2; j++) {
-//                    autoScoreCommands[i][j] = new AutoScore(m_drivetrain,
-//                            FieldConstants.Grids.getCurrentGrid()[i][j]);
-//                }
-//            }
             new Trigger(xboxController::getAButtonIsHeld).onTrue(
-                    new AutoScore(m_drivetrain, m_nodeSelector::getSelectedNode)
+                    new AutoScore(m_drivetrain, nodeSelector::getSelectedNode)
             );
         }
 
@@ -331,19 +316,6 @@ public class RobotContainer {
                     .withPosition(3, 3).withSize(2, 1);
         }
 
-
-//            autoEventMap.put("PickUpFromGround", new PrintCommand("Picking up game piece from ground!"));
-//            autoEventMap.put("StowArm", new PrintCommand("Stowing the arm!"));
-//            autoEventMap.put("LiftArm", new PrintCommand("Lifting the arm!"));
-//            autoEventMap.put("PlaceGamePiece", new PrintCommand("Placing the game piece!"));
-//            autoEventMap.put("Balance", new PrintCommand("Balancing on charging station!"));
-//
-//            //add paths to chooser
-//            for (var pathWithName : Paths.listOfPaths) {
-//                autoPathChooser.addOption("Auto " + pathWithName.name, pathWithName);
-//            }
-//            autoPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0));
-//            SmartDashboard.putData("Auto Paths", autoPathChooser);
 //
 //            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
 //            for (var path : Paths.listOfPaths) {
