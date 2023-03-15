@@ -1,14 +1,16 @@
 package frc.robot.commands.auto;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.autoScoring.AutoBalance;
-import frc.robot.commands.autoScoring.AutoScore;
+import frc.robot.commands.auto.autoScoring.AutoBalance;
+import frc.robot.commands.auto.autoScoring.AutoScore;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public final class AutoRoutines {
@@ -23,7 +25,7 @@ public final class AutoRoutines {
         return new AutoCommand(
                 new SequentialCommandGroup(
                         new AutoScore(drivetrain, node),
-                        new AutoBalance(drivetrain, navX::getPitch)
+                        new AutoBalance(drivetrain, navX)
                 ),
                 node.scoringPosition,
                 "HIGH CONE BUMP SIDE CHARGING STATION"

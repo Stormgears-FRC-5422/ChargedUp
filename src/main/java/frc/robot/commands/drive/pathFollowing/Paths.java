@@ -78,7 +78,7 @@ public final class Paths {
                     poses[i].getTranslation(),
                     new Rotation2d(heading),
                     poses[i].getRotation()
-            ));
+            ).withControlLengths(0.01, 0.01));
         }
         return PathPlanner.generatePath(
                 new PathConstraints(maxVel, maxAcc), points);

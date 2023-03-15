@@ -12,9 +12,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
-import frc.robot.commands.autoScoring.NodeSelector;
+import frc.robot.commands.auto.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
-import frc.robot.commands.autoScoring.AutoScore;
+import frc.robot.commands.auto.autoScoring.AutoScore;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LidarIndicatorCommand;
@@ -184,7 +184,21 @@ public class RobotContainer {
         configureBindings();
         if (Toggles.usePoseEstimator && Toggles.useNavX) {
             AutoRoutines.highConeBumpSideChargingStation(m_drivetrain, m_navX);
+
+            if (AutoRoutines.autoCommands.size() > 0) {
+                for (var autoCommand : AutoRoutines.autoCommands) {
+                    autoCommandChooser.addOption(autoCommand.name, autoCommand);
+                }
+                var command = AutoRoutines.autoCommands.get(0);
+                autoCommandChooser.setDefaultOption(command.name, command);
+            }
+
+            ShuffleboardConstants.getInstance().driverTab
+                    .add("Auto Selector", autoCommandChooser)
+                    .withWidget(BuiltInWidgets.kComboBoxChooser)
+                    .withPosition(2, 3).withSize(2, 1);
         }
+
     }
 
     private void configureBindings() {
@@ -255,6 +269,7 @@ public class RobotContainer {
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> logitechController.getRawButton(5)).onTrue(
                     new InstantCommand(() -> {
+                        System.out.println("Cancelling current drivetrain command!");
                         m_drivetrain.getCurrentCommand().cancel();
                         driveWithJoystick.schedule();
                     })

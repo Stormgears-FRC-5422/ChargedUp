@@ -1,4 +1,4 @@
-package frc.robot.commands.autoScoring;
+package frc.robot.commands.auto.autoScoring;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.util.Color;
@@ -10,6 +10,7 @@ import static frc.robot.constants.FieldConstants.Grids.*;
 
 public class NodeSelector {
 
+    private int logCounter = 0;
     private int selectedRow = 0;
     private int selectedCol = 0;
 
@@ -35,6 +36,8 @@ public class NodeSelector {
     }
 
     public ScoringNode getSelectedNode() {
+        System.out.println("Selected Col: " + selectedCol + " Selected Row: " + selectedRow);
+        System.out.println(currentGrid[selectedCol][selectedRow]);
         return currentGrid[selectedCol][selectedRow];
     }
 

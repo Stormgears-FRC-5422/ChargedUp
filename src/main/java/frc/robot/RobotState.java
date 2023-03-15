@@ -204,12 +204,12 @@ public class RobotState extends StormSubsystemBase {
 
         poseMap = new TreeMap<>();
 
-        setStartPose(
-                new Pose2d(
-                    xStartEntry.getDouble(0.0),
-                    yStartEntry.getDouble(0.0),
-                    Rotation2d.fromDegrees(rotStartEntry.getDouble(0.0)))
-        );
+//        setStartPose(
+//                new Pose2d(
+//                    xStartEntry.getDouble(0.0),
+//                    yStartEntry.getDouble(0.0),
+//                    Rotation2d.fromDegrees(rotStartEntry.getDouble(0.0)))
+//        );
     }
 
     public void disabledInit() {

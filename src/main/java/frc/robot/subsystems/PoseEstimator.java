@@ -37,7 +37,7 @@ public class PoseEstimator extends StormSubsystemBase {
     // increase these to trust less
     // TODO: tune these numbers
     private final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-    private final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.3, 0.3, 0.3);
+    private final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
 
     private double currentOdometryEntryTime, currentVisionEntryTime;
 
@@ -102,8 +102,8 @@ public class PoseEstimator extends StormSubsystemBase {
                     Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
                     // have to transform to robot pose
                     visionPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
-//                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.15)
-//                        resetEstimator(visionPose);
+                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.15)
+                        resetEstimator(visionPose);
 //                    System.out.println(visionPose);
                     m_poseEstimator.addVisionMeasurement(visionPose, time);
                     // log the position

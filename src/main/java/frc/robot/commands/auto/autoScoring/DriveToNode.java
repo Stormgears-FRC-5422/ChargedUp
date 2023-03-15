@@ -1,4 +1,4 @@
-package frc.robot.commands.autoScoring;
+package frc.robot.commands.auto.autoScoring;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -92,7 +92,7 @@ public class DriveToNode extends PathFollowingCommand {
                     scoreRotation).withPrevControlLength(Units.inchesToMeters(10));
 
             path = PathPlanner.generatePath(
-                    new PathConstraints(2, 1),
+                    new PathConstraints(1.5, 1),
                     List.of(startPoint, alignToGrids, alignToNode, scoringPose));
         }
         withPath(path);

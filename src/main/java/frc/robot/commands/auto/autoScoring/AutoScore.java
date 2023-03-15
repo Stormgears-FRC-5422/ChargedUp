@@ -1,4 +1,4 @@
-package frc.robot.commands.autoScoring;
+package frc.robot.commands.auto.autoScoring;
 
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotState;
@@ -18,7 +18,10 @@ public class AutoScore extends SequentialCommandGroup {
                                         nodeSupplier.get().gridRegion.contains(RobotState.getInstance().getCurrentPose())),
                                 new PrintCommand("Moving arm to " + nodeSupplier.get().height))
                 ),
-                new PrintCommand("Dropping " + nodeSupplier.get().type + " in " + nodeSupplier.get().height + " node")
+                new InstantCommand(() -> {
+                    System.out.println("Dropping " + nodeSupplier.get().type
+                            + " in " + nodeSupplier.get().height + " node");
+                })
         );
         addRequirements(drivetrain);
     }

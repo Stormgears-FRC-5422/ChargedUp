@@ -46,6 +46,7 @@ public final class AprilTagPoseEstimationStrategy {
         
         Translation2d translation;
         if (data.size() > 1) {
+            System.out.println("Using triangulation method");
             AprilTagData secondClosest = data.get(1);
             translation = _twoAprilTags(closest, secondClosest);
             // if both tags are in range then we can average their yaw values for rotation

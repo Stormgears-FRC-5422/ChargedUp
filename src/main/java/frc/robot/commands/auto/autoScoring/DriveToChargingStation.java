@@ -1,4 +1,4 @@
-package frc.robot.commands.autoScoring;
+package frc.robot.commands.auto.autoScoring;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -54,6 +54,7 @@ public class DriveToChargingStation extends PathFollowingCommand {
 
         // give an array of poses
         ArrayList<Pose2d> poses = new ArrayList<>();
+        poses.add(currentPose);
         // find which sid eof station we are on
         boolean isRightOfStation = currentPose.getX() >= station.getCenter().getX();
         double alignedX = isRightOfStation?

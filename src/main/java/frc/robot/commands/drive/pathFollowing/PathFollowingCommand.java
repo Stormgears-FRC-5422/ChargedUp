@@ -2,6 +2,7 @@ package frc.robot.commands.drive.pathFollowing;
 
 import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -64,6 +65,13 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        if (m_path == null) {
+            DriverStation.reportWarning("Path wasn't set for pathfollowing command", true);
+            m_path = Paths.getPathToPose(
+                    RobotState.getInstance().getCurrentPose(),
+                    new Pose2d(1, 0, new Rotation2d()),
+                    1.0, 1.0);
+        }
         m_path = transformForAlliance?
                 PathPlannerTrajectory.transformTrajectoryForAlliance(m_path, DriverStation.getAlliance()) :
                 m_path;
@@ -100,7 +108,8 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return currentTime >= totalTime && m_drivetrain.atReferenceState();
+        if (currentTime >= totalTime) System.out.println("Command Finished!");
+        return currentTime >= totalTime;
     }
 
     @Override
