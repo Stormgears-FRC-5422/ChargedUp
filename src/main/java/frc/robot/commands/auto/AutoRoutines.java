@@ -21,7 +21,7 @@ public final class AutoRoutines {
     }
 
     public static AutoCommand highConeBumpSideChargingStation(DrivetrainBase drivetrain, NavX navX) {
-        var node = FieldConstants.Grids.getCurrentGrid()[0][0];
+        var node = FieldConstants.Grids.getGrid()[0][0];
         return new AutoCommand(
                 new SequentialCommandGroup(
                         new AutoScore(drivetrain, node),
