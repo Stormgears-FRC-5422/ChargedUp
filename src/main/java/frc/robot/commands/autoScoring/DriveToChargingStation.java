@@ -8,6 +8,7 @@ import frc.robot.RobotState;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
 import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.constants.Constants;
+import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import static frc.robot.constants.FieldConstants.Regions.*;
 
 public class DriveToChargingStation extends PathFollowingCommand {
 
-    RectangleRegion chargingStation = getCurrentChargingStation();
+    RectangleRegion chargingStation = FieldConstants.getChargingStation();
     private static final double DISTANCE_TO_ENGAGE_STATION = Units.inchesToMeters(25.0);
     private static final double MARGIN = Units.inchesToMeters(3.0);
 

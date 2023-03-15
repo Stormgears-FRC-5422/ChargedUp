@@ -6,7 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -107,7 +106,7 @@ public class RobotContainer {
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (Toggles.useDrive) {
             try {
-                m_drivetrain = DrivetrainFactory.getInstance(driveType);
+                m_drivetrain = DrivetrainFactory.getInstance(DriveConstants.driveType);
 //                System.out.println("Successfully created Drivetrain!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -142,12 +141,11 @@ public class RobotContainer {
         } else
             System.out.println("NOT using stormnet");
 
-        if (Toggles.useDrive && driveType.equals("SwerveDrive")) {
+        if (Toggles.useDrive && DriveConstants.driveType.equals("SwerveDrive")) {
             m_poseEstimator = new PoseEstimator(m_drivetrain.getSwerveDriveKinematics());
             System.out.println("USING pose estimator");
             Toggles.usePoseEstimator = true;
         }
-
 
         if (Toggles.useStormNet) {
             System.out.println("Using StormNet");

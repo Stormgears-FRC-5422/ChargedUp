@@ -16,7 +16,7 @@ public class NodeSelector {
     private final ScoringNode[][] currentGrid;
 
     public NodeSelector() {
-        currentGrid = getCurrentGrid();
+        currentGrid = getGrid();
         boolean[] CUBE_COLUMNS = new boolean[]{false, true, false, false, true, false, false, true, false};
         for (int col = 0; col < 9; col++) {
             int colTransformed = currentGrid.length - 1 - col;

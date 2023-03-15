@@ -19,7 +19,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import frc.robot.RobotState;
 
-import static frc.robot.constants.Constants.*;
+import static frc.robot.constants.Constants.DriveConstants.*;
+import static frc.robot.constants.Constants.kNeoFreeSpeedRPM;
 
 public class SDSDrivetrain extends DrivetrainBase {
     /**

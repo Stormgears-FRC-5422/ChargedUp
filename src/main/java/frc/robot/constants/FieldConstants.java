@@ -16,6 +16,7 @@ import static frc.robot.constants.Constants.*;
 
 public final class FieldConstants {
 
+
     public static void init() {
         Grids.initGridNodes();
 
@@ -44,6 +45,27 @@ public final class FieldConstants {
         } else {
             System.out.println("Couldn't get april tag pose!");
             return new Pose3d();
+        }
+    }
+
+    public static Regions.RectangleRegion blueChargingStation = new Regions.RectangleRegion(
+            Units.inchesToMeters(152), Units.inchesToMeters(115),
+            Units.inchesToMeters(60), Units.inchesToMeters(189));
+    public static Regions.RectangleRegion redChargingStation = blueChargingStation.getMirrored();
+
+    public static Regions.RectangleRegion getChargingStation() {
+        return (DriverStation.getAlliance() == Alliance.Red)? redChargingStation : blueChargingStation;
+    }
+
+    public final static class Substations {
+
+        public static class DoubleSubstation {
+            public final Regions.RectangleRegion leftRegion, rightRegion;
+
+            public DoubleSubstation(Regions.RectangleRegion leftRegion, Regions.RectangleRegion rightRegion) {
+                this.leftRegion = leftRegion;
+                this.rightRegion = rightRegion;
+            }
         }
     }
 
@@ -107,7 +129,7 @@ public final class FieldConstants {
             }
         }
 
-        public static ScoringNode[][] getCurrentGrid() {
+        public static ScoringNode[][] getGrid() {
             return (DriverStation.getAlliance() == Alliance.Red)? redAllianceGrid : blueAllianceGrid;
         }
 
@@ -207,14 +229,6 @@ public final class FieldConstants {
     }
 
     public static class Regions {
-        public static RectangleRegion blueChargingStation = new RectangleRegion(
-                Units.inchesToMeters(152), Units.inchesToMeters(115),
-                Units.inchesToMeters(60), Units.inchesToMeters(189));
-        public static RectangleRegion redChargingStation = blueChargingStation.getMirrored();
-
-        public static RectangleRegion getCurrentChargingStation() {
-            return (DriverStation.getAlliance() == Alliance.Red)? redChargingStation : blueChargingStation;
-        }
 
         public interface Region {
             /** all field coords */

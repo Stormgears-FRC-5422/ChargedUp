@@ -46,11 +46,8 @@ public final class Constants {
     public static final int backLeftOffsetTicks = StormProp.getInt("backLeftOffsetTicks", 0);
     public static final int backRightOffsetTicks = StormProp.getInt("backRightOffsetTicks", 0);
 
-    public static final String kMK4iModuleKind = StormProp.getString("mk4iModuleKind", "");
-    public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
-    public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
     public static final double TURN_RADIUS = Math.sqrt(
-            Math.pow(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, 2) + Math.pow(DRIVETRAIN_WHEELBASE_METERS / 2.0, 2));
+            Math.pow(DriveConstants.DRIVETRAIN_TRACKWIDTH_METERS / 2.0, 2) + Math.pow(DriveConstants.DRIVETRAIN_WHEELBASE_METERS / 2.0, 2));
     public static final double ROBOT_WIDTH = StormProp.getNumber("robotWidth", 0.);
     public static final double ROBOT_LENGTH = StormProp.getNumber("robotLength", 0.);
     public static final double BUMPER_THICKNESS = StormProp.getNumber("bumperThickness", 0.);
@@ -61,27 +58,33 @@ public final class Constants {
     // </mecanum>
 
     // Map to SDS implementation constants
-    public static final int FRONT_LEFT_MODULE_DRIVE_MOTOR = frontLeftDriveID;
-    public static final int FRONT_LEFT_MODULE_STEER_MOTOR = frontLeftSwivelID;
-    public static final int FRONT_LEFT_MODULE_STEER_ENCODER = frontLeftEncoderID;
-    public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * frontLeftOffsetTicks / kSwivelEncoderTicksPerRotation);
-
-    public static final int FRONT_RIGHT_MODULE_DRIVE_MOTOR = frontRightDriveID;
-    public static final int FRONT_RIGHT_MODULE_STEER_MOTOR = frontRightSwivelID;
-    public static final int FRONT_RIGHT_MODULE_STEER_ENCODER = frontRightEncoderID;
-    public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * frontRightOffsetTicks / kSwivelEncoderTicksPerRotation);
-
-    public static final int BACK_LEFT_MODULE_DRIVE_MOTOR = backLeftDriveID;
-    public static final int BACK_LEFT_MODULE_STEER_MOTOR = backLeftSwivelID;
-    public static final int BACK_LEFT_MODULE_STEER_ENCODER = backLeftEncoderID;
-    public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backLeftOffsetTicks / kSwivelEncoderTicksPerRotation);
-
-    public static final int BACK_RIGHT_MODULE_DRIVE_MOTOR = backRightDriveID;
-    public static final int BACK_RIGHT_MODULE_STEER_MOTOR = backRightSwivelID;
-    public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
-    public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
-
-    public static final String driveType = StormProp.getString("driveType", "");
+    public static final class DriveConstants {
+        public static final String kMK4iModuleKind = StormProp.getString("mk4iModuleKind", "");
+        public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
+        public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
+        public static final int FRONT_LEFT_MODULE_DRIVE_MOTOR = frontLeftDriveID;
+        public static final int FRONT_LEFT_MODULE_STEER_MOTOR = frontLeftSwivelID;
+        public static final int FRONT_LEFT_MODULE_STEER_ENCODER = frontLeftEncoderID;
+        public static final double FRONT_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * frontLeftOffsetTicks / kSwivelEncoderTicksPerRotation);
+        public static final int FRONT_RIGHT_MODULE_DRIVE_MOTOR = frontRightDriveID;
+        public static final int FRONT_RIGHT_MODULE_STEER_MOTOR = frontRightSwivelID;
+        public static final int FRONT_RIGHT_MODULE_STEER_ENCODER = frontRightEncoderID;
+        public static final double FRONT_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * frontRightOffsetTicks / kSwivelEncoderTicksPerRotation);
+        public static final int BACK_LEFT_MODULE_DRIVE_MOTOR = backLeftDriveID;
+        public static final int BACK_LEFT_MODULE_STEER_MOTOR = backLeftSwivelID;
+        public static final int BACK_LEFT_MODULE_STEER_ENCODER = backLeftEncoderID;
+        public static final double BACK_LEFT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backLeftOffsetTicks / kSwivelEncoderTicksPerRotation);
+        public static final int BACK_RIGHT_MODULE_DRIVE_MOTOR = backRightDriveID;
+        public static final int BACK_RIGHT_MODULE_STEER_MOTOR = backRightSwivelID;
+        public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
+        public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
+        public static final String driveType = StormProp.getString("driveType", "");
+        public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
+        public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
+        public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
+        public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
+        public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
+    }
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
     public static final int onOffSolenoidChannel = StormProp.getInt("onOffSolenoidChannel", -1);
@@ -99,14 +102,7 @@ public final class Constants {
     public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
-    public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
-    public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
-    public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
-
-    public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
-    public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
-
-      public static class VisionConstants {
+    public static class VisionConstants {
           private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiX", 0.0));
           private static final double kCameraYTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiY", 0.0));
           private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
