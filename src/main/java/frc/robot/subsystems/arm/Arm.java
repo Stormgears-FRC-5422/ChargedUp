@@ -28,10 +28,13 @@ public class Arm extends StormSubsystemBase {
     double m_maxDBeta;
     double m_maxXSpeed = 1.0;
     double m_maxYSpeed = 1.0;
+    Pose2d gripperPose;
+    protected double forwardSoftLimit;
+    protected double reverseSoftLimit;
 
     //TODO - delete these
-//    double dX = 0;
-//    double dY = 0;
+    double dX = 0;
+    double dY = 0;
 
     // The arm speeds will always be scaled by this factor. It defaults to kArmSpeedScale, but can be reset
     // (say by using the slider on the joystick)
@@ -110,6 +113,40 @@ public class Arm extends StormSubsystemBase {
 
         updateGeometry();
         m_kinematics = new ArmDriveKinematics(m_geometry);
+
+        //setShoulderSoftLimits(2 * Math.PI/3, Math.PI/6);
+        enableSoftLimits();
+        setElbowSoftLimits((-2./180.)*Math.PI, (-160./180.)*Math.PI);
+    }
+    
+    public void disableSoftLimits() {
+        m_shoulder.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, false);
+        m_shoulder.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, false);
+        m_elbow.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, false);
+        m_elbow.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, false);
+        //System.out.println(getName() + ".disableSoft()");
+    }
+
+    public void enableSoftLimits() {
+        //m_shoulder.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+        //m_shoulder.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
+        m_elbow.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+        m_elbow.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
+        //System.out.println(getName() + ".enableLimits()");
+    }
+
+    public void setShoulderSoftLimits(double forward, double reverse) {
+        forwardSoftLimit = forward;
+        reverseSoftLimit = reverse;
+        m_shoulder.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, (float) forwardSoftLimit);
+        m_shoulder.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, (float) reverseSoftLimit);
+    }
+
+    public void setElbowSoftLimits(double forward, double reverse) {
+        forwardSoftLimit = forward;
+        reverseSoftLimit = reverse;
+        m_elbow.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, (float) forwardSoftLimit);
+        m_elbow.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, (float) reverseSoftLimit);
     }
 
     private void updateGeometry() {
@@ -122,7 +159,13 @@ public class Arm extends StormSubsystemBase {
     private void updateTargetGeometry(ArmJointSpeeds jointSpeeds) {
         double s = m_geometry.getAlpha() + jointSpeeds.dAlpha * 0.02;
         double e = m_geometry.getBeta() + jointSpeeds.dBeta * 0.02;
+        e = Math.min(e,-5 * (Math.PI/180));
+        e = Math.max(e, -Math.PI);
+        s = Math.max(s, Math.PI/6);
+        s = Math.min(s, 2 * Math.PI/3);
+        System.out.println("S: " + s + " E: " + e);
         m_geometry.setAngles(s,e);
+        
     }
 
     @Override
@@ -142,21 +185,24 @@ public class Arm extends StormSubsystemBase {
             m_elbow.setVoltage(e * MAX_VOLTAGE);
         }
 
-        updateGeometry();
+       updateGeometry();
 
         // fake geometry
-//        updateTargetGeometry(m_jointSpeeds);
+        // updateTargetGeometry(m_jointSpeeds);
 
-        Pose2d pose = m_geometry.getPose();
+        gripperPose = m_geometry.getPose();
+        // SmartDashboard.putNumber("X-coordinate", gripperPose.getX());
+        // SmartDashboard.putNumber("Y-coordinate: ", gripperPose.getY());
 
-//        SmartDashboard.putNumber("X-coordinate in arm space", pose.getX());
-//        SmartDashboard.putNumber("Y-coordinate in arm space", pose.getY());
-//        SmartDashboard.putNumber("dX arm space", dX);
-//        SmartDashboard.putNumber("dY arm space", dY);
-//        SmartDashboard.putNumber("Alpha angle in arm space", m_geometry.getAlpha());
-//        SmartDashboard.putNumber("Beta in arm space", m_geometry.getBeta());
-//        SmartDashboard.putNumber("dAlpha arm space", s);
-//        SmartDashboard.putNumber("dBeta arm space", e);
+
+        // SmartDashboard.putNumber("X-coordinate in arm space", gripperPose.getX());
+        // SmartDashboard.putNumber("Y-coordinate in arm space", gripperPose.getY());
+        // SmartDashboard.putNumber("dX arm space", dX);
+        // SmartDashboard.putNumber("dY arm space", dY);
+        // SmartDashboard.putNumber("Alpha angle in arm space", m_geometry.getAlpha());
+        // SmartDashboard.putNumber("Beta in arm space", m_geometry.getBeta());
+        // SmartDashboard.putNumber("dAlpha arm space", s);
+        // SmartDashboard.putNumber("dBeta arm space", e);
     }
 
 
@@ -171,11 +217,12 @@ public class Arm extends StormSubsystemBase {
     }
 
     public void xyMoveArm(ChassisSpeeds speeds) {
-//        dX = speeds.vxMetersPerSecond;
-//        dY = speeds.vyMetersPerSecond;
+        dX = speeds.vxMetersPerSecond;
+        dY = speeds.vyMetersPerSecond;
         ArmJointSpeeds jointSpeeds  = m_kinematics.toJointSpeeds(speeds);
         m_jointSpeeds = ArmDriveKinematics.desaturateJointSpeeds(jointSpeeds, m_maxDAlpha, m_maxDBeta);
         m_jointSpeeds.scale(m_armSpeedScale);
+        System.out.println("alpha: " + m_jointSpeeds.dAlpha + " beta: " + m_jointSpeeds.dBeta);
     }
 
     public void percentOutXYMoveArm(ChassisSpeeds speeds) {
@@ -194,5 +241,9 @@ public class Arm extends StormSubsystemBase {
 
     public void setSpeedScale(double scale) {
         m_armSpeedScale = MathUtil.clamp(scale, 0, kArmSpeedScale);
+    }
+
+    public Pose2d getGripperPose() {
+        return gripperPose;
     }
 }

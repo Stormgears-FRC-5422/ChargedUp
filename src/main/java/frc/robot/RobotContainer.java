@@ -5,16 +5,18 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
-import frc.robot.commands.auto.autoScoring.AutoScore;
+import frc.robot.commands.auto.autoScoring.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LidarIndicatorCommand;
@@ -24,10 +26,15 @@ import frc.robot.commands.drive.EnhancedDriveWithJoystick;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
+
+import frc.robot.commands.arm.ArmTrajectoryToPose;
+
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmJointSpeeds;
+import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.drive.GyroCommand;
@@ -211,6 +218,11 @@ public class RobotContainer {
                     m_armCommand = new XYArm(m_arm,
                             xboxController::getRightJoystickX,
                             xboxController::getRightJoystickY);
+                    ArmTrajectoryToPose armTrajectory = new ArmTrajectoryToPose(m_arm, new Translation2d(0.5, 0.4));
+                    new Trigger(xboxController::getAButtonIsHeld).onTrue(armTrajectory);
+                    // new Trigger(xboxController::getAButtonIsHeld).whileTrue(
+                    //     new RunCommand(() -> m_arm.moveArm(new ArmJointSpeeds(0.1, 0.07)), m_arm));
+
                 } else {
                     System.out.println("Using Angle mode for arm movement");
                     m_armCommand = new BasicArm(m_arm,
