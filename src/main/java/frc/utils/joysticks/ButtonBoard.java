@@ -10,11 +10,9 @@ public class ButtonBoard extends Joystick {
    *
    * @param port The port index on the Driver Station that the joystick is plugged into.
    */
-  public ButtonBoard(int port) {
+    public ButtonBoard(int port) {
     super(port);
   }
-
-
     public boolean jumper() {
         return getRawButton(1);
     }
@@ -48,6 +46,7 @@ public class ButtonBoard extends Joystick {
     public boolean grid1() {
     return  getRawButton(12);
   }
+
     public boolean grid2() {
     return  getRawButton(11);
   }
@@ -88,19 +87,15 @@ public class ButtonBoard extends Joystick {
     return  getRawButton(4);
   }
 
-<<<<<<< Updated upstream
-  public boolean gripper(){return getRawButton(1);}
-  public boolean cubeCone(){return getRawButton(7);}
+    public boolean gripper(){return getRawButton(1);}
+    public boolean cubeCone(){return getRawButton(7);}
 
-  public boolean manualOverride(){return getRawButton(9);}
+    public boolean manualOverride(){return getRawButton(9);}
 
-  public boolean kill() {
-=======
     public boolean kill() {
->>>>>>> Stashed changes
-        return  getRawButton(8);
-  }
-  //HAVE NOT DONE switches (kill switch, manual arm control etc.)
+      return  getRawButton(8);
+    }
 
+  //HAVE NOT DONE switches (kill switch, manual arm control etc.)
 
 }
