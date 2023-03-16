@@ -14,70 +14,90 @@ public class ButtonBoard extends Joystick {
     super(port);
   }
 
-  public boolean jumper() {
-    return getRawButton(1);
-  }
 
- public boolean leftSub() {
+    public boolean jumper() {
+        return getRawButton(1);
+    }
+
+    public boolean store() {
+        return  getRawButton(2);
+    }
+
+    public boolean leftSub() {
     return getRawButton(12);
  }
 
-  public boolean rightSub() {
+    public boolean floor() {
+        return getRawButton(11);
+    }
+
+    public boolean rightSub() {
     return getRawButton(10);
   }
 
-  public boolean floor() {
-    return getRawButton(11);
-  }
+    public boolean High(){return getRawButton(7);}
 
-  public boolean store() {
-    return  getRawButton(2);
-  }
+    public boolean Medium(){return getRawButton(6);}
 
-  public boolean grid1() {
+    public boolean Low(){return getRawButton(5);}
+
+    public boolean Cone(){return getRawButton (9);}
+
+    public boolean Cube(){return getRawButton(8);}
+
+    public boolean grid1() {
     return  getRawButton(12);
   }
-  public boolean grid2() {
+    public boolean grid2() {
     return  getRawButton(11);
   }
 
-  public boolean grid3() {
+    public boolean grid3() {
     return  getRawButton(10);
   }
 
-  public boolean grid4() {
+    public boolean grid4() {
     return  getRawButton(9);
   }
 
-  public boolean grid5() {
+    public boolean grid5() {
     return  getRawButton(8);
   }
 
-  public boolean grid6() {
+    public boolean grid6() {
     return  getRawButton(7);
   }
 
-  public boolean grid7() {
+    public boolean grid7() {
     return  getRawButton(6);
   }
 
-  public boolean grid8() {
+    public boolean grid8() {
     return  getRawButton(5);
   }
 
-  public boolean grid9() {
+    public boolean grid9() {
     return  getRawButton(4);
   }//w
 
-  public boolean confirm() {
+    public boolean confirm() {
     return  getRawButton(3);
   }
 
-  public boolean cancel() {
+    public boolean cancel() {
     return  getRawButton(4);
   }
 
+<<<<<<< Updated upstream
+  public boolean gripper(){return getRawButton(1);}
+  public boolean cubeCone(){return getRawButton(7);}
+
+  public boolean manualOverride(){return getRawButton(9);}
+
   public boolean kill() {
+=======
+    public boolean kill() {
+>>>>>>> Stashed changes
         return  getRawButton(8);
   }
   //HAVE NOT DONE switches (kill switch, manual arm control etc.)
