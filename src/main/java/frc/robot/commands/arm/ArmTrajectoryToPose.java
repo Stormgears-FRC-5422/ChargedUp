@@ -56,8 +56,10 @@ public class ArmTrajectoryToPose extends CommandBase {
         System.out.println("Start Translation: " + path.getInitialHolonomicPose().getTranslation());
         System.out.println("Middle Translation: " + path.getState(path.getStates().size() / 2).poseMeters.getTranslation());
         System.out.println("End Translation: " + path.getEndState().poseMeters.getTranslation());
-        timer.start();
         totalTime = path.getTotalTimeSeconds();
+
+        timer.reset();
+        timer.start();
     }
 
     @Override
