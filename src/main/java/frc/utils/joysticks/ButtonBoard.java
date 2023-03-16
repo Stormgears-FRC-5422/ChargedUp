@@ -77,6 +77,11 @@ public class ButtonBoard extends Joystick {
     return  getRawButton(4);
   }
 
+  public boolean gripper(){return getRawButton(1);}
+  public boolean cubeCone(){return getRawButton(7);}
+
+  public boolean manualOverride(){return getRawButton(9);}
+
   public boolean kill() {
         return  getRawButton(8);
   }
