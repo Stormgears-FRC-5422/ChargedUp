@@ -29,9 +29,10 @@ public class ArmTrajectoryToPose extends CommandBase {
     private Timer timer = new Timer();
     private double currentTime, totalTime;
 
+    int count = 0;
     private PPHolonomicDriveController controller = new PPHolonomicDriveController(
-        new PIDController(0.5, 0, 0),
-        new PIDController(1.0, 0, 0),
+        new PIDController(3.0, 0, 0),
+        new PIDController(3.0, 0, 0),
         new PIDController(0, 0, 0));
 
     public ArmTrajectoryToPose(Arm arm, Translation2d goalTranslation) {
@@ -50,7 +51,7 @@ public class ArmTrajectoryToPose extends CommandBase {
         heading = Rotation2d.fromRadians(initialHeading);
 
         path = PathPlanner.generatePath(
-            new PathConstraints(0.5, 0.2),
+            new PathConstraints(2.0, 2.0),
             new PathPoint(startTranslation, new Rotation2d(initialHeading)),
             new PathPoint(goalTranslation, new Rotation2d(initialHeading)));
         System.out.println("Start Translation: " + path.getInitialHolonomicPose().getTranslation());
@@ -65,14 +66,24 @@ public class ArmTrajectoryToPose extends CommandBase {
     @Override
     public void execute() {
         currentTime = timer.get();
-        System.out.println(currentTime);
-
         var setpoint = (PathPlannerTrajectory.PathPlannerState) path.sample(currentTime);
-        System.out.println(setpoint.poseMeters.getTranslation());
-        currentPose = new Pose2d(arm.getGripperPose().getTranslation(), heading);
+
+        currentPose = new Pose2d(arm.getGripperPose().getTranslation(), new Rotation2d(0.0));
         ChassisSpeeds output = controller.calculate(currentPose, setpoint);
-        SmartDashboard.putNumber("X output", output.vxMetersPerSecond);
-        SmartDashboard.putNumber("Y output", output.vyMetersPerSecond);
+
+//        SmartDashboard.putNumber("X output", output.vxMetersPerSecond);
+//        SmartDashboard.putNumber("Y output", output.vyMetersPerSecond);
+
+        if (count++ % 25 == 0) {
+            System.out.println("*****");
+            System.out.println("time: " + currentTime + ", heading: " + heading + " ");
+            System.out.println("currentPose: " + currentPose);
+            System.out.println("--");
+            System.out.println("setpoint: " + setpoint);
+            System.out.println("dX: " + output.vxMetersPerSecond + ", dY: " + output.vyMetersPerSecond + " ");
+            System.out.println("--");
+        }
+
         arm.xyMoveArm(
                 new ChassisSpeeds(output.vxMetersPerSecond, output.vyMetersPerSecond, 0));
         // System.out.println(output);
@@ -83,7 +94,7 @@ public class ArmTrajectoryToPose extends CommandBase {
     @Override
     public boolean isFinished() {
         return (currentTime >= totalTime) &&
-                (currentPose.getTranslation().getDistance(goalTranslation) <= 0.1);
+               (currentPose.getTranslation().getDistance(goalTranslation) <= 0.1);
     }
 
     @Override

@@ -220,6 +220,8 @@ public class RobotContainer {
                             xboxController::getRightJoystickY);
                     new Trigger(xboxController::getAButtonIsHeld).onTrue(
                             new ArmTrajectoryToPose(m_arm, new Translation2d(1.0, 1.0)));
+                    new Trigger(xboxController::getBButtonIsHeld).onTrue(
+                            new ArmTrajectoryToPose(m_arm, new Translation2d(0.2, 0.15)));
                     // new Trigger(xboxController::getAButtonIsHeld).whileTrue(
                     //     new RunCommand(() -> m_arm.moveArm(new ArmJointSpeeds(0.1, 0.07)), m_arm));
 
