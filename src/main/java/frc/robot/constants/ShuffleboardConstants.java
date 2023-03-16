@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import java.util.Map;
 
 public final class ShuffleboardConstants {
-    public final ShuffleboardTab robotStateTab, drivetrainTab, navXTab,
+    public ShuffleboardTab robotStateTab, drivetrainTab, navXTab,
             pathFollowingTab, driverTab;
     public final Field2d poseEstimationFieldSim;
 

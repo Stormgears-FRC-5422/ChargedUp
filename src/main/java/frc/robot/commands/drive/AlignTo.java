@@ -20,11 +20,6 @@ public class AlignTo extends CommandBase {
 
     //error -> pout drive
     private final PIDController controller = new PIDController(0.1, 0, 0);
-    //output can't change by more than 20% in one second 20%/s is max change in velocity (acceleration)
-    private final SlewRateLimiter velLimiter = new SlewRateLimiter(0.2);
-
-    private final ShuffleboardTab tab = Shuffleboard.getTab("Align to command");
-    private final GenericEntry limitedOutput = tab.add("Limited Output", 0.0).withWidget(BuiltInWidgets.kGraph).getEntry();
 
     /** TODO: what is this error going to be i.e. pixels, yaw, meters? */
     public AlignTo(DoubleSupplier errorSupplier, DrivetrainBase drivetrain) {
@@ -32,9 +27,7 @@ public class AlignTo extends CommandBase {
         m_errorSupplier = errorSupplier;
 
         //FIXME: should be based on error supplier
-        controller.setTolerance(5, 10);
-        tab.addBoolean("Are we there?", controller::atSetpoint);
-        tab.add("Controller", controller).withWidget(BuiltInWidgets.kPIDController);
+        controller.setTolerance(5);
 
         addRequirements(drivetrain);
     }
@@ -43,20 +36,16 @@ public class AlignTo extends CommandBase {
     public void initialize() {
         System.out.println("Starting align command at: " + RobotState.getInstance().getTimeSeconds());
         m_drivetrain.stopDrive();
-        velLimiter.reset(0);
     }
 
     @Override
     public void execute() {
         double controllerOutput = controller.calculate(0, m_errorSupplier.getAsDouble());
-        double limitedControllerOutput = velLimiter.calculate(controllerOutput);
 
         System.out.println("Raw controller output: " + controllerOutput);
-        System.out.println("Limited controller output: " + limitedControllerOutput);
-        limitedOutput.setDouble(limitedControllerOutput);
 
         m_drivetrain.percentOutDrive(
-                new ChassisSpeeds(0.0, limitedControllerOutput, 0.0),
+                new ChassisSpeeds(0.0, controllerOutput, 0.0),
                 false
         );
     }

@@ -218,8 +218,8 @@ public class RobotContainer {
                     m_armCommand = new XYArm(m_arm,
                             xboxController::getRightJoystickX,
                             xboxController::getRightJoystickY);
-                    ArmTrajectoryToPose armTrajectory = new ArmTrajectoryToPose(m_arm, new Translation2d(0.5, 0.4));
-                    new Trigger(xboxController::getAButtonIsHeld).onTrue(armTrajectory);
+                    new Trigger(xboxController::getAButtonIsHeld).onTrue(
+                            new ArmTrajectoryToPose(m_arm, new Translation2d(1.0, 1.0)));
                     // new Trigger(xboxController::getAButtonIsHeld).whileTrue(
                     //     new RunCommand(() -> m_arm.moveArm(new ArmJointSpeeds(0.1, 0.07)), m_arm));
 
@@ -322,9 +322,9 @@ public class RobotContainer {
 //        new Trigger(m_buttonboard2::cancel).onTrue();
 
         if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
-            new Trigger(xboxController::getAButtonIsHeld).onTrue(
-                    new AutoScore(m_drivetrain, nodeSelector::getSelectedNode)
-            );
+//            new Trigger(xboxController::getAButtonIsHeld).onTrue(
+//                    new AutoScore(m_drivetrain, nodeSelector::getSelectedNode)
+//            );
         }
 
 //            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
