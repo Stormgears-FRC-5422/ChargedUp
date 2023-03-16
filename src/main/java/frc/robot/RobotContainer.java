@@ -140,6 +140,8 @@ public class RobotContainer {
 
         if (Toggles.usePneumatics) {
             m_compression = new Compression();
+            m_compression.startCompressor();
+            System.out.println("Using Compressor");
         } else
             System.out.println("NOT using pneumatics");
 
@@ -235,6 +237,7 @@ public class RobotContainer {
             }
 
             if (Toggles.usePneumatics) {
+
                 new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
                 new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
 //                new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
@@ -307,43 +310,16 @@ public class RobotContainer {
                 }
             }));
         }
-//        new Trigger(m_buttonboard1::leftSub).onTrue();
-//        new Trigger(m_buttonboard1::rightSub).onTrue();
-//        new Trigger(m_buttonboard1::floor).onTrue();
-//        new Trigger(m_buttonboard1::store).onTrue();
-//        new Trigger(m_buttonboard1::grid1).onTrue();
-//        new Trigger(m_buttonboard1::grid2).onTrue();
-//        new Trigger(m_buttonboard1::grid3).onTrue();
-//        new Trigger(m_buttonboard1::grid4).onTrue();
-//        new Trigger(m_buttonboard1::grid5).onTrue();
-//        new Trigger(m_buttonboard1::grid6).onTrue();
-//        new Trigger(m_buttonboard1::grid7).onTrue();
-//        new Trigger(m_buttonboard2::grid8).onTrue();
-//        new Trigger(m_buttonboard2::grid9).onTrue();
-//        new Trigger(m_buttonboard2::confirm).onTrue();
-//        new Trigger(m_buttonboard2::cancel).onTrue();
+
+        if (Toggles.useLogitechController && Toggles.usePneumatics) {
+            new Trigger(() -> logitechController.getRawButton(7)).onTrue(new InstantCommand(() -> m_compression.toggleCompressor()));
+        }
 
         if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
 //            new Trigger(xboxController::getAButtonIsHeld).onTrue(
 //                    new AutoScore(m_drivetrain, nodeSelector::getSelectedNode)
 //            );
         }
-
-//            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
-//            for (var path : Paths.listOfPaths) {
-//                testPathChooser.addOption(path.name, path.path);
-//            }
-//            testPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0).path);
-//
-//            ShuffleboardConstants.getInstance().pathFollowingTab
-//                    .add("Path Command", testPathChooser)
-//                    .withPosition(0, 3).withSize(2, 1);
-//
-//            ShuffleboardConstants.getInstance().pathFollowingTab
-//                    .add("Run Selected Command",
-//                            new FolllowPathFromPose(m_drivetrain, testPathChooser.getSelected()))
-//                    .withPosition(0, 2).withSize(2, 1)
-//                    .withWidget(BuiltInWidgets.kCommand);
 
     }
 
@@ -357,4 +333,3 @@ public class RobotContainer {
         return new PrintCommand("Autonomous! -----");
     }
 }
-
