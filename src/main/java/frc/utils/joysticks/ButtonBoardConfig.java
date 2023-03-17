@@ -1,30 +1,41 @@
 package frc.utils.joysticks;
 
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.auto.autoScoring.NodeSelector;
+import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
-import frc.robot.commands.autoScoring.placeGamePiece;
-import frc.robot.commands.autoScoring.placeGamePiece.Level;
-import frc.robot.commands.autoScoring.placeGamePiece.gamePiece;
+import frc.robot.commands.autoScoring.PlaceGamePiece;
+import frc.robot.commands.autoScoring.PlaceGamePiece.Level;
+import frc.robot.commands.autoScoring.PlaceGamePiece.gamePiece;
 
 public class ButtonBoardConfig {
 
   ButtonBoard m_buttonboard1;
   ButtonBoard m_buttonboard2;
-  Level m_Level;
-  gamePiece m_gamePiece;
+  public Level m_Level;
+  public gamePiece m_gamePiece;
 
   NeoPixel neoPixel;
-  private int grid;
+  public int grid;
 
-  public ButtonBoardConfig(NeoPixel neoPixel) {
+  public NodeSelector nodeSelector;
+
+  Compression compression;
+
+  public ButtonBoardConfig(NeoPixel neoPixel, NodeSelector nodeSelector, Compression compression) {
     m_buttonboard1 = new ButtonBoard(1);
     m_buttonboard2 = new ButtonBoard(2);
     this.neoPixel = neoPixel;
+    this.nodeSelector = nodeSelector;
+    this.compression = compression;
   }
 
   public void buttonBoardSetup(){
-    int[] segments = {1, 2};
+    int[] segments1 = {1, 2};
+
     System.out.println("buttonBoardSetup starting");
 
     if (!m_buttonboard2.jumper()) {
@@ -40,59 +51,81 @@ public class ButtonBoardConfig {
     new Trigger(m_buttonboard1::floor)
         .onTrue(new InstantCommand(() -> System.out.println("Floor Selected")))
         .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
-        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
-             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
+             new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.PURPLE_COLOR))));
+
+    new Trigger(m_buttonboard1::floor)
+            .onTrue(new InstantCommand(() -> System.out.println("Floor Selected")))
+            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+                    new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.YELLOW_COLOR))));
 
     new Trigger(m_buttonboard1::leftSub)
-        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
-        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
-        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
-             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
+            .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
+            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR))));
+
+    new Trigger(m_buttonboard1::leftSub)
+            .onTrue(new InstantCommand(() -> System.out.println("Let Sub Selected")))
+            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
 
     new Trigger(m_buttonboard1::rightSub)
-        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
-        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
-        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
-             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
+            .onTrue(new InstantCommand(() -> System.out.println("Right Sub Selected")))
+            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR))));
+
+    new Trigger(m_buttonboard1::rightSub)
+            .onTrue(new InstantCommand(() -> System.out.println("Right Sub Selected")))
+            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
+
+
+
+//
+//    new Trigger(m_buttonboard1::leftSub)
+//        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
+//        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
+//        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
+//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
+//
+//    new Trigger(m_buttonboard1::rightSub)
+//        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
+//        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
+//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
+//        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
+//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
 
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
 
     new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
 
-    new Trigger(m_buttonboard2::grid1).onTrue(new InstantCommand(() -> grid = 1));
-    new Trigger(m_buttonboard2::grid2).onTrue(new InstantCommand(() -> grid = 2));
-    new Trigger(m_buttonboard2::grid3).onTrue(new InstantCommand(() -> grid = 3));
-    new Trigger(m_buttonboard2::grid4).onTrue(new InstantCommand(() -> grid = 4));
-    new Trigger(m_buttonboard2::grid5).onTrue(new InstantCommand(() -> grid = 5));
-    new Trigger(m_buttonboard2::grid6).onTrue(new InstantCommand(() -> grid = 6));
-    new Trigger(m_buttonboard2::grid7).onTrue(new InstantCommand(() -> grid = 7));
-    new Trigger(m_buttonboard2::grid8).onTrue(new InstantCommand(() -> grid = 8));
-    new Trigger(m_buttonboard2::grid9).onTrue(new InstantCommand(() -> grid = 9));
 
-    new Trigger(m_buttonboard1::High).onTrue(new InstantCommand(() -> m_Level = Level.HIGH));
-    new Trigger(m_buttonboard1::Medium).onTrue(new InstantCommand(() -> m_Level = Level.MEDIUM));
-    new Trigger(m_buttonboard1::Low).onTrue(new InstantCommand(() -> m_Level = Level.LOW));
+    new Trigger(() -> m_buttonboard1.getRawButton(5) && !m_buttonboard1.getRawButton(6))
+            .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
+    new Trigger(() -> !m_buttonboard1.getRawButton(5) && !m_buttonboard1.getRawButton(6))
+            .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
+    new Trigger(() -> m_buttonboard1.getRawButton(6) && !m_buttonboard1.getRawButton(5))
+            .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
 
-    new Trigger(m_buttonboard1::Cone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
-    new Trigger(m_buttonboard1::Cube).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
+    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
+    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
 
-    new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(() -> System.out.println("Gripper Closed")));
-    new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(() -> System.out.println("Gripper Open")));
+    new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
+    new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
 
-    new Trigger(m_buttonboard1::confirm).onTrue(new InstantCommand(() ->
-      {
-        if (grid != 0) {
-            new InstantCommand(() -> new placeGamePiece(m_Level, m_gamePiece));
-            grid = 0;
-        } else {
-            System.out.println("No Grid Running");
-        }
-      } ));
+    int offset = 4;
+    for (int i = 8; i >= 0; i--) {
+      int temp = i;
+      new Trigger(() -> m_buttonboard2.getRawButton(temp + offset))
+              .onTrue(new InstantCommand(() -> nodeSelector.setSelectedCol(temp)));
+    }
+
 
     new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() -> { grid = 0;}));
 
+  }
+
+  public boolean confirm() {
+    return m_buttonboard1.getRawButton(3);
   }
 }

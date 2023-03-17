@@ -33,15 +33,8 @@ public class ButtonBoard extends Joystick {
     return getRawButton(10);
   }
 
-    public boolean High(){return getRawButton(7);}
-
-    public boolean Medium(){return getRawButton(6);}
-
+    public boolean highMedium(){return getRawButton(6);}
     public boolean Low(){return getRawButton(5);}
-
-    public boolean Cone(){return getRawButton (9);}
-
-    public boolean Cube(){return getRawButton(8);}
 
     public boolean grid1() {
     return  getRawButton(12);

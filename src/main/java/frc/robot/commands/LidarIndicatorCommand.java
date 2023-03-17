@@ -30,10 +30,11 @@ public class LidarIndicatorCommand extends CommandBase {
   public void execute() {
     double distance = m_stormNet.getLidarDistance();
     System.out.println(distance);
-    if (distance >= 0.1 && distance <= 0.2) {
-      neoPixel.setColor(5, NeoPixel.PURPLE_COLOR);
+    if (distance >= 0.12 && distance <= 0.3
+    ) {
+      neoPixel.setColor(5, NeoPixel.GREEN_COLOR);
     }
-    if (distance < 0.1) {
+    if (distance < 0.12) {
       neoPixel.setColor(5, NeoPixel.RED_COLOR);
     }
     if (distance > 0.3) {

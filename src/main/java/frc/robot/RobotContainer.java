@@ -14,9 +14,9 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
+import frc.robot.commands.auto.autoScoring.AutoScore;
 import frc.robot.commands.auto.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
-import frc.robot.commands.auto.autoScoring.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LidarIndicatorCommand;
@@ -33,8 +33,6 @@ import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmJointSpeeds;
-import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.drive.GyroCommand;
@@ -69,6 +67,7 @@ public class RobotContainer {
     // COMMANDS
     // **********
     BalanceCommand m_balancecommand;
+
     GyroCommand m_gyrocommand;
     LidarIndicatorCommand m_lidarIndicatorCommand;
     ArmCommand m_armCommand;
@@ -98,6 +97,7 @@ public class RobotContainer {
 
         m_robotState = RobotState.getInstance();
 
+
         if (Toggles.useNavX) {
             m_navX = new NavX();
         } else {
@@ -110,6 +110,7 @@ public class RobotContainer {
         } else {
             System.out.println("NOT using StatusLights");
         }
+
 
         // Note the pattern of attempting to create the object then disabling it if that creation fails
         if (Toggles.useDrive) {
@@ -294,7 +295,7 @@ public class RobotContainer {
 
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
-            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel);
+            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression);
             buttonBoardConfig.buttonBoardSetup();
         }
 
@@ -315,10 +316,13 @@ public class RobotContainer {
             new Trigger(() -> logitechController.getRawButton(7)).onTrue(new InstantCommand(() -> m_compression.toggleCompressor()));
         }
 
-        if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
+        if (Toggles.useNodeSelector && Toggles.useButtonBoard) {
 //            new Trigger(xboxController::getAButtonIsHeld).onTrue(
 //                    new AutoScore(m_drivetrain, nodeSelector::getSelectedNode)
 //            );
+            new Trigger(buttonBoardConfig::confirm).onTrue(
+                    new InstantCommand(() -> System.out.println("Selected Node: " + nodeSelector.getSelectedNode()))
+            );
         }
 
     }
