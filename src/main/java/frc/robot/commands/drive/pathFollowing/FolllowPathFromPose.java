@@ -19,7 +19,7 @@ public class FolllowPathFromPose extends PathFollowingCommand {
     public void initialize() {
         var currentPose = RobotState.getInstance().getCurrentPose();
         m_path = (PathPlannerTrajectory) m_path.transformBy(new Transform2d(new Pose2d(), currentPose));
-        withPath(m_path);
+        addPath(m_path);
         super.initialize();
     }
 }

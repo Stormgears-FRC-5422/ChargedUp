@@ -78,8 +78,6 @@ public class ButtonBoardConfig {
             .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
                     new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
 
-
-
 //
 //    new Trigger(m_buttonboard1::leftSub)
 //        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
@@ -97,21 +95,23 @@ public class ButtonBoardConfig {
 
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
 
-    new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
+//    new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
 
 
+
+//    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
+//    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
+
+    new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
+    new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
+
+    // set row of node selector
     new Trigger(() -> m_buttonboard1.getRawButton(5) && !m_buttonboard1.getRawButton(6))
             .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
     new Trigger(() -> !m_buttonboard1.getRawButton(5) && !m_buttonboard1.getRawButton(6))
             .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
     new Trigger(() -> m_buttonboard1.getRawButton(6) && !m_buttonboard1.getRawButton(5))
             .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
-
-    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
-    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
-
-    new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
-    new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
 
     int offset = 4;
     for (int i = 8; i >= 0; i--) {
@@ -121,11 +121,23 @@ public class ButtonBoardConfig {
     }
 
 
-    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() -> { grid = 0;}));
+//    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() -> { grid = 0;}));
 
   }
 
   public boolean confirm() {
     return m_buttonboard1.getRawButton(3);
+  }
+
+  public boolean stow() {
+    return m_buttonboard1.store();
+  }
+
+  public boolean cancel() {
+    return m_buttonboard1.cancel();
+  }
+
+  public boolean pickFloor() {
+    return m_buttonboard1.floor();
   }
 }

@@ -53,12 +53,12 @@ public class PathFollowingCommand extends CommandBase {
     }
 
     /** must be set in constructor or here before command schedule */
-    public PathFollowingCommand withPath(PathPlannerTrajectory path) {
+    public PathFollowingCommand addPath(PathPlannerTrajectory path) {
         m_path = path;
         return this;
     }
 
-    public PathFollowingCommand withTransformForAlliance(boolean transformForAlliance) {
+    public PathFollowingCommand setTransformForAlliance(boolean transformForAlliance) {
         this.transformForAlliance = transformForAlliance;
         return this;
     }
@@ -108,8 +108,8 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        if (currentTime >= totalTime) System.out.println("Command Finished!");
-        return currentTime >= totalTime;
+        if (currentTime >= totalTime) System.out.println("PathFollowingCommand Finished!");
+        return currentTime >= totalTime && m_drivetrain.atReferenceState();
     }
 
     @Override

@@ -102,7 +102,7 @@ public class PoseEstimator extends StormSubsystemBase {
                     Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
                     // have to transform to robot pose
                     visionPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
-                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.15)
+                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.05)
                         resetEstimator(visionPose);
 //                    System.out.println(visionPose);
                     m_poseEstimator.addVisionMeasurement(visionPose, time);

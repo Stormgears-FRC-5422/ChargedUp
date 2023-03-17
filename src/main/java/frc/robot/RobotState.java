@@ -31,7 +31,7 @@ public class RobotState extends StormSubsystemBase {
 
     private Pose2d startPose;
 
-    private GenericEntry xStartEntry, yStartEntry, rotStartEntry;
+    private GenericEntry xEntry, yEntry, rotEntry;
 
     public static RobotState getInstance() {
         if (m_instance != null) return m_instance;
@@ -52,20 +52,20 @@ public class RobotState extends StormSubsystemBase {
         layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
         layout.addNumber("Rotational Velocity", this::getCurrentDegPerSecVel);
 
-        var startPoseSetter = ShuffleboardConstants.getInstance().driverTab
+        var poseGridLayout = ShuffleboardConstants.getInstance().driverTab
                 .getLayout("Set Start Pose", BuiltInLayouts.kGrid)
                 .withProperties(Map.of("number of columns", 3, "number of rows", 1))
                 .withPosition(0, 3).withSize(2, 1);
 
-        xStartEntry = startPoseSetter
+        xEntry = poseGridLayout
                 .add("X", getStartPose().getX())
                 .withPosition(0, 0).getEntry();
 
-        yStartEntry = startPoseSetter
+        yEntry = poseGridLayout
                 .add("Y", getStartPose().getY())
                 .withPosition(1, 0).getEntry();
 
-        rotStartEntry = startPoseSetter
+        rotEntry = poseGridLayout
                 .add("Rot", getStartPose().getRotation().getDegrees())
                 .withPosition(2, 0).getEntry();
     }
@@ -192,6 +192,11 @@ public class RobotState extends StormSubsystemBase {
 //                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
 //            poseMap.pollFirstEntry();
 //        }
+
+        Pose2d currentPose = getCurrentPose();
+        xEntry.setDouble(currentPose.getX());
+        yEntry.setDouble(currentPose.getY());
+        rotEntry.setDouble(currentPose.getRotation().getDegrees());
     }
 
     public void enabledInit() {

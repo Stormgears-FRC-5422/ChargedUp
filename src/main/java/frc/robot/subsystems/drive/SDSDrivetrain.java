@@ -52,14 +52,11 @@ public class SDSDrivetrain extends DrivetrainBase {
     //pid gains from trapezoid move forward command
     //constraints made arbitrary
 
-    private final PIDController xController = new PIDController(driveXkp, driveXki, 0.);
-    private final PIDController yController = new PIDController(driveYkp, driveYki, 0.);
-    private final PIDController rotController = new PIDController(turnkp, 0., 0.);
+    private final PIDController xController = new PIDController(driveXkp, driveXki, driveXkd);
+    private final PIDController yController = new PIDController(driveYkp, driveYki, driveYkd);
+    private final PIDController rotController = new PIDController(turnkp, turnki, turnkd);
     final PPHolonomicDriveController m_holonomicController = new PPHolonomicDriveController(
-            xController,
-            yController,
-            rotController
-    );
+            xController, yController, rotController);
 
     public SDSDrivetrain() {
         initEncoders();

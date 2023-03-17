@@ -97,7 +97,8 @@ public final class FieldConstants {
         public static void initGridNodes() {
             double scoringX = Units.inchesToMeters(54.05) + halfRobotLengthWithBumper;
             for (int wpiY = 0; wpiY < 9; wpiY++) {
-                ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
+                ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)?
+                        ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
                 double yTranslation = distToFirstNodeY + (wpiY * distBetweenNodes);
 
                 // calculating regions for blue nodes
@@ -113,7 +114,9 @@ public final class FieldConstants {
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     var height = nodeHeights[wpiX];
                     double xTranslation = nodeXs[wpiX];
-                    double zTranslation = height.getHeight();
+                    // decrease height by five inches if its a cube
+                    double zTranslation = type == ScoringNode.NodeType.CUBE?
+                        height.getHeight() - Units.inchesToMeters(5.0) : height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
@@ -124,7 +127,7 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-                    System.out.println(node);
+//                    System.out.println(node);
                 }
             }
         }

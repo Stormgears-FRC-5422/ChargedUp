@@ -7,7 +7,8 @@ import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.utils.motorcontrol.StormSpark;
 import frc.utils.motorcontrol.StormTalon;
 import java.lang.Math;
@@ -29,7 +30,7 @@ public class Arm extends StormSubsystemBase {
     double m_maxDBeta;
     double m_maxXSpeed = 1.0;
     double m_maxYSpeed = 1.0;
-    Pose2d gripperPose;
+    Pose2d gripperPose = new Pose2d();
     protected double forwardSoftLimit;
     protected double reverseSoftLimit;
 
@@ -49,35 +50,35 @@ public class Arm extends StormSubsystemBase {
     private final ArmDriveKinematics m_kinematics;
 
     public Arm() {
-        m_maxDAlpha = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * armShoulderGearRatio);
-        m_maxDBeta = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * armElbowGearRatio);
+        m_maxDAlpha = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * ArmConstants.armShoulderGearRatio);
+        m_maxDBeta = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * ArmConstants.armElbowGearRatio);
         m_maxXSpeed = 1.0;
         m_maxYSpeed = 1.0;
 
         setSpeedScale(kArmSpeedScale);
 
-        m_shoulderEncoder = new StormTalon(armShoulderEncoderID);
+        m_shoulderEncoder = new StormTalon(ArmConstants.armShoulderEncoderID);
         // The shoulder encoder goes the wrong way and setSensorPhase doesn't seem to do anything. Not fighting this now
-        setEncoderOffsetTicks(m_shoulderEncoder, -armShoulderEncoderOffsetTicks);
+        setEncoderOffsetTicks(m_shoulderEncoder, -ArmConstants.armShoulderEncoderOffsetTicks);
         m_shoulderEncoder.setNegatePosition(true);
 
-        m_elbowEncoder = new StormTalon(armElbowEncoderID);
-        setEncoderOffsetTicks(m_elbowEncoder, -armElbowEncoderOffsetTicks);
+        m_elbowEncoder = new StormTalon(ArmConstants.armElbowEncoderID);
+        setEncoderOffsetTicks(m_elbowEncoder, -ArmConstants.armElbowEncoderOffsetTicks);
 
-        m_shoulder = new StormSpark(armShoulderID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
+        m_shoulder = new StormSpark(ArmConstants.armShoulderID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
         m_shoulder.setInverted(false);
         m_shoulder.setIdleMode(CANSparkMax.IdleMode.kBrake);
         m_shoulder.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         m_shoulder.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
-        m_shoulder.getEncoder().setPositionConversionFactor(2.0 * Math.PI / armShoulderGearRatio);
+        m_shoulder.getEncoder().setPositionConversionFactor(2.0 * Math.PI / ArmConstants.armShoulderGearRatio);
         m_shoulder.getEncoder().setPosition(m_shoulderEncoder.getPositionRadians(StormTalon.AngleRangeType.rangeNegToPos));
 
-        m_elbow = new StormSpark(armElbowID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
+        m_elbow = new StormSpark(ArmConstants.armElbowID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
         m_elbow.setInverted(true);
         m_elbow.setIdleMode(CANSparkMax.IdleMode.kBrake);
         m_elbow.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         m_elbow.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
-        m_elbow.getEncoder().setPositionConversionFactor(2.0 * Math.PI / armElbowGearRatio);
+        m_elbow.getEncoder().setPositionConversionFactor(2.0 * Math.PI / ArmConstants.armElbowGearRatio);
         m_elbow.getEncoder().setPosition(m_elbowEncoder.getPositionRadians(StormTalon.AngleRangeType.rangeNegToPos));
 
         try {
@@ -119,8 +120,34 @@ public class Arm extends StormSubsystemBase {
 
         //setShoulderSoftLimits(2 * Math.PI/3, Math.PI/6);
         setShoulderSoftLimits(1.98, (40.0/180.0)*Math.PI);
-        setElbowSoftLimits((-2./180.)*Math.PI, -2.88);
+        setElbowSoftLimits((-3./180.)*Math.PI, -2.88);
         enableSoftLimits();
+
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("x", () -> gripperPose.getX());
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("y", () -> gripperPose.getY());
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("vx", () -> dX);
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("vy", () -> dY);
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("alpha", m_geometry::getAlpha);
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("beta", m_geometry::getBeta);
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("valpha", () -> m_jointSpeeds.dAlpha);
+        ShuffleboardConstants.getInstance().armStatusLayout
+                .addNumber("vbeta", () -> m_jointSpeeds.dBeta);
+
+//        ShuffleboardConstants.getInstance().armTab
+//                .add("Shoulder Encoder", m_shoulder.getEncoder())
+//                .withWidget(BuiltInWidgets.kEncoder)
+//                .withPosition(2, 0).withSize(2, 2);
+//        ShuffleboardConstants.getInstance().armTab
+//                .add("Elbow Encoder", m_elbow.getEncoder())
+//                .withWidget(BuiltInWidgets.kEncoder)
+//                .withPosition(2, 2).withSize(2, 2);
     }
     
     public void disableSoftLimits() {
@@ -197,17 +224,17 @@ public class Arm extends StormSubsystemBase {
 //         updateTargetGeometry(m_jointSpeeds);
 
         gripperPose = m_geometry.getPose();
-        SmartDashboard.putNumber("X-coordinate", gripperPose.getX());
-        SmartDashboard.putNumber("Y-coordinate: ", gripperPose.getY());
-
-        SmartDashboard.putNumber("X-coordinate in arm space", gripperPose.getX());
-        SmartDashboard.putNumber("Y-coordinate in arm space", gripperPose.getY());
-        SmartDashboard.putNumber("dX arm space", dX);
-        SmartDashboard.putNumber("dY arm space", dY);
-        SmartDashboard.putNumber("Alpha angle in arm space", m_geometry.getAlpha());
-        SmartDashboard.putNumber("Beta in arm space", m_geometry.getBeta());
-        SmartDashboard.putNumber("dAlpha arm space", s);
-        SmartDashboard.putNumber("dBeta arm space", e);
+//        SmartDashboard.putNumber("X-coordinate", gripperPose.getX());
+//        SmartDashboard.putNumber("Y-coordinate: ", gripperPose.getY());
+//
+//        SmartDashboard.putNumber("X-coordinate in arm space", gripperPose.getX());
+//        SmartDashboard.putNumber("Y-coordinate in arm space", gripperPose.getY());
+//        SmartDashboard.putNumber("dX arm space", dX);
+//        SmartDashboard.putNumber("dY arm space", dY);
+//        SmartDashboard.putNumber("Alpha angle in arm space", m_geometry.getAlpha());
+//        SmartDashboard.putNumber("Beta in arm space", m_geometry.getBeta());
+//        SmartDashboard.putNumber("dAlpha arm space", s);
+//        SmartDashboard.putNumber("dBeta arm space", e);
     }
 
 

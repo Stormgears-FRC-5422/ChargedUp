@@ -37,7 +37,7 @@ public class DriveToChargingStation extends PathFollowingCommand {
         var points = getNextPoses(currentPose, chargingStation);
         var path = PathPlanner.generatePath(
                 new PathConstraints(1.5, 1), points);
-        withPath(path);
+        addPath(path);
         super.initialize();
     }
 

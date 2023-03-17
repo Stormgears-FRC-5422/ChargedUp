@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
@@ -36,6 +37,7 @@ public class NavX extends StormSubsystemBase {
         tab.addNumber("Absolute Yaw", () -> getAbsoluteRotation().getDegrees());
         ShuffleboardConstants.getInstance().driverTab
                 .addDouble("Gyro", () -> getAbsoluteRotation().getDegrees())
+//                .withWidget(BuiltInWidgets.kGyro)
                 .withPosition(3, 2).withSize(1, 1);
     }
 

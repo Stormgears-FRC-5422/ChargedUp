@@ -18,7 +18,7 @@ public class ButtonBoard extends Joystick {
     }
 
     public boolean store() {
-        return  getRawButton(2);
+        return getRawButton(2);
     }
 
     public boolean leftSub() {

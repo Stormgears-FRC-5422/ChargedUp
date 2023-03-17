@@ -78,29 +78,49 @@ public final class Constants {
         public static final int BACK_RIGHT_MODULE_STEER_MOTOR = backRightSwivelID;
         public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
         public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
+
         public static final String driveType = StormProp.getString("driveType", "");
+
         public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
+        public static final double driveXki = StormProp.getNumber("driveXki", 0.0);
+        public static final double driveXkd = StormProp.getNumber("driveXkd", 0.0);
         public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
+        public static final double driveYki = StormProp.getNumber("driveYki", 0.0);
+        public static final double driveYkd = StormProp.getNumber("driveYkd", 0.0);
         public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
-        public static final double driveXki = StormProp.getNumber("driveXki", 1.0);
-        public static final double driveYki = StormProp.getNumber("driveYki", 1.0);
+        public static final double turnki = StormProp.getNumber("turnki", 0.0);
+        public static final double turnkd = StormProp.getNumber("turnkd", 0.0);
     }
 
     public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
     public static final int onOffSolenoidChannel = StormProp.getInt("onOffSolenoidChannel", -1);
     public static final int cubeConeSolenoidChannel = StormProp.getInt("cubeConeSolenoidChannel", -1);
-    public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
-    public static final int armElbowID = StormProp.getInt("armElbowID", -1);
-    public static final int armShoulderEncoderID = StormProp.getInt("armShoulderEncoderID", -1);
-    public static final int armElbowEncoderID = StormProp.getInt("armElbowEncoderID", -1);
-    public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
-    public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
     public static final int kMagEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
-    public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
-    public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
-    public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
-    public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
+
+    public static class ArmConstants {
+
+        public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
+        public static final int armElbowID = StormProp.getInt("armElbowID", -1);
+        public static final int armShoulderEncoderID = StormProp.getInt("armShoulderEncoderID", -1);
+        public static final int armElbowEncoderID = StormProp.getInt("armElbowEncoderID", -1);
+        public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
+        public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
+        public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
+        public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
+        public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
+        public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
+
+        private static final double armOriginX = StormProp.getNumber("armOriginX", 0.1);
+        private static final double armOriginY = StormProp.getNumber("armOriginY", 0.1);
+
+        public static final Translation2d armTranslation = new Translation2d(
+                Units.inchesToMeters(armOriginX),
+                Units.inchesToMeters(armOriginY));
+
+        public static final Translation2d pickGround = new Translation2d(0.77, -0.11);
+        public static final Translation2d stowPosition = new Translation2d(0.2, 0.15);
+    }
 
     public static class VisionConstants {
           private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiX", 0.0));

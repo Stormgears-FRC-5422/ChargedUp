@@ -23,14 +23,14 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final DoubleSupplier txSupplier, tySupplier, omegaSupplier;
 
     // FIXME: tune these slew rates
-    private final SlewRateLimiter txLimiter = new SlewRateLimiter(2);
-    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(2);
-    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(2);
+    private final SlewRateLimiter txLimiter = new SlewRateLimiter(3);
+    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(3);
+    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(3);
 
     private final BooleanSupplier robotRelativeSupplier, percisionModeSupplier;
     private final ProfiledPIDController rotController =
             new ProfiledPIDController(0.01, 0.0, 0.0,
-                new TrapezoidProfile.Constraints(180, 70));
+                new TrapezoidProfile.Constraints(180, 60));
     private final DoubleSupplier robotAngleSupplier;
 
     private double omegaSpeed;
