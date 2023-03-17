@@ -26,7 +26,7 @@ public final class FieldConstants {
     public final static double FIELD_LENGTH = Units.feetToMeters(54) + Units.inchesToMeters(3.25);
     public final static double FIELD_WIDTH = Units.feetToMeters(26) + Units.inchesToMeters(3.5);
 
-    public final static double HALF_FIELDLENGTH = FIELD_LENGTH / 2.0;
+    public final static double HALF_FIELD_LENGTH = FIELD_LENGTH / 2.0;
 
     public static final AprilTagFieldLayout APRILTAG_FIELD_LAYOUT;
 
@@ -59,6 +59,32 @@ public final class FieldConstants {
     }
 
     public final static class Substations {
+
+        public final static double substationHeight = Units.inchesToMeters(39.938);
+
+        private final static double substationAlignDist = Units.inchesToMeters(12.0);
+        private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS + substationAlignDist);
+        private final static double wallToPortalClose = Units.inchesToMeters(34.881);
+        private final static double wallToPortalFar = Units.inchesToMeters(64.861);
+        private final static double portalToFar = Units.inchesToMeters(24.126);
+
+        private final static double wallToRobotPadding = FIELD_WIDTH - (ROBOT_WIDTH / 2.0);
+
+        private final static Regions.RectangleRegion blueLeftRegion = new Regions.RectangleRegion(
+                wallToRobotPadding - BUMPER_THICKNESS, alignDist,
+                wallToRobotPadding - wallToPortalClose, alignDist);
+
+        private final static Regions.RectangleRegion blueRightRegion = new Regions.RectangleRegion(
+                wallToRobotPadding - wallToPortalFar, alignDist,
+                wallToRobotPadding - wallToPortalFar - portalToFar, alignDist
+        );
+
+        public final static DoubleSubstation blueDoubleSubstation = new DoubleSubstation(blueLeftRegion, blueRightRegion);
+        public final static DoubleSubstation redDoubleSubstation = new DoubleSubstation(blueRightRegion.getMirrored(), blueLeftRegion.getMirrored());
+
+        public static DoubleSubstation getDoubleSubstation() {
+            return (DriverStation.getAlliance() == Alliance.Red)? redDoubleSubstation : blueDoubleSubstation;
+        }
 
         public static class DoubleSubstation {
             public final Regions.RectangleRegion leftRegion, rightRegion;
@@ -94,14 +120,15 @@ public final class FieldConstants {
         //last one is kind of a guess (hybrid node)
         private static final double[] nodeXs = {Units.inchesToMeters(14.32), Units.inchesToMeters(31.35), Units.inchesToMeters(47.0)};
 
-        // Calaculate regions for every 3 by 3 of nodes
-        private static final double regionMinX = Units.inchesToMeters(54.05);
+        // Calculate regions for every 3 by 3 of nodes
         private static final double distBetweenChargingStationGrid = Units.inchesToMeters(59.0);
-        private static final double regionMaxX = regionMinX + distBetweenChargingStationGrid - halfRobotLengthWithBumper;
-        private static final double firstRegionWidth = Units.inchesToMeters(75.185);
-        private static final double secondRegionWidth = Units.inchesToMeters(65.55);
-        private static final double thirdRegionWidth = Units.inchesToMeters(75.345);
-        private static final double[] regionWidths = new double[] {firstRegionWidth, secondRegionWidth, thirdRegionWidth};
+        private static final double regionMinX = Units.inchesToMeters(54.05);
+        private static final double regionMaxWidth = regionMinX + distBetweenChargingStationGrid;
+        private static final double[] regionMaxWidths = new double[] {regionMaxWidth - halfRobotLengthWithBumper, regionMaxWidth, regionMaxWidth};
+        private static final double firstRegionLength = Units.inchesToMeters(75.185);
+        private static final double secondRegionLength = Units.inchesToMeters(65.55);
+        private static final double thirdRegionLength = Units.inchesToMeters(75.345);
+        private static final double[] regionLengths = new double[] {firstRegionLength, secondRegionLength, thirdRegionLength};
 
         public static void initGridNodes() {
             double scoringX = Units.inchesToMeters(54.05) + halfRobotLengthWithBumper;
@@ -114,16 +141,17 @@ public final class FieldConstants {
                 int currentRegion = wpiY / 3;
                 double regionMinY = 0.0;
                 for (int i = 0; i < currentRegion; i++)
-                    regionMinY += regionWidths[i];
-                double regionWidth = regionWidths[currentRegion];
+                    regionMinY += regionLengths[i];
+                double regionWidth = regionLengths[currentRegion];
                 double regionMaxY = regionMinY + regionWidth;
+                double regionMaxX = regionMaxWidths[currentRegion];
                 Regions.RectangleRegion region = new Regions.RectangleRegion(regionMaxY, regionMaxX, regionMinY, regionMinX);
 
                 for (int wpiX = 0; wpiX < 3; wpiX++) {
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     var height = nodeHeights[wpiX];
                     double xTranslation = nodeXs[wpiX];
-                    // decrease height by thirteen inches if its a cube
+                    // decrease height by thirteen inches if it is a cube
                     double zTranslation = type == ScoringNode.NodeType.CUBE?
                         height.getHeight() - Units.inchesToMeters(13.50) : height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
@@ -264,11 +292,6 @@ public final class FieldConstants {
         public static class RectangleRegion implements Region {
             public final double maxY, minY, maxX, minX;
 
-            /** field coords */
-            public RectangleRegion(Translation2d topRight, Translation2d bottomLeft) {
-                this(topRight.getY(), topRight.getX(), bottomLeft.getY(), bottomLeft.getX());
-            }
-
             public RectangleRegion(double maxY, double maxX, double minY, double minX) {
                 this.maxY = maxY;
                 this.minY = minY;
@@ -358,7 +381,7 @@ public final class FieldConstants {
     }
 
     public static double mirrorXPosition(double xToBeMirrored) {
-        return (HALF_FIELDLENGTH - xToBeMirrored) + HALF_FIELDLENGTH;
+        return (HALF_FIELD_LENGTH - xToBeMirrored) + HALF_FIELD_LENGTH;
     }
 
     public static Translation2d mirrorTranslation(Translation2d translation) {

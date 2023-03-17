@@ -19,6 +19,7 @@ import com.revrobotics.SparkMaxPIDController;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import static frc.robot.constants.Constants.*;
+import static frc.robot.constants.Constants.ArmConstants.*;
 
 public class Arm extends StormSubsystemBase {
     final ArmGeometry m_geometry = new ArmGeometry();
@@ -57,46 +58,46 @@ public class Arm extends StormSubsystemBase {
     double downwardArmLimit;
 
     public Arm() {
-        m_maxDAlpha = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * ArmConstants.armShoulderGearRatio);
-        m_maxDBeta = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * ArmConstants.armElbowGearRatio);
+        m_maxDAlpha = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * armShoulderGearRatio);
+        m_maxDBeta = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * armElbowGearRatio);
         m_maxXSpeed = 1.0;
         m_maxYSpeed = 1.0;
 
         setSpeedScale(kArmSpeedScale);
 
-        m_shoulderEncoder = new StormTalon(ArmConstants.armShoulderEncoderID);
+        m_shoulderEncoder = new StormTalon(armShoulderEncoderID);
         // The shoulder encoder goes the wrong way and setSensorPhase doesn't seem to do anything. Not fighting this now
-        setEncoderOffsetTicks(m_shoulderEncoder, -ArmConstants.armShoulderEncoderOffsetTicks);
+        setEncoderOffsetTicks(m_shoulderEncoder, -armShoulderEncoderOffsetTicks);
         m_shoulderEncoder.setNegatePosition(true);
 
-        m_elbowEncoder = new StormTalon(ArmConstants.armElbowEncoderID);
-        setEncoderOffsetTicks(m_elbowEncoder, -ArmConstants.armElbowEncoderOffsetTicks);
+        m_elbowEncoder = new StormTalon(armElbowEncoderID);
+        setEncoderOffsetTicks(m_elbowEncoder, -armElbowEncoderOffsetTicks);
 
-        m_shoulder = new StormSpark(ArmConstants.armShoulderID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
+        m_shoulder = new StormSpark(armShoulderID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
         m_shoulder.setInverted(false);
         m_shoulder.setIdleMode(CANSparkMax.IdleMode.kBrake);
         m_shoulder.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         m_shoulder.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
-        m_shoulder.getEncoder().setPositionConversionFactor(2.0 * Math.PI / ArmConstants.armShoulderGearRatio);
+        m_shoulder.getEncoder().setPositionConversionFactor(2.0 * Math.PI / armShoulderGearRatio);
         m_shoulder.getEncoder().setPosition(m_shoulderEncoder.getPositionRadians(StormTalon.AngleRangeType.rangeNegToPos));
 
-        m_elbow = new StormSpark(ArmConstants.armElbowID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
+        m_elbow = new StormSpark(armElbowID, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
         m_elbow.setInverted(true);
         m_elbow.setIdleMode(CANSparkMax.IdleMode.kBrake);
         m_elbow.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         m_elbow.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
-        m_elbow.getEncoder().setPositionConversionFactor(2.0 * Math.PI / ArmConstants.armElbowGearRatio);
+        m_elbow.getEncoder().setPositionConversionFactor(2.0 * Math.PI / armElbowGearRatio);
         m_elbow.getEncoder().setPosition(m_elbowEncoder.getPositionRadians(StormTalon.AngleRangeType.rangeNegToPos));
 
-        forwardArmLimit = ArmConstants.forwardConstraint + ArmConstants.armInlay
-                          - ArmConstants.gripperWheelRadius - ArmConstants.armForwardSafetyBuffer;
-        backwardArmLimit = ArmConstants.backwardConstraint
-                           + ArmConstants.gripperWheelRadius + ArmConstants.armBackwardSafetyBuffer;
+        forwardArmLimit = forwardConstraint + armInlay
+                          - gripperWheelRadius - armForwardSafetyBuffer;
+        backwardArmLimit = backwardConstraint
+                           + gripperWheelRadius + armBackwardSafetyBuffer;
 
-        upwardArmLimit = ArmConstants.upwardConstraint - ArmConstants.chassisHeight
-                         - ArmConstants.gripperWheelRadius - ArmConstants.armUpwardSafetyBuffer;
-        downwardArmLimit = ArmConstants.downwardConstraint
-                           + ArmConstants.gripperWheelRadius + ArmConstants.armDownwardSafetyBuffer;
+        upwardArmLimit = upwardConstraint - chassisHeight
+                         - gripperWheelRadius - armUpwardSafetyBuffer;
+        downwardArmLimit = downwardConstraint
+                           + gripperWheelRadius + armDownwardSafetyBuffer;
 
         try {
             System.out.println("Delete this quick nap - only for simulation");
@@ -370,8 +371,16 @@ public class Arm extends StormSubsystemBase {
 
     public Translation3d getGlobalTranslation() {
         return new Translation3d(
-                gripperPose.getX() + ArmConstants.armTranslation.getX(), 0,
-                gripperPose.getY() + ArmConstants.armTranslation.getY()
+                gripperPose.getX() + armTranslation.getX(), 0,
+                gripperPose.getY() + armTranslation.getY()
+        );
+    }
+
+    /** returns a translation in arm space given a translation from robot origin */
+    public static Translation2d fromGlobalTranslation(Translation3d global) {
+        return new Translation2d(
+                global.getY() - armTranslation.getX(),
+                global.getZ() - armTranslation.getY()
         );
     }
 }

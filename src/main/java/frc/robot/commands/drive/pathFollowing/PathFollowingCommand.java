@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
+import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
@@ -53,7 +54,7 @@ public class PathFollowingCommand extends CommandBase {
     }
 
     /** must be set in constructor or here before command schedule */
-    public PathFollowingCommand addPath(PathPlannerTrajectory path) {
+    public PathFollowingCommand setPath(PathPlannerTrajectory path) {
         m_path = path;
         return this;
     }
@@ -85,6 +86,8 @@ public class PathFollowingCommand extends CommandBase {
         totalTime = m_path.getTotalTimeSeconds();
         System.out.println("Following path starting at: " + startTime);
         System.out.println("Pose at start: " + currentPose + " to: " + endPose);
+
+        m_drivetrain.setDriveSpeedScale(1.0);
     }
 
     @Override
@@ -116,6 +119,7 @@ public class PathFollowingCommand extends CommandBase {
     public void end(boolean interrupted) {
         System.out.println("Following path command ended at: " + RobotState.getInstance().getTimeSeconds());
         System.out.println("Pose at End: " + RobotState.getInstance().getCurrentPose());
+        m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
         if (!interrupted)
             m_drivetrain.stopDrive();
     }

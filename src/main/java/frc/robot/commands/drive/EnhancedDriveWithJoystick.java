@@ -114,11 +114,16 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         else
             m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
 
+        if (setpointRotationMode && percisionModeSupplier.getAsBoolean()) {
+            m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
+        }
+
+        double tx = txLimiter.calculate(txSupplier.getAsDouble());
+        double ty = tyLimiter.calculate(tySupplier.getAsDouble());
+        double omega = (setpointRotationMode)? omegaSpeed : omegaLimiter.calculate(omegaSpeed);
+
         m_drivetrain.percentOutDrive(
-                new ChassisSpeeds(
-                        txLimiter.calculate(txSupplier.getAsDouble()),
-                        tyLimiter.calculate(tySupplier.getAsDouble()),
-                        (setpointRotationMode)? omegaSpeed : omegaLimiter.calculate(omegaSpeed)),
+                new ChassisSpeeds(tx, ty, omega),
                 !robotRelativeSupplier.getAsBoolean()
         );
     }

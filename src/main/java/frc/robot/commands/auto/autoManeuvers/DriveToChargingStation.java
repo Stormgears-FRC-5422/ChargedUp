@@ -1,4 +1,4 @@
-package frc.robot.commands.auto.autoScoring;
+package frc.robot.commands.auto.autoManeuvers;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -37,7 +37,7 @@ public class DriveToChargingStation extends PathFollowingCommand {
         var points = getNextPoses(currentPose, chargingStation);
         var path = PathPlanner.generatePath(
                 new PathConstraints(1.5, 1), points);
-        addPath(path);
+        setPath(path);
         super.initialize();
     }
 

@@ -1,4 +1,4 @@
-package frc.robot.commands.auto.autoScoring;
+package frc.robot.commands.auto.autoManeuvers;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;

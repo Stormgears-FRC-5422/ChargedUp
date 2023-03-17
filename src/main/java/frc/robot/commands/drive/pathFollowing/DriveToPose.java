@@ -29,7 +29,7 @@ public class DriveToPose extends PathFollowingCommand {
     public void initialize() {
         var currPose = RobotState.getInstance().getCurrentPose();
         double currVel = RobotState.getInstance().getCurrentLinearVel();
-        addPath(Paths.getPathFromPose(currPose, currVel, goalPose, maxVel, maxAcc));
+        setPath(Paths.getPathFromPose(currPose, currVel, goalPose, maxVel, maxAcc));
         super.initialize();
     }
 

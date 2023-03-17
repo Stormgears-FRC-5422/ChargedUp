@@ -1,4 +1,4 @@
-package frc.robot.commands.auto.autoScoring;
+package frc.robot.commands.auto.autoManeuvers;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -95,7 +95,7 @@ public class DriveToNode extends PathFollowingCommand {
                     new PathConstraints(1.0, 2),
                     List.of(startPoint, alignToGrids, alignToNode, scoringPose));
         }
-        addPath(path);
+        setPath(path);
         super.initialize();
     }
 }

@@ -1,4 +1,4 @@
-package frc.robot.commands.auto.autoScoring;
+package frc.robot.commands.auto.autoManeuvers;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.drive.BalanceCommand;

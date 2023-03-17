@@ -188,10 +188,10 @@ public class RobotState extends StormSubsystemBase {
     @Override
     public void lastPeriodic() {
         // clear map
-//        while (poseMap.size() > 1 &&
-//                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
-//            poseMap.pollFirstEntry();
-//        }
+        while (poseMap.size() > 5 &&
+                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
+            poseMap.pollFirstEntry();
+        }
 
         Pose2d currentPose = getCurrentPose();
         xEntry.setDouble(currentPose.getX());

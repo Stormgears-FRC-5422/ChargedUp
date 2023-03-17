@@ -1,10 +1,8 @@
 package frc.utils.joysticks;
 
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.auto.autoScoring.NodeSelector;
+import frc.robot.commands.auto.autoManeuvers.NodeSelector;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
 

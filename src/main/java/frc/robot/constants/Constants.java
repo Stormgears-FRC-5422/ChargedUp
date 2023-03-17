@@ -6,6 +6,7 @@ package frc.robot.constants;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.arm.Arm;
 import frc.utils.configfile.StormProp;
 
 public final class Constants {
@@ -131,6 +132,11 @@ public final class Constants {
 
         public static final Translation2d pickGround = new Translation2d(0.77, -0.11);
         public static final Translation2d stowPosition = new Translation2d(0.2, 0.15);
+
+        private static final double outToDoubleSubstation = Units.inchesToMeters(15.0);
+        public static final Translation2d pickDoubleSubstation = Arm.fromGlobalTranslation(
+                new Translation3d(0.0, outToDoubleSubstation, FieldConstants.Substations.substationHeight)
+        );
     }
 
     public static class VisionConstants {

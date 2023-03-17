@@ -18,11 +18,6 @@ public final class AprilTagPoseEstimationStrategy {
     private static int logCounter = 0;
 
     private static HashMap<Integer, Double> heightDiffs = new HashMap<>();
-    static {
-        for (int i = 1; i <= 8; i++) {
-            heightDiffs.put(i, Math.abs(getTagPose(i).getZ() - CAMERA_POSITION.getZ()));
-        }
-    }
 
     private static HashMap<Integer, Pose3d> tagPoses = new HashMap<>();
 
@@ -125,7 +120,13 @@ public final class AprilTagPoseEstimationStrategy {
 
     /** get distance to tag in 2d field positions */
     private static double _get2dDist(int tagID, double dist3d) {
-        double heightDiff = heightDiffs.get(tagID);
+        double heightDiff;
+        if (heightDiffs.containsKey(tagID))
+            heightDiff = heightDiffs.get(tagID);
+        else {
+            heightDiff = Math.abs(_getTagPose(tagID).getZ() - CAMERA_POSITION.getZ());
+            heightDiffs.put(tagID, heightDiff);
+        }
         return Math.sqrt((dist3d*dist3d) - (heightDiff*heightDiff));
     }
 
