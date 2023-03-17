@@ -1,0 +1,10 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Path Following/Goal v. Current Pose": "Field2d",
+      "/Shuffleboard/Pose Estimation/Pose Estimation": "Field2d",
+      "/Shuffleboard/Robot State/Field": "Field2d"
+    }
+  }
+}
