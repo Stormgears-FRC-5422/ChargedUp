@@ -1,23 +1,28 @@
 package frc.utils.joysticks;
 
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.auto.autoManeuvers.NodeSelector;
+import frc.robot.constants.Constants;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
+import frc.robot.subsystems.arm.Arm;
 
 public class ButtonBoardConfig {
 
   ButtonBoard m_buttonboard1;
   ButtonBoard m_buttonboard2;
   NeoPixel neoPixel;
+  Arm arm;
   public int grid;
 
   public NodeSelector nodeSelector;
 
   Compression compression;
 
-  public ButtonBoardConfig(NeoPixel neoPixel, NodeSelector nodeSelector, Compression compression) {
+  public ButtonBoardConfig(NeoPixel neoPixel, NodeSelector nodeSelector, Compression compression, Arm arm) {
     m_buttonboard1 = new ButtonBoard(1);
     m_buttonboard2 = new ButtonBoard(2);
     this.neoPixel = neoPixel;
@@ -40,36 +45,20 @@ public class ButtonBoardConfig {
 
     new Trigger(m_buttonboard1::kill).onTrue(new InstantCommand(() -> System.exit(0)));
 
-    new Trigger(m_buttonboard1::floor)
-        .onTrue(new InstantCommand(() -> System.out.println("Floor Selected")))
-        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-             new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.PURPLE_COLOR))));
+    new Trigger(() -> m_buttonboard1.getRawButton(11) && m_buttonboard1.getRawButton(7))
+            .onTrue(  new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.PURPLE_COLOR)));
+    new Trigger(() -> m_buttonboard1.getRawButton(11) && !m_buttonboard1.getRawButton(7))
+            .onTrue(  new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(m_buttonboard1::floor)
-            .onTrue(new InstantCommand(() -> System.out.println("Floor Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.YELLOW_COLOR))));
+    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR)));
+    new Trigger(() -> m_buttonboard1.getRawButton(12) && !m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(m_buttonboard1::leftSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR))));
-
-    new Trigger(m_buttonboard1::leftSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Let Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
-
-    new Trigger(m_buttonboard1::rightSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Right Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR))));
-
-    new Trigger(m_buttonboard1::rightSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Right Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
-
+    new Trigger(() -> m_buttonboard1.getRawButton(10) && m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR)));
+    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR)));
 
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
 
@@ -80,8 +69,10 @@ public class ButtonBoardConfig {
 //    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
 //    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
 
-    new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
-    new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
+    if (Constants.Toggles.usePneumatics) {
+      new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
+      new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
+    }
 
     // set row of node selector
     new Trigger(() -> m_buttonboard1.getRawButton(5) && !m_buttonboard1.getRawButton(6))
@@ -91,8 +82,6 @@ public class ButtonBoardConfig {
     new Trigger(() -> m_buttonboard1.getRawButton(6) && !m_buttonboard1.getRawButton(5))
             .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
 
-    new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
-    new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
 
     int offset = 4;
     for (int i = 8; i >= 0; i--) {
@@ -123,5 +112,35 @@ public class ButtonBoardConfig {
 
   public boolean pickRightSub() {
     return m_buttonboard1.rightSub();
+  }
+
+  public double armUpDown() {
+    double y = m_buttonboard2.getY();
+    double dy = 0;
+    // There is a slight voltage bias that causes the joystick to report != 0 at rest
+    if (Math.abs(y) > 0.5 ) {
+      if (y < 0)
+        dy = 0.5;
+      else
+        dy = -0.5;
+    }
+
+    if (dy != 0) System.out.println("armUpDown: dy = " + dy);
+    return dy;
+  }
+
+  public double armInOut() {
+    double x = m_buttonboard1.getX();
+    double dx = 0;
+    // There is a slight voltage bias that causes the joystick to report != 0 at rest
+    if (Math.abs(x) > 0.5 ) {
+      if (x < 0)
+        dx = 0.5;
+      else
+        dx = -0.5;
+    }
+
+    if (dx != 0) System.out.println("armInOut: dx = " + dx);
+    return dx;
   }
 }

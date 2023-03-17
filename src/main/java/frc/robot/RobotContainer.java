@@ -147,7 +147,7 @@ public class RobotContainer {
         if (Toggles.useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
-          if (Toggles.useStatusLights)
+          if (Toggles.useStatusLights && Toggles.useStormNet)
               m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
         } else
             System.out.println("NOT using stormnet");
@@ -184,7 +184,7 @@ public class RobotContainer {
         }
 
         if (Toggles.useXboxController) {
-            xboxController = new StormXboxController(kLogitechControllerPort + 1);
+            xboxController = new StormXboxController(kLogitechControllerPort + 3);
             System.out.println("using xbox controller");
         } else
             System.out.println("NOT using xbox controller");
@@ -297,14 +297,19 @@ public class RobotContainer {
 
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
-            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression);
+            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression, m_arm);
             buttonBoardConfig.buttonBoardSetup();
 
-            if (Toggles.useArm && Toggles.useXYArmMode) {
+            // Button board can only do XY arm mode
+            if (Toggles.useArm) {
                 new Trigger(buttonBoardConfig::stow).onTrue(
                         new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
                 new Trigger(buttonBoardConfig::pickFloor).onTrue(
                         new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
+                m_armCommand = new XYArm(m_arm,
+                        buttonBoardConfig::armInOut,
+                        buttonBoardConfig::armUpDown);
+                m_arm.setDefaultCommand(m_armCommand);
             }
 
             if (Toggles.useDrive && Toggles.useArm) {
