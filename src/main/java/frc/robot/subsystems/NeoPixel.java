@@ -34,7 +34,7 @@ public class NeoPixel extends SubsystemBase {
   }
 
   public void setColor(int segmentNumber, Color8Bit color) {
-    System.out.println("setting color " + color.toString() + " for segment:" + segmentNumber);
+//    System.out.println("setting color " + color.toString() + " for segment:" + segmentNumber);
     ledLightStrip.setLEDColor(segmentNumber, color);
     ledColorRequested = true;
   }

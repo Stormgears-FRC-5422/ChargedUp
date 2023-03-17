@@ -108,6 +108,17 @@ public final class Constants {
         public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
         public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
         public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
+	    public static final double armInlay = StormProp.getNumber("armInlay", 1.0);
+	    public static final double gripperWheelRadius = StormProp.getNumber("gripperWheelRadius",1.0);
+	    public static final double armForwardSafetyBuffer = StormProp.getNumber("armForwardSafetyBuffer", 1.0);
+	    public static final double armUpwardSafetyBuffer = StormProp.getNumber("armUpwardSafetyBuffer", 1.0);
+	    public static final double armBackwardSafetyBuffer = StormProp.getNumber("armBackwardSafetyBuffer", 1.0);
+	    public static final double armDownwardSafetyBuffer = StormProp.getNumber("armDownwardSafetyBuffer", 1.0);
+	    public static final double chassisHeight = StormProp.getNumber("chassisHeight", 1.0);
+	    public static final double forwardConstraint = StormProp.getNumber("forwardConstraint", 1.0);
+	    public static final double upwardConstraint = StormProp.getNumber("upwardConstraint", 1.0);
+	    public static final double backwardConstraint = StormProp.getNumber("backwardConstraint", 1.0);
+	    public static final double downwardConstraint = StormProp.getNumber("downwardConstraint", 1.0);
         public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
         public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
 

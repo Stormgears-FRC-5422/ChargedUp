@@ -51,6 +51,11 @@ public class Arm extends StormSubsystemBase {
     protected ArmJointSpeeds m_jointSpeeds = new ArmJointSpeeds(0.0, 0.0);
     private final ArmDriveKinematics m_kinematics;
 
+    double forwardArmLimit;
+    double backwardArmLimit;
+    double upwardArmLimit;
+    double downwardArmLimit;
+
     public Arm() {
         m_maxDAlpha = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * ArmConstants.armShoulderGearRatio);
         m_maxDBeta = 2.0 * Math.PI * kNeoFreeSpeedRPM / (60.0 * ArmConstants.armElbowGearRatio);
@@ -82,6 +87,16 @@ public class Arm extends StormSubsystemBase {
         m_elbow.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen).enableLimitSwitch(true);
         m_elbow.getEncoder().setPositionConversionFactor(2.0 * Math.PI / ArmConstants.armElbowGearRatio);
         m_elbow.getEncoder().setPosition(m_elbowEncoder.getPositionRadians(StormTalon.AngleRangeType.rangeNegToPos));
+
+        forwardArmLimit = ArmConstants.forwardConstraint + ArmConstants.armInlay
+                          - ArmConstants.gripperWheelRadius - ArmConstants.armForwardSafetyBuffer;
+        backwardArmLimit = ArmConstants.backwardConstraint
+                           + ArmConstants.gripperWheelRadius + ArmConstants.armBackwardSafetyBuffer;
+
+        upwardArmLimit = ArmConstants.upwardConstraint - ArmConstants.chassisHeight
+                         - ArmConstants.gripperWheelRadius - ArmConstants.armUpwardSafetyBuffer;
+        downwardArmLimit = ArmConstants.downwardConstraint
+                           + ArmConstants.gripperWheelRadius + ArmConstants.armDownwardSafetyBuffer;
 
         try {
             System.out.println("Delete this quick nap - only for simulation");
@@ -121,8 +136,8 @@ public class Arm extends StormSubsystemBase {
         m_kinematics = new ArmDriveKinematics(m_geometry);
 
         //setShoulderSoftLimits(2 * Math.PI/3, Math.PI/6);
-        setShoulderSoftLimits(1.98, (40.0/180.0)*Math.PI);
-        setElbowSoftLimits((-3./180.)*Math.PI, -2.88);
+        setShoulderSoftLimits((113./180.)*Math.PI, (40./180.)*Math.PI);
+        setElbowSoftLimits((-5./180.)*Math.PI, (-165./180.)*Math.PI);
         enableSoftLimits();
 
         ShuffleboardConstants.getInstance().armStatusLayout
@@ -251,6 +266,7 @@ public class Arm extends StormSubsystemBase {
     }
 
     public void xyMoveArm(ChassisSpeeds speeds) {
+        regulateArm(gripperPose, speeds);
         dX = speeds.vxMetersPerSecond;
         dY = speeds.vyMetersPerSecond;
         ArmJointSpeeds jointSpeeds  = m_kinematics.toJointSpeeds(speeds);
@@ -276,6 +292,77 @@ public class Arm extends StormSubsystemBase {
     public void setSpeedScale(double scale) {
         m_armSpeedScale = MathUtil.clamp(scale, 0, kArmSpeedScale);
     }
+
+    public void regulateArm(Pose2d gripperCoords, ChassisSpeeds speeds){
+        // forward / backward
+        if (gripperCoords.getX() >= forwardArmLimit && speeds.vxMetersPerSecond > 0) {
+//            System.out.println("limiting forward x at x=" + gripperCoords.getX() + ", dx=" + speeds.vxMetersPerSecond);
+            speeds.vxMetersPerSecond = 0;
+            // speeds.vxMetersPerSecond = Math.min(m_maxXSpeed * m_armSpeedScale * applyCushionX(speeds, gripperCoords), speeds.vxMetersPerSecond);
+        } else if (gripperCoords.getX() <= backwardArmLimit && speeds.vxMetersPerSecond < 0) {
+//            System.out.println("limiting backward x at x=" + gripperCoords.getX() + ", dx=" + speeds.vxMetersPerSecond);
+            speeds.vxMetersPerSecond = 0;
+            // speeds.vxMetersPerSecond = Math.max(m_maxXSpeed * m_armSpeedScale * applyCushionX(speeds, gripperCoords), speeds.vxMetersPerSecond);
+        }
+
+        // upward / downward
+        if (gripperCoords.getY() >= upwardArmLimit && speeds.vyMetersPerSecond > 0) {
+//            System.out.println("limiting upward y at y=" + gripperCoords.getY() + ", dy=" + speeds.vyMetersPerSecond);
+            speeds.vyMetersPerSecond = 0;
+            // speeds.vyMetersPerSecond = Math.min(m_maxYSpeed * m_armSpeedScale * applyCushionY(speeds, gripperCoords),speeds.vyMetersPerSecond);
+        } else if (gripperCoords.getY() <= downwardArmLimit && speeds.vyMetersPerSecond < 0) {
+//            System.out.println("limiting downward y at y=" + gripperCoords.getY() + ", dy=" + speeds.vyMetersPerSecond);
+            speeds.vyMetersPerSecond = 0;
+            // speeds.vyMetersPerSecond = Math.max(m_maxYSpeed * m_armSpeedScale * applyCushionY(speeds, gripperCoords), speeds.vyMetersPerSecond);
+        }
+    }
+
+//    public double applyCushionX(ChassisSpeeds speed, Pose2d position) {
+//        double delta;
+//
+//        if (Math.abs(position.getX() - forwardArmLimit) < 0.1016) { //0.1016 = 4 inches, change later
+//            delta = position.getX() - forwardArmLimit;
+//        }
+//        else if (Math.abs(position.getX()- backwardArmLimit) < 0.1016) {
+//            delta = Math.abs(position.getX() - backwardArmLimit);
+//        }
+//        else{
+//            return speed.vxMetersPerSecond;
+//        }
+//
+//        double limit = delta/0.1016;
+//
+//        if (Math.abs(speed.vxMetersPerSecond) < limit) {
+//            return speed.vxMetersPerSecond;
+//        }
+//
+//        return limit;
+//
+//    }
+//
+//    public double applyCushionY(ChassisSpeeds speed, Pose2d position) {
+//        double delta;
+//
+//        if (Math.abs(position.getY() - upwardArmLimit) < 0.1016) { //0.1016 = 4 inches, change later
+//            delta = position.getY() - upwardArmLimit;
+//        }
+//        else if (Math.abs(position.getY()- downwardArmLimit) < 0.1016) {
+//            delta = Math.abs(position.getY() - downwardArmLimit);
+//        }
+//        else{
+//            return speed.vyMetersPerSecond;
+//        }
+//
+//        double limit = delta/0.1016;
+//
+//        if (Math.abs(speed.vyMetersPerSecond) < limit) {
+//            return speed.vyMetersPerSecond;
+//        }
+//
+//        return limit;
+//
+//    }
+
 
     public Pose2d getGripperPose() {
         return gripperPose;
