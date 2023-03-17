@@ -30,12 +30,8 @@ public class Compression extends StormSubsystemBase {
         onOffSolenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, onOffSolenoidChannel);
         onOffSolenoid.set(false);
 
-<<<<<<< Updated upstream
-=======
-
         running = true;
-        onOffSolenoidSet = false;
->>>>>>> Stashed changes
+
         printStatus();
     }
     public void startCompressor() {
@@ -57,20 +53,13 @@ public class Compression extends StormSubsystemBase {
         }
     }
     public void grabCubeOrCone(){
-<<<<<<< Updated upstream
-        solenoidSet = true;
-        onOffSolenoid.set(true);
-=======
-        onOffSolenoid.set(false);
->>>>>>> Stashed changes
-    }
-    public void release(){
-<<<<<<< Updated upstream
         solenoidSet = false;
         onOffSolenoid.set(false);
-=======
+    }
+    public void release(){
+        solenoidSet = true;
         onOffSolenoid.set(true);
->>>>>>> Stashed changes
+
     }
     private void printStatus() {
         System.out.println("\n\nShould be running: " + running);
