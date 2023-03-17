@@ -44,43 +44,24 @@ public class ButtonBoardConfig {
 
     new Trigger(m_buttonboard1::kill).onTrue(new InstantCommand(() -> System.exit(0)));
 
-    new Trigger(m_buttonboard1::floor)
-        .onTrue(new InstantCommand(() -> System.out.println("Floor Selected")))
-        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-             new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.PURPLE_COLOR))));
+    new Trigger(() -> m_buttonboard1.getRawButton(11) && m_buttonboard1.getRawButton(7))
+            .onTrue(  new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.PURPLE_COLOR)));
+    new Trigger(() -> m_buttonboard1.getRawButton(11) && !m_buttonboard1.getRawButton(7))
+            .onTrue(  new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(m_buttonboard1::floor)
-            .onTrue(new InstantCommand(() -> System.out.println("Floor Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setSpecificSegmentColor(segments1, NeoPixel.YELLOW_COLOR))));
+    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR)));
+    new Trigger(() -> m_buttonboard1.getRawButton(12) && !m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(m_buttonboard1::leftSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR))));
-
-    new Trigger(m_buttonboard1::leftSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Let Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
-
-    new Trigger(m_buttonboard1::rightSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Right Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR))));
-
-    new Trigger(m_buttonboard1::rightSub)
-            .onTrue(new InstantCommand(() -> System.out.println("Right Sub Selected")))
-            .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-                    new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
-
+    new Trigger(() -> m_buttonboard1.getRawButton(10) && m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.PURPLE_COLOR)));
+    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
+            .onTrue(new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR)));
 
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
 
 //    new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
-
-
-
 //    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
 //    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
 
