@@ -149,6 +149,8 @@ public class RobotContainer {
         if (Toggles.useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
+          if (Toggles.useStatusLights)
+              m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
         } else
             System.out.println("NOT using stormnet");
 
@@ -221,6 +223,8 @@ public class RobotContainer {
                     m_armCommand = new XYArm(m_arm,
                             xboxController::getRightJoystickX,
                             xboxController::getRightJoystickY);
+                    new Trigger(xboxController::getAButtonIsHeld).onTrue(
+                            new ArmTrajectoryToPose(m_arm, new Translation2d(1.0, 1.0)));
                     new Trigger(xboxController::getBButtonIsHeld).onTrue(
                             new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
                     new Trigger(xboxController::getAButtonIsHeld).onTrue(
@@ -286,6 +290,12 @@ public class RobotContainer {
                     })
             );
         }
+
+        new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(() -> {m_vision.setMode(0);
+            System.out.println("12 ran");}));
+        new Trigger(() -> logitechController.getRawButton(11)).onTrue(new InstantCommand(() -> {m_vision.setMode(1);
+            System.out.println("11 Ran");}));
+
 
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
