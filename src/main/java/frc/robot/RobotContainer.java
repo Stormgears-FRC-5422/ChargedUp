@@ -149,7 +149,7 @@ public class RobotContainer {
         if (Toggles.useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
-          if (Toggles.useStatusLights)
+          if (Toggles.useStatusLights && Toggles.useStormNet)
               m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
         } else
             System.out.println("NOT using stormnet");
