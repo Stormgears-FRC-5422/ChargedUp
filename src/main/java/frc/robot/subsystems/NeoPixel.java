@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.lights.LEDLightStrip;
@@ -33,7 +34,7 @@ public class NeoPixel extends SubsystemBase {
   }
 
   public void setColor(int segmentNumber, Color8Bit color) {
-    System.out.println("setting color " + color.toString() + " for segment:" + segmentNumber);
+//    System.out.println("setting color " + color.toString() + " for segment:" + segmentNumber);
     ledLightStrip.setLEDColor(segmentNumber, color);
     ledColorRequested = true;
   }
@@ -50,11 +51,5 @@ public class NeoPixel extends SubsystemBase {
     }
   }
 
-  @Override
-  public void periodic() {
-    if (ledColorRequested) {
-      ledLightStrip.setLEDData();
-    }
-    ledColorRequested = false;
-  }
+
 }

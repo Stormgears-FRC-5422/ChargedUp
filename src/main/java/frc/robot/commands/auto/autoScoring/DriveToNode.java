@@ -40,7 +40,7 @@ public class DriveToNode extends PathFollowingCommand {
         boolean isRed = goalNode.alliance == DriverStation.Alliance.Red;
         boolean inRegion = goalNode.gridRegion.contains(currentPose);
         
-        double distForAligned = Constants.TURN_RADIUS + Constants.BUMPER_THICKNESS + Units.inchesToMeters(7.0);
+        double distForAligned = Constants.TURN_RADIUS + Constants.BUMPER_THICKNESS + Units.inchesToMeters(3.5);
 
         PathPlannerTrajectory path;
         if (inRegion) {
@@ -92,10 +92,10 @@ public class DriveToNode extends PathFollowingCommand {
                     scoreRotation).withPrevControlLength(Units.inchesToMeters(10));
 
             path = PathPlanner.generatePath(
-                    new PathConstraints(1.5, 1),
+                    new PathConstraints(1.0, 2),
                     List.of(startPoint, alignToGrids, alignToNode, scoringPose));
         }
-        withPath(path);
+        addPath(path);
         super.initialize();
     }
 }

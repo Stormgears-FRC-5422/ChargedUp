@@ -23,14 +23,14 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final DoubleSupplier txSupplier, tySupplier, omegaSupplier;
 
     // FIXME: tune these slew rates
-    private final SlewRateLimiter txLimiter = new SlewRateLimiter(2);
-    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(2);
-    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(2);
+    private final SlewRateLimiter txLimiter = new SlewRateLimiter(3.5);
+    private final SlewRateLimiter tyLimiter = new SlewRateLimiter(3.5);
+    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(3.5);
 
     private final BooleanSupplier robotRelativeSupplier, percisionModeSupplier;
     private final ProfiledPIDController rotController =
-            new ProfiledPIDController(0.01, 0.0, 0.0,
-                new TrapezoidProfile.Constraints(180, 70));
+            new ProfiledPIDController(0.02, 0.0, 0.0,
+                new TrapezoidProfile.Constraints(180, 60));
     private final DoubleSupplier robotAngleSupplier;
 
     private double omegaSpeed;
@@ -48,7 +48,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         this.percisionModeSupplier = percisionModeSupplier;
 
         rotController.enableContinuousInput(-180.0, 180.0);
-        rotController.setTolerance(0.04);
+        rotController.setTolerance(0.5);
 
         robotAngleSupplier = () -> (Constants.Toggles.usePoseEstimator)?
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees() :
@@ -104,6 +104,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
+        m_drivetrain.setDriveSpeedScale(1.0);
         System.out.println("Drive command ended!");
     }
 

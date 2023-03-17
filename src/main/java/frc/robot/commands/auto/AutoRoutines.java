@@ -17,14 +17,14 @@ public final class AutoRoutines {
     public static ArrayList<AutoCommand> autoCommands = new ArrayList<>();
 
     public static void initAutoRoutines(DrivetrainBase drivetrain, NavX navX, Arm arm) {
-        highConeBumpSideChargingStation(drivetrain, navX);
+        highConeBumpSideChargingStation(drivetrain, arm, navX);
     }
 
-    public static AutoCommand highConeBumpSideChargingStation(DrivetrainBase drivetrain, NavX navX) {
+    public static AutoCommand highConeBumpSideChargingStation(DrivetrainBase drivetrain, Arm arm, NavX navX) {
         var node = FieldConstants.Grids.getGrid()[0][0];
         return new AutoCommand(
                 new SequentialCommandGroup(
-                        new AutoScore(drivetrain, node),
+//                        new AutoScore(drivetrain, arm, node),
                         new AutoBalance(drivetrain, navX)
                 ),
                 node.scoringPosition,

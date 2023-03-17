@@ -12,8 +12,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 
+import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
+import frc.robot.commands.auto.autoScoring.AutoScore;
 import frc.robot.commands.auto.autoScoring.NodeSelector;
 import frc.robot.commands.drive.BalanceCommand;
 import frc.robot.commands.auto.autoScoring.*;
@@ -23,6 +25,7 @@ import frc.robot.commands.LidarIndicatorCommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.drive.EnhancedDriveWithJoystick;
+import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
@@ -33,8 +36,6 @@ import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.PoseEstimator;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmJointSpeeds;
-import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
 import frc.robot.commands.drive.GyroCommand;
@@ -140,12 +141,16 @@ public class RobotContainer {
 
         if (Toggles.usePneumatics) {
             m_compression = new Compression();
+            m_compression.startCompressor();
+            System.out.println("Using Compressor");
         } else
             System.out.println("NOT using pneumatics");
 
         if (Toggles.useStormNet) {
           StormNet.init();
           m_stormNet = StormNet.getInstance();
+          if (Toggles.useStatusLights)
+              m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
         } else
             System.out.println("NOT using stormnet");
 
@@ -188,8 +193,8 @@ public class RobotContainer {
 
         // Configure the trigger bindings
         configureBindings();
-        if (Toggles.usePoseEstimator && Toggles.useNavX) {
-            AutoRoutines.highConeBumpSideChargingStation(m_drivetrain, m_navX);
+        if (Toggles.usePoseEstimator && Toggles.useNavX && Toggles.useArm && Toggles.useVision) {
+            AutoRoutines.initAutoRoutines(m_drivetrain, m_navX, m_arm);
 
             if (AutoRoutines.autoCommands.size() > 0) {
                 for (var autoCommand : AutoRoutines.autoCommands) {
@@ -218,11 +223,12 @@ public class RobotContainer {
                     m_armCommand = new XYArm(m_arm,
                             xboxController::getRightJoystickX,
                             xboxController::getRightJoystickY);
-                    ArmTrajectoryToPose armTrajectory = new ArmTrajectoryToPose(m_arm, new Translation2d(0.5, 0.4));
-                    new Trigger(xboxController::getAButtonIsHeld).onTrue(armTrajectory);
-                    // new Trigger(xboxController::getAButtonIsHeld).whileTrue(
-                    //     new RunCommand(() -> m_arm.moveArm(new ArmJointSpeeds(0.1, 0.07)), m_arm));
-
+                    new Trigger(xboxController::getAButtonIsHeld).onTrue(
+                            new ArmTrajectoryToPose(m_arm, new Translation2d(1.0, 1.0)));
+                    new Trigger(xboxController::getBButtonIsHeld).onTrue(
+                            new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
+                    new Trigger(xboxController::getAButtonIsHeld).onTrue(
+                            new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
                 } else {
                     System.out.println("Using Angle mode for arm movement");
                     m_armCommand = new BasicArm(m_arm,
@@ -233,10 +239,8 @@ public class RobotContainer {
             }
 
             if (Toggles.usePneumatics) {
-                new Trigger(xboxController::getXButtonIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
-                new Trigger(xboxController::getBButtonIsHeld).onTrue(new InstantCommand(m_compression::release));
-//                new Trigger(xboxController::getAButtonIsHeld).onTrue(new InstantCommand(m_compression::stopCompressor));
-//                new Trigger(xboxController::getYButtonIsHeld).onTrue(new InstantCommand(m_compression::startCompressor));
+                new Trigger(xboxController::getRightBumperIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
+                new Trigger(xboxController::getLeftBumperIsHeld).onTrue(new InstantCommand(m_compression::release));
             } else {
                 System.out.println("Pneumatics or controller not operational");
             }
@@ -287,10 +291,40 @@ public class RobotContainer {
             );
         }
 
+        new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(() -> {m_vision.setMode(0);
+            System.out.println("12 ran");}));
+        new Trigger(() -> logitechController.getRawButton(11)).onTrue(new InstantCommand(() -> {m_vision.setMode(1);
+            System.out.println("11 Ran");}));
+
+
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
-            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel);
+            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression);
             buttonBoardConfig.buttonBoardSetup();
+
+            if (Toggles.useArm && Toggles.useXYArmMode) {
+                new Trigger(buttonBoardConfig::stow).onTrue(
+                        new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
+                new Trigger(buttonBoardConfig::pickFloor).onTrue(
+                        new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
+            }
+
+            if (Toggles.useDrive && Toggles.useArm) {
+                new Trigger(buttonBoardConfig::cancel).onTrue(new InstantCommand(() -> {
+                        if (m_drivetrain.getCurrentCommand() != null) {
+                            m_drivetrain.getCurrentCommand().cancel();
+                        }
+                        if (m_drivetrain.getDefaultCommand() != null) {
+                            m_drivetrain.getDefaultCommand().schedule();
+                        }
+                        if (m_arm.getCurrentCommand() != null) {
+                            m_drivetrain.getCurrentCommand().cancel();
+                        }
+                        if (m_arm.getDefaultCommand() != null) {
+                            m_arm.getDefaultCommand().schedule();
+                        }
+                }));
+            }
         }
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
@@ -305,43 +339,12 @@ public class RobotContainer {
                 }
             }));
         }
-//        new Trigger(m_buttonboard1::leftSub).onTrue();
-//        new Trigger(m_buttonboard1::rightSub).onTrue();
-//        new Trigger(m_buttonboard1::floor).onTrue();
-//        new Trigger(m_buttonboard1::store).onTrue();
-//        new Trigger(m_buttonboard1::grid1).onTrue();
-//        new Trigger(m_buttonboard1::grid2).onTrue();
-//        new Trigger(m_buttonboard1::grid3).onTrue();
-//        new Trigger(m_buttonboard1::grid4).onTrue();
-//        new Trigger(m_buttonboard1::grid5).onTrue();
-//        new Trigger(m_buttonboard1::grid6).onTrue();
-//        new Trigger(m_buttonboard1::grid7).onTrue();
-//        new Trigger(m_buttonboard2::grid8).onTrue();
-//        new Trigger(m_buttonboard2::grid9).onTrue();
-//        new Trigger(m_buttonboard2::confirm).onTrue();
-//        new Trigger(m_buttonboard2::cancel).onTrue();
 
-        if (Toggles.useNodeSelector && Toggles.useXboxController && Toggles.usePoseEstimator) {
-            new Trigger(xboxController::getAButtonIsHeld).onTrue(
-                    new AutoScore(m_drivetrain, nodeSelector::getSelectedNode)
-            );
+        if (Toggles.useNodeSelector && Toggles.useButtonBoard && Toggles.usePoseEstimator &&
+                Toggles.useVision && Toggles.useArm && Toggles.useXYArmMode && Toggles.usePneumatics) {
+            new Trigger(buttonBoardConfig::confirm).onTrue(
+                    new AutoScore(m_drivetrain, m_arm, m_compression, nodeSelector::getSelectedNode));
         }
-
-//            SendableChooser<PathPlannerTrajectory> testPathChooser = new SendableChooser<>();
-//            for (var path : Paths.listOfPaths) {
-//                testPathChooser.addOption(path.name, path.path);
-//            }
-//            testPathChooser.setDefaultOption(Paths.listOfPaths.get(0).name, Paths.listOfPaths.get(0).path);
-//
-//            ShuffleboardConstants.getInstance().pathFollowingTab
-//                    .add("Path Command", testPathChooser)
-//                    .withPosition(0, 3).withSize(2, 1);
-//
-//            ShuffleboardConstants.getInstance().pathFollowingTab
-//                    .add("Run Selected Command",
-//                            new FolllowPathFromPose(m_drivetrain, testPathChooser.getSelected()))
-//                    .withPosition(0, 2).withSize(2, 1)
-//                    .withWidget(BuiltInWidgets.kCommand);
 
     }
 
@@ -355,4 +358,3 @@ public class RobotContainer {
         return new PrintCommand("Autonomous! -----");
     }
 }
-

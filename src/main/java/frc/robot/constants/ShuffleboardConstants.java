@@ -7,14 +7,15 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import java.util.Map;
 
 public final class ShuffleboardConstants {
-    public final ShuffleboardTab robotStateTab, drivetrainTab, navXTab,
-            pathFollowingTab, driverTab;
-    public final Field2d poseEstimationFieldSim;
+    public ShuffleboardTab robotStateTab, drivetrainTab, navXTab,
+            pathFollowingTab, driverTab, armTab;
+    public Field2d poseEstimationFieldSim;
 
     // Shuffleboard stuff for path following
-    public final ShuffleboardLayout robotStateList, pathFollowingList, gridLayout;
-    public final GenericEntry dTranslationEntry, dRotationEntry;
-    public final Field2d pathFollowingFieldSim;
+    public ShuffleboardLayout robotStateList, pathFollowingList, gridLayout,
+    armStatusLayout, armPathFollowingList;
+    public GenericEntry dTranslationEntry, dRotationEntry, dTranslationEntryArm;
+    public Field2d pathFollowingFieldSim;
 
     private static ShuffleboardConstants instance;
 
@@ -29,6 +30,7 @@ public final class ShuffleboardConstants {
         drivetrainTab = Shuffleboard.getTab("Drivetrain");
         navXTab = Shuffleboard.getTab("Gyro");
         pathFollowingTab = Shuffleboard.getTab("Path Following");
+        armTab = Shuffleboard.getTab("Arm");
         driverTab = Shuffleboard.getTab("Driver");
 
         pathFollowingList = pathFollowingTab
@@ -61,11 +63,26 @@ public final class ShuffleboardConstants {
                 .withPosition(0, 0)
                 .withSize(2, 4);
 
-        gridLayout = driverTab.getLayout("Node Selector", BuiltInLayouts.kGrid)
+        gridLayout = driverTab
+                .getLayout("Node Selector", BuiltInLayouts.kGrid)
                 .withProperties(Map.of(
                         "Label position", "HIDDEN",
                         "Number of columns", 9,
                         "Number of rows", 3))
                 .withPosition(0, 0).withSize(4, 2);
+
+        armStatusLayout = armTab
+                .getLayout("Arm Status", BuiltInLayouts.kGrid)
+                .withProperties(Map.of(
+                        "Number of columns", 2,
+                        "Number of rows", 4))
+                .withPosition(0, 0).withSize(2, 5);
+
+        armPathFollowingList = armTab
+                .getLayout("Arm Path Following", BuiltInLayouts.kList)
+                .withPosition(4, 0).withSize(2, 5);
+
+        dTranslationEntryArm = armPathFollowingList
+                .add("dTranslation", 0.0).getEntry();
     }
 }

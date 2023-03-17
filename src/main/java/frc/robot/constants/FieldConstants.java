@@ -2,6 +2,7 @@ package frc.robot.constants;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -66,6 +67,14 @@ public final class FieldConstants {
                 this.leftRegion = leftRegion;
                 this.rightRegion = rightRegion;
             }
+
+            public Translation2d getLeftTranslation(Translation2d current) {
+                return leftRegion.getClosest(current);
+            }
+
+            public Translation2d getRightTranslation(Translation2d current) {
+                return rightRegion.getClosest(current);
+            }
         }
     }
 
@@ -97,7 +106,8 @@ public final class FieldConstants {
         public static void initGridNodes() {
             double scoringX = Units.inchesToMeters(54.05) + halfRobotLengthWithBumper;
             for (int wpiY = 0; wpiY < 9; wpiY++) {
-                ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)? ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
+                ScoringNode.NodeType type = (wpiY == 1 || wpiY == 4 || wpiY == 7)?
+                        ScoringNode.NodeType.CUBE : ScoringNode.NodeType.CONE;
                 double yTranslation = distToFirstNodeY + (wpiY * distBetweenNodes);
 
                 // calculating regions for blue nodes
@@ -113,7 +123,9 @@ public final class FieldConstants {
                     type = (wpiX == 2)? ScoringNode.NodeType.HYBRID : type;
                     var height = nodeHeights[wpiX];
                     double xTranslation = nodeXs[wpiX];
-                    double zTranslation = height.getHeight();
+                    // decrease height by thirteen inches if its a cube
+                    double zTranslation = type == ScoringNode.NodeType.CUBE?
+                        height.getHeight() - Units.inchesToMeters(13.50) : height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
@@ -124,7 +136,7 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-                    System.out.println(node);
+//                    System.out.println(node);
                 }
             }
         }
@@ -221,7 +233,7 @@ public final class FieldConstants {
                 NodeHeight(double height) {
                     this.height = height;
                 }
-                public double getHeight() {
+                double getHeight() {
                     return height;
                 }
             }
@@ -279,6 +291,12 @@ public final class FieldConstants {
             public RectangleRegion getMirrored() {
                 return new RectangleRegion(maxY, mirrorXPosition(maxX),
                         minY, mirrorXPosition(minX));
+            }
+
+            public Translation2d getClosest(Translation2d translation) {
+                double x = MathUtil.clamp(translation.getX(), minX, maxX);
+                double y = MathUtil.clamp(translation.getY(), minY, maxY);
+                return new Translation2d(x, y);
             }
 
             @Override

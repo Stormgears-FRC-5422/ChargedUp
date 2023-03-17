@@ -12,8 +12,8 @@ public class ArmGeometry {
     Rotation2d noRotation = new Rotation2d(0.0);
 
     public ArmGeometry() {
-        l = kA1Length;
-        m = kA2Length;
+        l = ArmConstants.kA1Length;
+        m = ArmConstants.kA2Length;
 
         m_endPose = new Pose2d(0,0,noRotation);
     }

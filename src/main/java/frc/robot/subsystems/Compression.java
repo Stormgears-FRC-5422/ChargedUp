@@ -19,11 +19,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static frc.robot.constants.Constants.*;
 
 public class Compression extends StormSubsystemBase {
-    private boolean running;
-    private boolean onOffSolenoidSet;
     private Compressor mainCompressor;
     private Solenoid onOffSolenoid;
-
+    private boolean running;
+    private boolean solenoidSet;
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
         mainCompressor.disable();
@@ -31,38 +30,53 @@ public class Compression extends StormSubsystemBase {
         onOffSolenoid = new Solenoid(kCompressorModuleId, PneumaticsModuleType.CTREPCM, onOffSolenoidChannel);
         onOffSolenoid.set(false);
 
+        running = true;
 
-        running = false;
-        onOffSolenoidSet = false;
         printStatus();
     }
-
     public void startCompressor() {
         running = true;
         mainCompressor.enableDigital();
         printStatus();
     }
-
     public void stopCompressor(){
         running = false;
         mainCompressor.disable();
         printStatus();
     }
 
-    public void grabCubeOrCone(){
-        onOffSolenoid.set(true);
+    public void toggleCompressor() {
+        if (running) {
+            stopCompressor();
+        } else {
+            startCompressor();
+        }
     }
-
-    public void release(){
+    public void grabCubeOrCone(){
+        solenoidSet = false;
         onOffSolenoid.set(false);
     }
+    public void release(){
+        solenoidSet = true;
+        onOffSolenoid.set(true);
 
+    }
     private void printStatus() {
         System.out.println("\n\nShould be running: " + running);
-        System.out.println("Solenoid should be enabled(): " + onOffSolenoidSet);
+        System.out.println("Solenoid should be enabled(): " + solenoidSet);
         System.out.println("Compressor isEnabled: " + mainCompressor.isEnabled());
         System.out.println("Compressor getPressureSwitchValve: " + mainCompressor.getPressureSwitchValue());
         System.out.println("Solenoid isEnabled(): " + !onOffSolenoid.isDisabled());
+    }
+
+    @Override
+    public void enabledInit() {
+        startCompressor();
+    }
+
+    @Override
+    public void disabledInit() {
+        stopCompressor();
     }
 
     @Override

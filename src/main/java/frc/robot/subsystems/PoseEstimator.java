@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import frc.robot.Robot;
 import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
@@ -102,7 +103,8 @@ public class PoseEstimator extends StormSubsystemBase {
                     Pose2d camPose = AprilTagPoseEstimationStrategy.fromAprilTagData(info, cameraAngle);
                     // have to transform to robot pose
                     visionPose = camPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
-                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.15)
+                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
+                        RobotState.getInstance().getCurrentDegPerSecVel() <= 15)
                         resetEstimator(visionPose);
 //                    System.out.println(visionPose);
                     m_poseEstimator.addVisionMeasurement(visionPose, time);

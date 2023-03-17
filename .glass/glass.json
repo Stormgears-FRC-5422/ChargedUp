@@ -1,0 +1,40 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "Shuffleboard": {
+        "Pose Estimation": {
+          "Poses": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Path Following/Goal v. Current Pose": "Field2d",
+      "/Shuffleboard/Path Following/Path Command": "String Chooser",
+      "/Shuffleboard/Path Following/Run Selected Command": "Command",
+      "/Shuffleboard/Pose Estimation/Poses": "Field2d",
+      "/Shuffleboard/Robot State/Field": "Field2d",
+      "/SmartDashboard/Auto Paths": "String Chooser",
+      "/SmartDashboard/Field": "Field2d"
+    },
+    "windows": {
+      "/Shuffleboard/Path Following/Goal v. Current Pose": {
+        "Goal Pose": {
+          "arrowSize": 15,
+          "style": "Box/Image"
+        },
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "5422"
+  }
+}
