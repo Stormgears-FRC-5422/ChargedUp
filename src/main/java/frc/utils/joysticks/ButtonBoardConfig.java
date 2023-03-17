@@ -102,10 +102,6 @@ public class ButtonBoardConfig {
       new Trigger(() -> m_buttonboard2.getRawButton(temp + offset))
               .onTrue(new InstantCommand(() -> nodeSelector.setSelectedCol(temp)));
     }
-
-
-    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() -> Commands.print("Cancel Enabled")));
-
   }
   public boolean confirm() {
     return m_buttonboard1.confirm();
@@ -121,5 +117,13 @@ public class ButtonBoardConfig {
 
   public boolean pickFloor() {
     return m_buttonboard1.floor();
+  }
+
+  public boolean pickLeftSub() {
+    return m_buttonboard1.leftSub();
+  }
+
+  public boolean pickRightSub() {
+    return m_buttonboard1.rightSub();
   }
 }

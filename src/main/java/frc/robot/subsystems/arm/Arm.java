@@ -6,6 +6,8 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.SparkMaxLimitSwitch;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import frc.robot.constants.ShuffleboardConstants;
@@ -277,5 +279,12 @@ public class Arm extends StormSubsystemBase {
 
     public Pose2d getGripperPose() {
         return gripperPose;
+    }
+
+    public Translation3d getGlobalTranslation() {
+        return new Translation3d(
+                gripperPose.getX() + ArmConstants.armTranslation.getX(), 0,
+                gripperPose.getY() + ArmConstants.armTranslation.getY()
+        );
     }
 }

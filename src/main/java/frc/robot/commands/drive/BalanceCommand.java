@@ -16,7 +16,6 @@ public class BalanceCommand extends CommandBase {
 
   private final PIDController controller = new PIDController(0.02, 0.0, 0.00);
 
-
   private ChassisSpeeds m_speed = new ChassisSpeeds(
           0.0,
           0.,

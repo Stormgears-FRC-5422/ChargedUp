@@ -92,7 +92,7 @@ public class DriveToNode extends PathFollowingCommand {
                     scoreRotation).withPrevControlLength(Units.inchesToMeters(10));
 
             path = PathPlanner.generatePath(
-                    new PathConstraints(1.5, 2),
+                    new PathConstraints(1.0, 2),
                     List.of(startPoint, alignToGrids, alignToNode, scoringPose));
         }
         addPath(path);

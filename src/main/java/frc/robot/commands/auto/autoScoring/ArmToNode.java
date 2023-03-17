@@ -5,6 +5,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.commands.arm.pathFollowing.ArmPathFollowingCommand;
 import frc.robot.subsystems.arm.Arm;
@@ -18,8 +19,9 @@ public class ArmToNode extends ArmPathFollowingCommand {
 
     // TODO: find x and y positions for each node {high, mid, hybrid}
     private static final double[] goalXPositions = {1.38, 0.984, 0.5};
-    private static final double[] coneYPositions = {1.25, 0.95, 0.22};
-    private static final double[] cubeYPositions = {0.96, 0.67, 0.22};
+
+    private static final double CONE_OFFSET = Units.inchesToMeters(7.0);
+    private static final double CUBE_OFFSET = Units.inchesToMeters(5.5);
 
     private final Arm arm;
     private final Supplier<ScoringNode> nodeSupplier;
@@ -35,9 +37,12 @@ public class ArmToNode extends ArmPathFollowingCommand {
         ScoringNode node = nodeSupplier.get();
         System.out.println("Moving arm to score on " + node.height + " of type " + node.type);
         final boolean isCube = node.type == ScoringNode.NodeType.CUBE;
-        double goalY = isCube?
-                cubeYPositions[node.row] : coneYPositions[node.row];
+//        double goalY = isCube?
+//                cubeYPositions[node.row] : coneYPositions[node.row];
+//        double goalX = goalXPositions[node.row];
         double goalX = goalXPositions[node.row];
+        Translation3d nodeTranslation = node.translation;
+        double goalY = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
 
         Translation2d current = arm.getGripperPose().getTranslation();
         final boolean isRight = current.getX() >= goalX;
@@ -52,7 +57,7 @@ public class ArmToNode extends ArmPathFollowingCommand {
                 .withNextControlLength(startControlLength);
 
 //        Rotation2d endHeading = new Rotation2d(calcHeading(intermediate, goal));
-        final double endControlLength = isCube? Units.inchesToMeters(7.0) : Units.inchesToMeters(12.0);
+        final double endControlLength = isCube? CUBE_OFFSET : CONE_OFFSET;
         PathPoint end = new PathPoint(goal, new Rotation2d(Math.PI), new Rotation2d())
                 .withPrevControlLength(endControlLength);
 
