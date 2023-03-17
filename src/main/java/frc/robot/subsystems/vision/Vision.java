@@ -1,6 +1,9 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotState;
 import frc.utils.data.StormStruct;
@@ -13,6 +16,14 @@ public class Vision extends StormSubsystemBase {
     private int logCounter = 0;
     private final StormStruct m_struct;
     private final Vector<AprilTagData> currentAprilTags = new Vector<>();
+
+
+
+    private NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
+    private NetworkTable table = inst.getTable("vision-data");
+
+    private IntegerPublisher xPub = table.getIntegerTopic("vision_mode").publish();
 
     public Vision() {
         var ntInst = NetworkTableInstance.getDefault();
@@ -70,5 +81,10 @@ public class Vision extends StormSubsystemBase {
                     ", offCenterDegrees=" + offCenterDegrees +
                     '}';
         }
+    }
+    public void setMode(int x){
+        System.out.println("Before");
+        xPub.set(x);
+        System.out.println("After");
     }
 }

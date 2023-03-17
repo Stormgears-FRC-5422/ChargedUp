@@ -98,6 +98,7 @@ public class RobotContainer {
         m_robotState = RobotState.getInstance();
 
 
+
         if (Toggles.useNavX) {
             m_navX = new NavX();
         } else {
@@ -151,6 +152,9 @@ public class RobotContainer {
           m_stormNet = StormNet.getInstance();
         } else
             System.out.println("NOT using stormnet");
+        if (Toggles.useStormNet && Toggles.useStatusLights){
+            m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
+        }
 
         if (Toggles.useDrive && DriveConstants.driveType.equals("SwerveDrive")) {
             m_poseEstimator = new PoseEstimator(m_drivetrain.getSwerveDriveKinematics());
@@ -282,6 +286,7 @@ public class RobotContainer {
 
             m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 
+
             // zero angle command when we are red make sure robot pointing forwards is 180
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             new Trigger(() -> logitechController.getRawButton(5)).onTrue(
@@ -292,6 +297,12 @@ public class RobotContainer {
                     })
             );
         }
+
+        new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(() -> {m_vision.setMode(0);
+            System.out.println("12 ran");}));
+        new Trigger(() -> logitechController.getRawButton(11)).onTrue(new InstantCommand(() -> {m_vision.setMode(1);
+            System.out.println("11 Ran");}));
+
 
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
@@ -326,7 +337,6 @@ public class RobotContainer {
         }
 
     }
-
     public Command getAutonomousCommand() {
         if (Toggles.usePoseEstimator) {
             AutoCommand selected = autoCommandChooser.getSelected();
@@ -336,4 +346,7 @@ public class RobotContainer {
         }
         return new PrintCommand("Autonomous! -----");
     }
+
+
+
 }

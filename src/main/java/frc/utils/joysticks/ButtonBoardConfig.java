@@ -1,23 +1,16 @@
 package frc.utils.joysticks;
 
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.auto.autoScoring.NodeSelector;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
-import frc.robot.commands.autoScoring.PlaceGamePiece;
-import frc.robot.commands.autoScoring.PlaceGamePiece.Level;
-import frc.robot.commands.autoScoring.PlaceGamePiece.gamePiece;
 
 public class ButtonBoardConfig {
 
   ButtonBoard m_buttonboard1;
   ButtonBoard m_buttonboard2;
-  public Level m_Level;
-  public gamePiece m_gamePiece;
-
   NeoPixel neoPixel;
   public int grid;
 
@@ -79,22 +72,6 @@ public class ButtonBoardConfig {
                     new InstantCommand(() -> neoPixel.setColor(3, NeoPixel.YELLOW_COLOR))));
 
 
-
-//
-//    new Trigger(m_buttonboard1::leftSub)
-//        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
-//        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
-//        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
-//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
-//
-//    new Trigger(m_buttonboard1::rightSub)
-//        .onTrue(new InstantCommand(() -> System.out.println("Left Sub Selected")))
-//        .and(new Trigger(m_buttonboard1::cubeCone).onTrue(
-//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.PURPLE_COLOR))))
-//        .or( new Trigger(m_buttonboard1::cubeCone).onFalse(
-//             new InstantCommand(() -> neoPixel.setAllColor( NeoPixel.YELLOW_COLOR))));
-
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
 
     new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
@@ -107,9 +84,6 @@ public class ButtonBoardConfig {
     new Trigger(() -> m_buttonboard1.getRawButton(6) && !m_buttonboard1.getRawButton(5))
             .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
 
-    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
-    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
-
     new Trigger(m_buttonboard1::gripper).onTrue(new InstantCommand(compression::grabCubeOrCone));
     new Trigger(m_buttonboard1::gripper).onFalse(new InstantCommand(compression::release));
 
@@ -121,11 +95,10 @@ public class ButtonBoardConfig {
     }
 
 
-    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() -> { grid = 0;}));
+    new Trigger(m_buttonboard1::cancel).onTrue(new InstantCommand(() -> Commands.print("Cancel Enabled")));
 
   }
-
   public boolean confirm() {
-    return m_buttonboard1.getRawButton(3);
+    return m_buttonboard1.confirm();
   }
 }
