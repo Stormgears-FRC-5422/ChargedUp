@@ -16,7 +16,9 @@ import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoManeuvers.AutoScore;
+import frc.robot.commands.auto.autoManeuvers.DriveToDoubleSubstation;
 import frc.robot.commands.auto.autoManeuvers.NodeSelector;
+import frc.robot.commands.auto.autoManeuvers.PickFromSubstation;
 import frc.robot.commands.drive.BalanceCommand;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -328,6 +330,21 @@ public class RobotContainer {
                         }
                 }));
             }
+
+            if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
+                new Trigger(buttonBoardConfig::pickLeftSub).onTrue(
+                        new PickFromSubstation(m_drivetrain, m_arm, m_compression,
+                                () -> DriveToDoubleSubstation.POSITION.LEFT));
+                new Trigger(buttonBoardConfig::pickRightSub).onTrue(
+                        new PickFromSubstation(m_drivetrain, m_arm, m_compression,
+                                () -> DriveToDoubleSubstation.POSITION.RIGHT));
+            }
+
+            if (Toggles.useNodeSelector && Toggles.usePoseEstimator &&
+                    Toggles.useVision && Toggles.useArm && Toggles.useXYArmMode && Toggles.usePneumatics) {
+                new Trigger(buttonBoardConfig::confirm).onTrue(
+                        new AutoScore(m_drivetrain, m_arm, m_compression, nodeSelector::getSelectedNode));
+            }
         }
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
@@ -343,11 +360,6 @@ public class RobotContainer {
             }));
         }
 
-        if (Toggles.useNodeSelector && Toggles.useButtonBoard && Toggles.usePoseEstimator &&
-                Toggles.useVision && Toggles.useArm && Toggles.useXYArmMode && Toggles.usePneumatics) {
-            new Trigger(buttonBoardConfig::confirm).onTrue(
-                    new AutoScore(m_drivetrain, m_arm, m_compression, nodeSelector::getSelectedNode));
-        }
 
     }
 

@@ -20,7 +20,7 @@ public class PickFromSubstation extends SequentialCommandGroup {
                 new ParallelCommandGroup(
                     new DriveToDoubleSubstation(drivetrain, sideSupplier.get()),
                     new InstantCommand(compression::release),
-                    new WaitCommand(0.5).andThen(
+                    new WaitCommand(0.1).andThen(
                             new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 2, 2))
                 )
         );
