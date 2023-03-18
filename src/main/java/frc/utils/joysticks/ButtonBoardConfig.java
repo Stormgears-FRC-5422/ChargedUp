@@ -10,6 +10,8 @@ import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 
+import static frc.robot.constants.Constants.kXYArmManualSpeed;
+
 public class ButtonBoardConfig {
 
   ButtonBoard m_buttonboard1;
@@ -118,14 +120,15 @@ public class ButtonBoardConfig {
     double y = m_buttonboard2.getY();
     double dy = 0;
     // There is a slight voltage bias that causes the joystick to report != 0 at rest
+    // any actual motion sets it to -1.0 or 1.0 so we just need some reasonable number in the middle here
     if (Math.abs(y) > 0.5 ) {
       if (y < 0)
-        dy = 0.5;
+        dy = kXYArmManualSpeed;
       else
-        dy = -0.5;
+        dy = -kXYArmManualSpeed;
     }
 
-    if (dy != 0) System.out.println("armUpDown: dy = " + dy);
+//    if (dy != 0) System.out.println("armUpDown: dy = " + dy);
     return dy;
   }
 
@@ -133,14 +136,15 @@ public class ButtonBoardConfig {
     double x = m_buttonboard1.getX();
     double dx = 0;
     // There is a slight voltage bias that causes the joystick to report != 0 at rest
+    // any actual motion sets it to -1.0 or 1.0 so we just need some reasonable number in the middle here
     if (Math.abs(x) > 0.5 ) {
       if (x < 0)
-        dx = 0.5;
+        dx = kXYArmManualSpeed;
       else
-        dx = -0.5;
+        dx = -kXYArmManualSpeed;
     }
 
-    if (dx != 0) System.out.println("armInOut: dx = " + dx);
+//    if (dx != 0) System.out.println("armInOut: dx = " + dx);
     return dx;
   }
 }
