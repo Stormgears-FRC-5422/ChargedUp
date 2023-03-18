@@ -5,6 +5,7 @@ import frc.utils.configfile.StormProp;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 // This same pattern could someday be used to implement an I2C listener or something else entirely
@@ -61,12 +62,16 @@ public class UDPListener extends StormNetVoice implements Runnable{
 
         System.out.println("Starting listener thread...");
         byte[] localBuffer = new byte[m_receiveBuffer.length];
+        int udpListenerPort = StormProp.getInt("udpListenerPort", -1);
 
         try {
             // Listening only - lets use a different port
-            socket = new DatagramSocket(StormProp.getInt("udpListenerPort",-1));
-            DatagramPacket packet = new DatagramPacket(localBuffer, localBuffer.length);
+//            socket = new DatagramSocket(StormProp.getInt("udpListenerPort",-1));
+            socket = new DatagramSocket(null); // Create an unbound socket
+            socket.setReuseAddress(true); // Enable address reuse
+            socket.bind(new InetSocketAddress(udpListenerPort)); // Bind the socket to the specified port
 
+            DatagramPacket packet = new DatagramPacket(localBuffer, localBuffer.length);
             while (!m_stopNow) {
                 socket.receive(packet);
                 //for debugging
