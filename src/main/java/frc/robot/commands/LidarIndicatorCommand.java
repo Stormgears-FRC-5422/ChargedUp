@@ -29,10 +29,8 @@ public class LidarIndicatorCommand extends CommandBase {
   @Override
   public void execute() {
     double distance = m_stormNet.getLidarDistance();
-//    SmartDashboard.putNumber("distance", distance);
-//    System.out.println(distance);
-    if (distance >= 0.13 && distance <= 0.257
-    ) {
+    System.out.println(m_stormNet.getLidarDistance());
+    if (distance >= 0.13 && distance <= 0.257) {
       neoPixel.setSpecificSegmentColor(segments, NeoPixel.GREEN_COLOR);
     }
     if (distance < 0.13) {

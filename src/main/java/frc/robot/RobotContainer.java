@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoCommand;
 import frc.robot.commands.auto.AutoRoutines;
@@ -71,6 +72,8 @@ public class RobotContainer {
     BalanceCommand m_balancecommand;
     GyroCommand m_gyrocommand;
     LidarIndicatorCommand m_lidarIndicatorCommand;
+
+    AprilTagStatusCommand m_aprilTagStatusCommand;
     ArmCommand m_armCommand;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
@@ -137,6 +140,7 @@ public class RobotContainer {
 
         if (Toggles.useVision) {
             m_vision = new Vision();
+            m_aprilTagStatusCommand = new AprilTagStatusCommand(m_neoPixel,m_vision);
         } else {
             System.out.println("NOT using vision");
         }

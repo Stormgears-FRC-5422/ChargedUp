@@ -1,7 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -21,6 +19,8 @@ public class Vision extends StormSubsystemBase {
     private NetworkTable table = inst.getTable("vision-data");
     private IntegerPublisher xPub = table.getIntegerTopic("vision_mode").publish();
 
+    private boolean vision_ready = false;
+
     public Vision() {
         var ntInst = NetworkTableInstance.getDefault();
         m_struct = new StormStruct(ntInst, "vision-data", "tag_data");
@@ -33,7 +33,11 @@ public class Vision extends StormSubsystemBase {
         // a bunch of stuff for each april tag currently in view
         var infoList = m_struct.get_data("april_tag");
         // exit if there is none
-        if (infoList.size() < 1) return;
+        if (infoList.size() < 1) {
+            vision_ready = false;
+            return;
+        };
+        vision_ready = true;
         // clear the april tag vector
         currentAprilTags.clear();
         for (var info : infoList) {
@@ -83,4 +87,9 @@ public class Vision extends StormSubsystemBase {
         xPub.set(x);
         System.out.println("After");
     }
+
+    public boolean getAprilTagStatus() {
+        return vision_ready;
+    }
+
 }

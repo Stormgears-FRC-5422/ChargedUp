@@ -35,7 +35,10 @@ public class ButtonBoardConfig {
 
   public void buttonBoardSetup(){
     int[] segments1 = {1, 2};
-    int[] allSegments = {1,2,3,4};
+    int[] allRingSegments = {1,2,3,4};
+    int[] segmentsoff = {3, 4};
+    int[] segmentsoff2 = {1, 2, 4};
+    int[] segmentsoff3 = {1, 2, 3};
 
     System.out.println("buttonBoardSetup starting");
 
@@ -64,20 +67,35 @@ public class ButtonBoardConfig {
 //    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
 //            .onTrue(new InstantCommand(() -> neoPixel.setColor(4, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(() -> m_buttonboard1.getRawButton(12) && !m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(() -> m_buttonboard1.getRawButton(11) && m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(() -> m_buttonboard1.getRawButton(11) && !m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
+//    CODE BELOW CAN BE USED WHEN WE FLOOR,LEFT, and RIGHT SUBS WORKS
 
-    new Trigger(() -> m_buttonboard1.getRawButton(10) && m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
+//    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
+//              neoPixel.setSpecificSegmentColor(segmentsoff, NeoPixel.NO_COLOR);}));
+//    new Trigger(() -> m_buttonboard1.getRawButton(12) && !m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
+//              neoPixel.setSpecificSegmentColor(segmentsoff, NeoPixel.NO_COLOR);}));
+//
+//    new Trigger(() -> m_buttonboard1.getRawButton(11) && m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
+//              neoPixel.setSpecificSegmentColor(segmentsoff2, NeoPixel.NO_COLOR);}));
+//    new Trigger(() -> m_buttonboard1.getRawButton(11) && !m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
+//              neoPixel.setSpecificSegmentColor(segmentsoff2, NeoPixel.NO_COLOR);}));
+//
+//    new Trigger(() -> m_buttonboard1.getRawButton(10) && m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
+//              neoPixel.setSpecificSegmentColor(segmentsoff3, NeoPixel.NO_COLOR);}));
+//    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
+//              neoPixel.setSpecificSegmentColor(segmentsoff3, NeoPixel.NO_COLOR);}));
+
+    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() ->
+    neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR)));
+    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() ->
+            neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR)));
+
 
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
 
