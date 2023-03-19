@@ -109,7 +109,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     }
 
     private void _drive() {
-        if (percisionModeSupplier.getAsBoolean())
+        if (!percisionModeSupplier.getAsBoolean())
             m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
         else
             m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
@@ -129,7 +129,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     }
 
     public void setSetPoint(double angle) {
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Red) {
+        if (RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red) {
             angle += (angle < 180.0) ? 180.0 : -180.0;
         }
         switch ((int) angle) {

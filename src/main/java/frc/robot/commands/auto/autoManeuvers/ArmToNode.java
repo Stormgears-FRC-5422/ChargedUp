@@ -51,14 +51,14 @@ public class ArmToNode extends ArmPathFollowingCommand {
         Translation2d goal = new Translation2d(goalX, goalY);
 
         // control radius of arc using divisor
-        final double startControlLength = current.getDistance(intermediate) / 0.5;
+        final double startControlLength = current.getDistance(intermediate) * 1.2;
         Rotation2d startHeading = new Rotation2d(calcHeading(current, intermediate));
         PathPoint start = new PathPoint(current, startHeading, new Rotation2d())
                 .withNextControlLength(startControlLength);
 
 //        Rotation2d endHeading = new Rotation2d(calcHeading(intermediate, goal));
-        final double endControlLength = isCube? CUBE_OFFSET : CONE_OFFSET;
-        PathPoint end = new PathPoint(goal, new Rotation2d(Math.PI), new Rotation2d())
+        final double endControlLength = (isCube? CUBE_OFFSET : CONE_OFFSET) * 3.0;
+        PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2), new Rotation2d())
                 .withPrevControlLength(endControlLength);
 
         var path = PathPlanner.generatePath(

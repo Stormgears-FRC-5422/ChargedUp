@@ -102,8 +102,8 @@ public class ArmPathFollowingCommand extends CommandBase {
     @Override
     public boolean isFinished() {
 //        System.out.println(controller.atReference());
-        return (currentTime >= path.getTotalTimeSeconds()) &&
-                controller.atReference();
+        return (currentTime >= path.getTotalTimeSeconds() && controller.atReference()) ||
+                currentTime >= path.getTotalTimeSeconds() + 1.0;
     }
 
     @Override

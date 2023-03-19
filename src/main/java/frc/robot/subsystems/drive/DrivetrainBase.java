@@ -48,8 +48,10 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
                     RobotState.getInstance().getCurrentPose().getRotation() :
                     RobotState.getInstance().getCurrentGyroData();
             // if we are on the red team make sure field relative is the other way
-            if (DriverStation.getAlliance() == DriverStation.Alliance.Red)
-                rotation.rotateBy(new Rotation2d(Math.PI));
+            if (RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red) {
+                rotation = rotation.plus(new Rotation2d(Math.PI));
+//                System.out.println(rotation);
+            }
             m_chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(s, rotation);
         } else {
             m_chassisSpeeds = s;

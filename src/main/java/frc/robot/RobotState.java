@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import frc.robot.constants.Constants;
@@ -30,6 +31,7 @@ public class RobotState extends StormSubsystemBase {
     private TreeMap<Double, Pose2d> poseMap = new TreeMap<>();
 
     private Pose2d startPose;
+    private DriverStation.Alliance currentAlliance = DriverStation.Alliance.Blue;
 
     private GenericEntry xEntry, yEntry, rotEntry;
 
@@ -68,6 +70,15 @@ public class RobotState extends StormSubsystemBase {
         rotEntry = poseGridLayout
                 .add("Rot", getStartPose().getRotation().getDegrees())
                 .withPosition(2, 0).getEntry();
+    }
+
+    public void setCurrentAlliance(DriverStation.Alliance alliance) {
+        currentAlliance = alliance;
+    }
+
+    public DriverStation.Alliance getCurrentAlliance() {
+//        System.out.println(currentAlliance);
+        return currentAlliance;
     }
 
     public double getTimeSeconds() {

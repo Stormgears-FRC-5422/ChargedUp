@@ -13,6 +13,7 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
+
 /**
  * Command that follows a path. path must be assigned before execute either with
  * withPath() method or in constructor. Use this whenever following any paths for logging.
@@ -21,9 +22,11 @@ public class PathFollowingCommand extends CommandBase {
 
     private final DrivetrainBase m_drivetrain;
     private PathPlannerTrajectory m_path;
+    private PathPlannerTrajectory transformedPath;
     private boolean transformForAlliance = false;
 
     private double startTime, currentTime, totalTime;
+    private boolean hasPassedTotalTime = false;
 
     private final Field2d fieldSim;
     private final FieldObject2d goalRobotPoseSim;
@@ -73,17 +76,22 @@ public class PathFollowingCommand extends CommandBase {
                     new Pose2d(1, 0, new Rotation2d()),
                     1.0, 1.0);
         }
-        m_path = transformForAlliance?
-                PathPlannerTrajectory.transformTrajectoryForAlliance(m_path, DriverStation.getAlliance()) :
-                m_path;
+        transformedPath = m_path;
+        if (transformForAlliance) {
+            transformedPath = PathPlannerTrajectory
+                    .transformTrajectoryForAlliance(m_path, RobotState.getInstance().getCurrentAlliance());
+            System.out.println("Transforming!");
+            System.out.println(transformedPath);
+        }
+        System.out.println(m_path.getInitialHolonomicPose());
 
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         Pose2d endPose = new Pose2d(
-                m_path.getEndState().poseMeters.getTranslation(),
-                m_path.getEndState().holonomicRotation
+                transformedPath.getEndState().poseMeters.getTranslation(),
+                transformedPath.getEndState().holonomicRotation
         );
         startTime = RobotState.getInstance().getTimeSeconds();
-        totalTime = m_path.getTotalTimeSeconds();
+        totalTime = transformedPath.getTotalTimeSeconds();
         System.out.println("Following path starting at: " + startTime);
         System.out.println("Pose at start: " + currentPose + " to: " + endPose);
 
@@ -93,7 +101,7 @@ public class PathFollowingCommand extends CommandBase {
     @Override
     public void execute() {
         currentTime = RobotState.getInstance().getTimeSeconds() - startTime;
-        var goalState = (PathPlannerTrajectory.PathPlannerState) m_path.sample(currentTime);
+        var goalState = (PathPlannerTrajectory.PathPlannerState) transformedPath.sample(currentTime);
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         //Path Planner states are different to trajectory states
         Pose2d goalPose = new Pose2d(
@@ -111,8 +119,7 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        if (currentTime >= totalTime) System.out.println("PathFollowingCommand Finished!");
-        return currentTime >= totalTime && m_drivetrain.atReferenceState();
+        return (currentTime >= totalTime && m_drivetrain.atReferenceState());
     }
 
     @Override

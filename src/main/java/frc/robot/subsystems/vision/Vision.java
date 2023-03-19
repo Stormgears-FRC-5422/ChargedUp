@@ -17,12 +17,8 @@ public class Vision extends StormSubsystemBase {
     private final StormStruct m_struct;
     private final Vector<AprilTagData> currentAprilTags = new Vector<>();
 
-
-
     private NetworkTableInstance inst = NetworkTableInstance.getDefault();
-
     private NetworkTable table = inst.getTable("vision-data");
-
     private IntegerPublisher xPub = table.getIntegerTopic("vision_mode").publish();
 
     public Vision() {

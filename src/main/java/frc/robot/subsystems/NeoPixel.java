@@ -5,11 +5,12 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.lights.LEDLightStrip;
 import frc.utils.lights.LightType;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
 
-public class NeoPixel extends SubsystemBase {
+public class NeoPixel extends StormSubsystemBase {
 
   public static final Color8Bit PURPLE_COLOR = new Color8Bit(211, 0, 211);//purple
   public static final Color8Bit BLACK_COLOR = new Color8Bit(0, 0, 0);
@@ -17,6 +18,7 @@ public class NeoPixel extends SubsystemBase {
   public static final Color8Bit RED_COLOR = new Color8Bit(200, 0, 0);//yellow
   public static final Color8Bit GREEN_COLOR = new Color8Bit(0, 200, 0);//yellow
 
+//  private final Addre
 
   LEDLightStrip ledLightStrip;
 
@@ -51,5 +53,10 @@ public class NeoPixel extends SubsystemBase {
     }
   }
 
-
+  @Override
+  public void stormPeriodic() {
+    if(ledColorRequested){
+      ledLightStrip.setLEDData();
+    }
+  }
 }

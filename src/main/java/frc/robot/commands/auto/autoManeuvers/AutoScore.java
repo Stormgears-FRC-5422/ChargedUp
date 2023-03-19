@@ -16,15 +16,12 @@ public class AutoScore extends SequentialCommandGroup {
     public AutoScore(DrivetrainBase drivetrain, Arm arm, Compression compression, Supplier<ScoringNode> nodeSupplier) {
         addCommands(
                 new ParallelCommandGroup(
-                        new DriveToNode(drivetrain, nodeSupplier),
-                        new WaitUntilCommand(() ->
-                                nodeSupplier.get().
-                                        gridRegion.contains(RobotState.getInstance().getCurrentPose()))
-                                .andThen(new ArmToNode(arm, nodeSupplier))
-                ),
-                new WaitCommand(0.5),
-                new InstantCommand(compression::release),
-                new ArmToTranslation(arm, Constants.ArmConstants.stowPosition, 2, 2)
+                        new DriveToNode(drivetrain, nodeSupplier)
+//                        new WaitUntilCommand(() ->
+//                                nodeSupplier.get().
+//                                        gridRegion.contains(RobotState.getInstance().getCurrentPose()))
+//                                .andThen(new ArmToNode(arm, nodeSupplier))
+                )
         );
         addRequirements(drivetrain);
     }

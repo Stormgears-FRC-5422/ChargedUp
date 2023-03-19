@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class PickFromSubstation extends SequentialCommandGroup {
 
     public PickFromSubstation(DrivetrainBase drivetrain, Arm arm, Compression compression,
-                              Supplier<DriveToDoubleSubstation.POSITION> sideSupplier) {
+                              Supplier<DriveToDoubleSubstation.Position> sideSupplier) {
         addCommands(
                 new ParallelCommandGroup(
                     new DriveToDoubleSubstation(drivetrain, sideSupplier.get()),

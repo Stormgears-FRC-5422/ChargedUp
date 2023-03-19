@@ -37,8 +37,8 @@ public class NodeSelector {
 
     public ScoringNode getSelectedNode() {
         System.out.println("Selected Col: " + selectedCol + " Selected Row: " + selectedRow);
-        System.out.println(currentGrid[selectedCol][selectedRow]);
-        return currentGrid[selectedCol][selectedRow];
+        System.out.println(getGrid()[selectedCol][selectedRow]);
+        return getGrid()[selectedCol][selectedRow];
     }
 
     public void setSelectedGridRow(int col, int row) {

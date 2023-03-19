@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.RobotState;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,14 +56,15 @@ public final class FieldConstants {
     public static Regions.RectangleRegion redChargingStation = blueChargingStation.getMirrored();
 
     public static Regions.RectangleRegion getChargingStation() {
-        return (DriverStation.getAlliance() == Alliance.Red)? redChargingStation : blueChargingStation;
+        return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
+                redChargingStation : blueChargingStation;
     }
 
     public final static class Substations {
 
         public final static double substationHeight = Units.inchesToMeters(39.938);
 
-        private final static double substationAlignDist = Units.inchesToMeters(12.0);
+        private final static double substationAlignDist = Units.feetToMeters(3.0);
         private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS + substationAlignDist);
         private final static double wallToPortalClose = Units.inchesToMeters(34.881);
         private final static double wallToPortalFar = Units.inchesToMeters(64.861);
@@ -83,7 +85,8 @@ public final class FieldConstants {
         public final static DoubleSubstation redDoubleSubstation = new DoubleSubstation(blueRightRegion.getMirrored(), blueLeftRegion.getMirrored());
 
         public static DoubleSubstation getDoubleSubstation() {
-            return (DriverStation.getAlliance() == Alliance.Red)? redDoubleSubstation : blueDoubleSubstation;
+            return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
+                    redDoubleSubstation : blueDoubleSubstation;
         }
 
         public static class DoubleSubstation {
@@ -164,13 +167,14 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-//                    System.out.println(node);
+                    System.out.println(transformedNode);
                 }
             }
         }
 
         public static ScoringNode[][] getGrid() {
-            return (DriverStation.getAlliance() == Alliance.Red)? redAllianceGrid : blueAllianceGrid;
+            return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
+                    redAllianceGrid : blueAllianceGrid;
         }
 
         public static class ScoringNode {
@@ -390,7 +394,7 @@ public final class FieldConstants {
 
     public static Pose2d mirrorPose(Pose2d pose) {
         double xMirrored = mirrorXPosition(pose.getX());
-        var rotationMirrored = pose.getRotation().times(-1.0);
+        var rotationMirrored = pose.getRotation().plus(new Rotation2d(Math.PI));
         return new Pose2d(xMirrored, pose.getY(), rotationMirrored);
     }
 }

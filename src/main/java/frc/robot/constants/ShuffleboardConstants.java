@@ -55,6 +55,7 @@ public final class ShuffleboardConstants {
 
         driverTab
                 .add("Field Sim", poseEstimationFieldSim)
+                .withProperties(Map.of("Label Position", "HIDDEN"))
                 .withWidget(BuiltInWidgets.kField)
                 .withSize(5, 3).withPosition(4, 0);
 

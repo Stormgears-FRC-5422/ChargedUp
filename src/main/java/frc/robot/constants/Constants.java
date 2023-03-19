@@ -131,11 +131,10 @@ public final class Constants {
                 Units.inchesToMeters(armOriginY));
 
         public static final Translation2d pickGround = new Translation2d(0.77, -0.11);
-        public static final Translation2d stowPosition = new Translation2d(0.2, 0.15);
-
-        private static final double outToDoubleSubstation = Units.inchesToMeters(15.0);
+        public static final Translation2d stowPosition = new Translation2d(0.19, 0.13);
+        private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstation = Arm.fromGlobalTranslation(
-                new Translation3d(0.0, outToDoubleSubstation, FieldConstants.Substations.substationHeight)
+                new Translation3d(0.0, 1.0, 1.2)
         );
     }
 
@@ -173,12 +172,13 @@ public final class Constants {
         public static boolean useDrive = StormProp.getBoolean("useDrive", false);
         public static boolean useNavX = StormProp.getBoolean("useNavX", false);
         public static boolean useLogitechController = StormProp.getBoolean("useLogitechController", false);
-        public static boolean useXboxController = StormProp.getBoolean("useXboxController", false);
+        public static boolean useFirstXboxController = StormProp.getBoolean("useFirstXboxController", false);
+        public static boolean useSecondXboxController = StormProp.getBoolean("useSecondXboxController", false);
         public static boolean useButtonBoard = StormProp.getBoolean("useButtonBoard", false);
         public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
         public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
         public static boolean useArm = StormProp.getBoolean("useArm", false);
-        public static boolean useXYArmMode = StormProp.getBoolean("useXYArmMode", false);
+        public static boolean useXYArmMode = StormProp.getBoolean("useXYArmMode", false) && useArm;
         public static boolean useVision = StormProp.getBoolean("useVision", false);
         public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
         public static boolean usePoseEstimator = false;

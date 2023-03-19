@@ -13,14 +13,14 @@ import frc.robot.RobotState;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
-import static frc.robot.commands.auto.autoManeuvers.DriveToDoubleSubstation.POSITION.LEFT;
+import static frc.robot.commands.auto.autoManeuvers.DriveToDoubleSubstation.Position.LEFT;
 import static frc.robot.constants.FieldConstants.Substations.*;
 import static frc.robot.commands.drive.pathFollowing.Paths.calcHeading;
 
 public class DriveToDoubleSubstation extends PathFollowingCommand {
-    private final POSITION side;
+    private final Position side;
 
-    public DriveToDoubleSubstation(DrivetrainBase drivetrain, POSITION side) {
+    public DriveToDoubleSubstation(DrivetrainBase drivetrain, Position side) {
         super(drivetrain);
 
         this.side = side;
@@ -56,7 +56,7 @@ public class DriveToDoubleSubstation extends PathFollowingCommand {
         super.initialize();
     }
 
-    public enum POSITION {
+    public enum Position {
         LEFT, RIGHT
     }
 }

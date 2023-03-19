@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -26,10 +27,7 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
     private RobotContainer m_robotContainer;
     private int count = 0;
-
-
-
-
+    private boolean wasEnabled = false;
 
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -37,21 +35,21 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-      // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-      // autonomous chooser on the dashboard.
+        // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+        // autonomous chooser on the dashboard.
 
         System.out.println(
                 "\n\n********************** \n" +
-                "********************** \n" +
-                "* Robot starting at "
+                        "********************** \n" +
+                        "* Robot starting at "
                         + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + "\n" +
-                "********************** \n" +
-                "********************** \n\n\n");
+                        "********************** \n" +
+                        "********************** \n\n\n");
 
         try {
-          m_robotContainer = new RobotContainer();
+            m_robotContainer = new RobotContainer();
         } catch (IllegalDriveTypeException e) {
-          throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -76,29 +74,44 @@ public class Robot extends TimedRobot {
         if (++count % 1000 == 0) {
             System.out.println("total memory: " + Runtime.getRuntime().totalMemory() + " bytes");
         }
+
+        if (DriverStation.isEnabled() && !wasEnabled) {
+            m_robotContainer.enabledInit();
+            wasEnabled = true;
+        }
     }
 
-    /** This function is called once each time the robot enters Disabled mode. */
+    /**
+     * This function is called once each time the robot enters Disabled mode.
+     */
     @Override
     public void disabledInit() {
     }
 
     @Override
-    public void disabledPeriodic() {}
-
-    /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
-    @Override
-    public void autonomousInit() {
-      // schedule the autonomous command (example)
-      m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-      if (m_autonomousCommand != null) {
-          m_autonomousCommand.schedule();
-      }
+    public void disabledPeriodic() {
     }
 
-    /** This function is called periodically during autonomous. */
+    /**
+     * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
+     */
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousInit() {
+        // schedule the autonomous command (example)
+
+        RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
+        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        if (m_autonomousCommand != null) {
+            m_autonomousCommand.schedule();
+        }
+    }
+
+    /**
+     * This function is called periodically during autonomous.
+     */
+    @Override
+    public void autonomousPeriodic() {
+    }
 
     @Override
     public void teleopInit() {
@@ -107,14 +120,18 @@ public class Robot extends TimedRobot {
         // continue until interrupted by another command, remove
         // this line or comment it out.
         if (m_autonomousCommand != null) {
-          m_autonomousCommand.cancel();
+            m_autonomousCommand.cancel();
         }
-       //m_robotContainer.m_lidarIndicatorCommand.schedule();
+        //m_robotContainer.m_lidarIndicatorCommand.schedule();
+        RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
     }
 
-    /** This function is called periodically during operator control. */
+    /**
+     * This function is called periodically during operator control.
+     */
     @Override
-    public void teleopPeriodic() {}
+    public void teleopPeriodic() {
+    }
 
     @Override
     public void testInit() {
@@ -122,15 +139,24 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().cancelAll();
     }
 
-    /** This function is called periodically during test mode. */
+    /**
+     * This function is called periodically during test mode.
+     */
     @Override
-    public void testPeriodic() {}
+    public void testPeriodic() {
+    }
 
-    /** This function is called once when the robot is first started up. */
+    /**
+     * This function is called once when the robot is first started up.
+     */
     @Override
-    public void simulationInit() {}
+    public void simulationInit() {
+    }
 
-    /** This function is called periodically whilst in simulation. */
+    /**
+     * This function is called periodically whilst in simulation.
+     */
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+    }
 }

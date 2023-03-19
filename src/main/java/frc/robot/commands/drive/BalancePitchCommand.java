@@ -12,7 +12,7 @@ import java.util.function.DoubleSupplier;
 public class BalancePitchCommand extends CommandBase {
 
     // tune these
-    private final PIDController speedController = new PIDController(0.2, 0.0, 0.00);
+    private final PIDController speedController = new PIDController(0.1, 0.0, 0.00);
     private final PIDController rotController = new PIDController(0.1, 0.0, 0.0);
 
     double holdAngle = 0;
@@ -43,11 +43,12 @@ public class BalancePitchCommand extends CommandBase {
 
     @Override
     public void execute() {
+        System.out.println(pitchSupplier.getAsDouble());
         // test to see if we should negate
         double xSpeed = speedController.calculate(pitchSupplier.getAsDouble(), 0);
         double rotSpeed = rotController.calculate(RobotState.getInstance().getCurrentPose()
                 .getRotation().getDegrees(), holdAngle);
-        m_drivetrain.drive(new ChassisSpeeds(-xSpeed, 0.0, rotSpeed), true);
+        m_drivetrain.drive(new ChassisSpeeds(-xSpeed, 0.0, rotSpeed), false);
     }
 
     // do we need this
@@ -59,7 +60,6 @@ public class BalancePitchCommand extends CommandBase {
     // again???
     @Override
     public void end(boolean interrupted) {
-        if (!interrupted)
-            m_drivetrain.stopDrive();
+        m_drivetrain.stopDrive();
     }
 }

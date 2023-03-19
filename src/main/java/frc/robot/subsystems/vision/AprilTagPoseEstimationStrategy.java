@@ -122,11 +122,9 @@ public final class AprilTagPoseEstimationStrategy {
     private static double _get2dDist(int tagID, double dist3d) {
         double heightDiff;
         if (heightDiffs.containsKey(tagID))
-            heightDiff = heightDiffs.get(tagID);
-        else {
-            heightDiff = Math.abs(_getTagPose(tagID).getZ() - CAMERA_POSITION.getZ());
-            heightDiffs.put(tagID, heightDiff);
-        }
+            return heightDiffs.get(tagID);
+        heightDiff = Math.abs(_getTagPose(tagID).getZ() - CAMERA_POSITION.getZ());
+        heightDiffs.put(tagID, heightDiff);
         return Math.sqrt((dist3d*dist3d) - (heightDiff*heightDiff));
     }
 

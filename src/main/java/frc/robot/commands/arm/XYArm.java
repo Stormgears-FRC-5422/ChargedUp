@@ -31,6 +31,7 @@ public class XYArm extends ArmCommand {
 
     @Override
     public void execute() {
+//        System.out.println("X: " + XSpeedSupplier.getAsDouble() + " Y: " + YSpeedSupplier.getAsDouble());
         arm.setSpeedScale(kXYArmSpeedScale);
         arm.percentOutXYMoveArm(new ChassisSpeeds(XSpeedSupplier.getAsDouble(),
                                                   YSpeedSupplier.getAsDouble(),
