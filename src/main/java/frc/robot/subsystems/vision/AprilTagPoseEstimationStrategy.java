@@ -49,6 +49,7 @@ public final class AprilTagPoseEstimationStrategy {
             if (useYaw && secondClosest.dist <= kMaxAprilTagYawTrustMeters) {
                 var secondCloseTagRotation = _getTagPose(secondClosest.id).getRotation().toRotation2d();
                 Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
+                // FIXME: what happens when the rotations are -179 and 179
                 double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
                 rotation = Rotation2d.fromDegrees(averageRotation);
             }
