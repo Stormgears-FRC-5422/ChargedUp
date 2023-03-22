@@ -30,9 +30,11 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     private final PIDController yController = new PIDController(0.01, 0.0, 0.0);
 
+    private static final double maxRotationSpeed = 0.5;
+    private static final double maxYSpeed = 0.5;
     private static final double maxJoystickInput = 0.3;
     // can go maxJoystickInput at this amount of meters
-    private static final double maxDistanceX = 1.0;
+    private static final double maxDistanceX = 2.0;
 
     public AlignToDoubleSubstation(DrivetrainBase drivetrain,
                                    DoubleSupplier joystickXSupplier,
@@ -76,24 +78,29 @@ public class AlignToDoubleSubstation extends CommandBase {
         double x = 0, y = 0, omega = 0;
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
 
-        omega = rotController.calculate(currentPose.getRotation().getDegrees());
-        omega = MathUtil.clamp(omega, -0.5, 0.5);
-
-        double joystickZ = (Math.pow(joystickZSupplier.getAsDouble(), 2)) * 0.4;
+        omega += rotController.calculate(currentPose.getRotation().getDegrees());
+        double joystickZ = signedSquare(joystickZSupplier.getAsDouble()) * maxJoystickInput;
         omega += joystickZ;
 
         double xError = (shouldFlip? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
         double xScale = xError / maxDistanceX;
-//        x = Math.pow(joystickXSupplier.getAsDouble(), 2) * xScale;
+//        x = signedSquare(joystickXSupplier.getAsDouble()) * xScale;
 
         double yError = ySetpoint - currentPose.getY();
 //        y = yController.calculate(yError);
 
+        omega = MathUtil.clamp(omega, -maxRotationSpeed, maxRotationSpeed);
+        x = MathUtil.clamp(x, -maxJoystickInput, maxJoystickInput);
+        y = MathUtil.clamp(y, -maxYSpeed, maxYSpeed);
         drivetrain.percentOutDrive(new ChassisSpeeds(x, y, omega), true);
     }
 
     public enum Side {
         LEFT,
         RIGHT
+    }
+
+    private double signedSquare(double input) {
+        return Math.signum(input) * Math.pow(input, 2);
     }
 }
