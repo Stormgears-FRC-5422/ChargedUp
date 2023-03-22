@@ -25,6 +25,8 @@ public class ButtonBoardConfig {
 
   Compression compression;
 
+  private final int[] allRingSegments = {1, 2, 3};
+
   public ButtonBoardConfig(NeoPixel neoPixel, NodeSelector nodeSelector, Compression compression, Arm arm) {
     m_buttonboard1 = new ButtonBoard(1);
     m_buttonboard2 = new ButtonBoard(2);
@@ -64,22 +66,28 @@ public class ButtonBoardConfig {
 //    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
 //            .onTrue(new InstantCommand(() -> neoPixel.setColor(4, NeoPixel.YELLOW_COLOR)));
 
-    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(() -> m_buttonboard1.getRawButton(12) && !m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
+//    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
+//    new Trigger(() -> m_buttonboard1.getRawButton(12) && !m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
+//
+//    new Trigger(() -> m_buttonboard1.getRawButton(11) && m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
+//    new Trigger(() -> m_buttonboard1.getRawButton(11) && !m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
+//
 
-    new Trigger(() -> m_buttonboard1.getRawButton(11) && m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(() -> m_buttonboard1.getRawButton(11) && !m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
-
-    new Trigger(() -> m_buttonboard1.getRawButton(10) && m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
-            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
+//    new Trigger(() -> m_buttonboard1.getRawButton(10) && m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.PURPLE_COLOR)));
+//    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
+//            .onTrue(new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allSegments, NeoPixel.YELLOW_COLOR)));
 
     new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
+
+    new Trigger(m_buttonboard1::cubeCone).whileTrue(
+            new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR)));
+    new Trigger(m_buttonboard1::cubeCone).whileFalse(
+            new InstantCommand(() -> neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR)));
 
 //    new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
 
@@ -90,17 +98,17 @@ public class ButtonBoardConfig {
 
     //TODO: change later
     if (Constants.Toggles.usePneumatics) {
-      new Trigger(() -> m_buttonboard2.getRawButton(3)).onTrue(new InstantCommand(compression::grabCubeOrCone));
-      new Trigger(() -> m_buttonboard2.getRawButton(3)).onFalse(new InstantCommand(compression::release));
+      new Trigger(() -> m_buttonboard2.getRawButton(3)).whileTrue(new InstantCommand(compression::grabCubeOrCone));
+      new Trigger(() -> m_buttonboard2.getRawButton(3)).whileFalse(new InstantCommand(compression::release));
     }
 
     // set row of node selector
     new Trigger(this::topGrid)
-            .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
+            .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
     new Trigger(this::middleGrid )
-            .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
+            .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
     new Trigger(this::bottomGrid)
-            .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
+            .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
 
 
     int offset = 4;

@@ -7,12 +7,15 @@ import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotState;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static frc.robot.constants.FieldConstants.*;
 import static com.pathplanner.lib.PathPlanner.*;
+import static com.pathplanner.lib.PathPlannerTrajectory.*;
 
 public final class Paths {
 //    public static final PathPlannerTrajectory straightPath = loadPath("Straight Path", 1, 0.5);
@@ -133,6 +136,49 @@ public final class Paths {
         Translation2d aboutInitialTranslation = translationB.minus(translationA);
         //This is to find the reference angle and the heading in radians
         return Math.atan2(aboutInitialTranslation.getY(), aboutInitialTranslation.getX());
+    }
+
+    public static PathPlannerState mirrorState(
+            PathPlannerState state,
+            DriverStation.Alliance alliance) {
+        if (alliance == DriverStation.Alliance.Blue) {
+            System.out.println("Called flipState() on the blue allliance");
+            return state;
+        }
+
+        Translation2d mirroredTranslation = mirrorTranslation(state.poseMeters.getTranslation());
+        Rotation2d mirroredHeading = mirrorRotation(state.poseMeters.getRotation());
+        Rotation2d mirroredHolonomicRotation = mirrorRotation(state.holonomicRotation);
+
+        var mirroredState = transformStateForAlliance(state, alliance);
+        mirroredState.poseMeters = new Pose2d(mirroredTranslation, mirroredHeading);
+        mirroredState.holonomicRotation = mirroredHolonomicRotation;
+
+        return mirroredState;
+    }
+
+    public static PathPlannerTrajectory mirrorPath(
+            PathPlannerTrajectory path,
+            DriverStation.Alliance alliance
+    ) {
+        if (alliance == DriverStation.Alliance.Blue) {
+            System.out.println("Called mirrorPath() on blue alliance");
+            return path;
+        }
+
+        List<State> mirroredStates = new ArrayList<>();
+        for (State s : path.getStates()) {
+            PathPlannerState state = (PathPlannerState) s;
+            mirroredStates.add(mirrorState(state, alliance));
+        }
+
+        return new PathPlannerTrajectory(
+                mirroredStates,
+                path.getMarkers(),
+                path.getStartStopEvent(),
+                path.getEndStopEvent(),
+                path.fromGUI
+        );
     }
 
     public static class PathWithName {

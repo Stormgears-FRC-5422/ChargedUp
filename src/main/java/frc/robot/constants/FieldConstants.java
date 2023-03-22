@@ -111,6 +111,22 @@ public final class FieldConstants {
     public final static class Grids {
         public static final ScoringNode[][] blueAllianceGrid = new ScoringNode[9][3];
         public static final ScoringNode[][] redAllianceGrid = new ScoringNode[9][3];
+        public static ScoringNode[][] getGrid() {
+            return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
+                    redAllianceGrid : blueAllianceGrid;
+        }
+
+        public static ScoringNode getOpposite(ScoringNode node) {
+            int mirroredCol = 8 - node.col;
+            switch (node.alliance) {
+                case Blue:
+                case Invalid:
+                default:
+                    return redAllianceGrid[mirroredCol][node.row];
+                case Red:
+                    return blueAllianceGrid[mirroredCol][node.row];
+            }
+        }
 
         private static final double halfRobotLengthWithBumper = (ROBOT_LENGTH / 2.0) + BUMPER_THICKNESS;
         private static final double distBetweenNodes = Units.inchesToMeters(22.0);
@@ -167,15 +183,10 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-                    System.out.println(transformedNode);
                 }
             }
         }
 
-        public static ScoringNode[][] getGrid() {
-            return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
-                    redAllianceGrid : blueAllianceGrid;
-        }
 
         public static class ScoringNode {
             public final NodeType type;
@@ -208,7 +219,7 @@ public final class FieldConstants {
                 double blueMiddleNodeY = Units.inchesToMeters(108);
                 double transformedY = (blueMiddleNodeY - nodeTranslation.getY()) + blueMiddleNodeY;
                 Translation3d transformedTranslation = new Translation3d(transformedX,
-                        transformedY, nodeTranslation.getZ());
+                        nodeTranslation.getY(), nodeTranslation.getZ());
 
                 Pose2d transformedScoringPosition = mirrorPose(node.scoringPosition);
 
@@ -385,16 +396,20 @@ public final class FieldConstants {
     }
 
     public static double mirrorXPosition(double xToBeMirrored) {
-        return (HALF_FIELD_LENGTH - xToBeMirrored) + HALF_FIELD_LENGTH;
+        return FIELD_LENGTH - xToBeMirrored;
     }
 
     public static Translation2d mirrorTranslation(Translation2d translation) {
         return new Translation2d(mirrorXPosition(translation.getX()), translation.getY());
     }
 
+    public static Rotation2d mirrorRotation(Rotation2d rotation) {
+        return new Rotation2d(-rotation.getCos(), rotation.getSin());
+    }
+
     public static Pose2d mirrorPose(Pose2d pose) {
-        double xMirrored = mirrorXPosition(pose.getX());
-        var rotationMirrored = pose.getRotation().plus(new Rotation2d(Math.PI));
-        return new Pose2d(xMirrored, pose.getY(), rotationMirrored);
+        Translation2d translationMirrored = mirrorTranslation(pose.getTranslation());
+        Rotation2d rotationMirrored = mirrorRotation(pose.getRotation());
+        return new Pose2d(translationMirrored, rotationMirrored);
     }
 }

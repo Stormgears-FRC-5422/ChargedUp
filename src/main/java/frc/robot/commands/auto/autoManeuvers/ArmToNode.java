@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.commands.arm.pathFollowing.ArmPathFollowingCommand;
+import frc.robot.constants.Constants;
 import frc.robot.subsystems.arm.Arm;
 
 import java.util.function.Supplier;
@@ -18,7 +19,7 @@ import static frc.robot.commands.drive.pathFollowing.Paths.calcHeading;
 public class ArmToNode extends ArmPathFollowingCommand {
 
     // TODO: find x and y positions for each node {high, mid, hybrid}
-    private static final double[] goalXPositions = {1.38, 0.984, 0.5};
+    private static final double[] goalXPositions = {1.15, 0.984, 0.5};
 
     private static final double CONE_OFFSET = Units.inchesToMeters(7.0);
     private static final double CUBE_OFFSET = Units.inchesToMeters(5.5);
@@ -42,7 +43,8 @@ public class ArmToNode extends ArmPathFollowingCommand {
 //        double goalX = goalXPositions[node.row];
         double goalX = goalXPositions[node.row];
         Translation3d nodeTranslation = node.translation;
-        double goalY = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
+        double goalY = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET) +
+                Constants.ArmConstants.armTranslation.getY();
 
         Translation2d current = arm.getGripperPose().getTranslation();
         final boolean isRight = current.getX() >= goalX;

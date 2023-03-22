@@ -36,7 +36,7 @@ public class ArmPathFollowingCommand extends CommandBase {
         this.arm = arm;
 
         // always in tolerance for rotation
-        controller.setTolerance(new Pose2d(0.05, 0.05, new Rotation2d(2 * Math.PI)));
+        controller.setTolerance(new Pose2d(0.01, 0.01, new Rotation2d(2 * Math.PI)));
 //        xController.setIntegratorRange(0.01, 0.03);
 //        yController.setIntegratorRange(0.01, 0.03);
 

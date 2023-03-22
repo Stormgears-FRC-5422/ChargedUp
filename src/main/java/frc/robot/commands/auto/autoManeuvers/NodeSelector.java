@@ -1,7 +1,9 @@
 package frc.robot.commands.auto.autoManeuvers;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
 
 import java.util.Map;
@@ -14,10 +16,8 @@ public class NodeSelector {
     private int selectedRow = 0;
     private int selectedCol = 0;
 
-    private final ScoringNode[][] currentGrid;
-
     public NodeSelector() {
-        currentGrid = getGrid();
+        ScoringNode[][] currentGrid = getGrid();
         boolean[] CUBE_COLUMNS = new boolean[]{false, true, false, false, true, false, false, true, false};
         for (int col = 0; col < 9; col++) {
             int colTransformed = currentGrid.length - 1 - col;
@@ -36,9 +36,12 @@ public class NodeSelector {
     }
 
     public ScoringNode getSelectedNode() {
-        System.out.println("Selected Col: " + selectedCol + " Selected Row: " + selectedRow);
-        System.out.println(getGrid()[selectedCol][selectedRow]);
-        return getGrid()[selectedCol][selectedRow];
+//        System.out.println("Selected Col: " + selectedCol + " Selected Row: " + selectedRow);
+//        System.out.println(getGrid()[selectedCol][selectedRow]);
+        int col = selectedCol;
+        if (RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red)
+            col = 8 - selectedCol;
+        return getGrid()[col][selectedRow];
     }
 
     public void setSelectedGridRow(int col, int row) {

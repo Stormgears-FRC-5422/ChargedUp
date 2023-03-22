@@ -31,18 +31,30 @@ public class ArmToTranslation extends ArmPathFollowingCommand {
         Translation2d current = arm.getGripperPose().getTranslation();
         final boolean isRight = current.getX() >= goal.getX();
         final boolean isLower = current.getY() <= goal.getY();
-        Translation2d intermediate = isRight?
-                new Translation2d(goal.getX(), current.getY()) :
-                new Translation2d(current.getX(), goal.getY());
+//        Translation2d intermediate = isRight?
+//                new Translation2d(goal.getX(), current.getY()) :
+//                new Translation2d(current.getX(), goal.getY());
+
+        Translation2d intermediate = new Translation2d();
+
+        if (!isRight && isLower) {
+            intermediate = new Translation2d(current.getX(), goal.getY());
+        } else if (isRight && isLower) {
+            intermediate = new Translation2d(current.getX(), goal.getY());
+        } else if (!isRight && !isLower) {
+            intermediate = new Translation2d(goal.getX(), current.getY());
+        } else if (isRight && !isLower) {
+            intermediate = new Translation2d(goal.getX(), current.getY());
+        }
 
         // control radius of arc using divisor
-        final double startControlLength = current.getDistance(intermediate) * 0.8;
+        final double startControlLength = current.getDistance(intermediate) * 1.2;
         Rotation2d startHeading = new Rotation2d(calcHeading(current, intermediate));
         PathPoint start = new PathPoint(current, startHeading, new Rotation2d())
                 .withNextControlLength(startControlLength);
 
 //        Rotation2d endHeading = new Rotation2d(calcHeading(intermediate, goal));
-        final double endControlLength = goal.getDistance(intermediate) * 0.8;
+        final double endControlLength = goal.getDistance(intermediate) * 1.2;
         PathPoint end = new PathPoint(goal, new Rotation2d(calcHeading(intermediate, goal)), new Rotation2d())
                 .withPrevControlLength(endControlLength);
 

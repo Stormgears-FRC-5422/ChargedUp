@@ -6,7 +6,6 @@ package frc.robot.constants;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.arm.Arm;
 import frc.utils.configfile.StormProp;
 
 public final class Constants {
@@ -130,12 +129,10 @@ public final class Constants {
                 Units.inchesToMeters(armOriginX),
                 Units.inchesToMeters(armOriginY));
 
-        public static final Translation2d pickGround = new Translation2d(0.77, -0.11);
-        public static final Translation2d stowPosition = new Translation2d(0.19, 0.13);
+        public static final Translation2d pickGround = new Translation2d(0.77, 0.03);
+        public static final Translation2d stowPosition = new Translation2d(0.19, 0.23);
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
-        public static final Translation2d pickDoubleSubstation = Arm.fromGlobalTranslation(
-                new Translation3d(0.0, 1.0, 1.2)
-        );
+        public static final Translation2d pickDoubleSubstation = new Translation2d(0.96, 1.31);
     }
 
     public static class VisionConstants {
@@ -144,7 +141,31 @@ public final class Constants {
           private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
           private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
           private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
-          public static final double kAprilTagYawTrustMeters = StormProp.getNumber("AprilTagYawTrustMeters", 0.5);
+          public static final double kMaxAprilTagYawTrustMeters =
+                  StormProp.getNumber("MaxAprilTagYawTrustMeters", 5.0);
+          public static final double kMaxAprilTagLinearVelTrustMetersPerSec =
+                  StormProp.getNumber("MaxAprilTagLinearVelTrustMetersPerSec", 2.0);
+          public static final double kMaxAprilTagRotationVelTrustDegPerSec =
+                  StormProp.getNumber("MaxAprilTagRotationalVelTrustDegPerSec", 50.0);
+          public static final double kMaxTranslationDeviation =
+                  StormProp.getNumber("MaxTranslationDeviation", 1.0);
+          public static final double kMaxRotationDeviation =
+                  StormProp.getNumber("MaxRotationDeviation", 1.0);
+
+          public static double kDistanceTrustWeight =
+                  StormProp.getNumber("DistanceTrustWeight", 0.2);
+          public static double kLinearVelTrustWeight =
+                  StormProp.getNumber("LinearVelTrustWeight", 0.2);
+          public static double kRotationalVelTrustWeight =
+                  StormProp.getNumber("RotationalVelTrustWeight", 0.2);
+
+          private static double sumWeights = kDistanceTrustWeight + kLinearVelTrustWeight + kRotationalVelTrustWeight;
+
+          static {
+              kDistanceTrustWeight /= sumWeights;
+              kLinearVelTrustWeight /= sumWeights;
+              kRotationalVelTrustWeight /= sumWeights;
+          }
 
           public static final Pose3d CAMERA_POSITION = new Pose3d(
                   kCameraXTranslation, kCameraYTranslation, kCameraZTranslation,

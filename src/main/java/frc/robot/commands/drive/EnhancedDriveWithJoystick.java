@@ -39,13 +39,13 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     public EnhancedDriveWithJoystick(DrivetrainBase drivetrain,
                                      DoubleSupplier txSupplier, DoubleSupplier tySupplier, DoubleSupplier omegaSupplier,
-                                     BooleanSupplier robotRelativeSupplier, BooleanSupplier percisionModeSupplier) {
+                                     BooleanSupplier robotRelativeSupplier, BooleanSupplier speedModeSupplier) {
         m_drivetrain = drivetrain;
         this.txSupplier = txSupplier;
         this.tySupplier = tySupplier;
         this.omegaSupplier = omegaSupplier;
         this.robotRelativeSupplier = robotRelativeSupplier;
-        this.percisionModeSupplier = percisionModeSupplier;
+        this.percisionModeSupplier = speedModeSupplier;
 
         rotController.enableContinuousInput(-180.0, 180.0);
         rotController.setTolerance(1.5);
@@ -60,7 +60,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
                 .withPosition(0, 2).withSize(1, 1);
 
         ShuffleboardConstants.getInstance().driverTab
-                .addBoolean("Percision Mode", percisionModeSupplier)
+                .addBoolean("Speed Mode", speedModeSupplier)
                 .withWidget(BuiltInWidgets.kBooleanBox)
                 .withPosition(1, 2).withSize(1, 1);
 

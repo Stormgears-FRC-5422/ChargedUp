@@ -4,6 +4,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,6 +30,8 @@ public class RobotState extends StormSubsystemBase {
     private int visionLogCounter = 0;
 
     private TreeMap<Double, Pose2d> poseMap = new TreeMap<>();
+    private final TimeInterpolatableBuffer<Pose2d> poseRecord =
+            TimeInterpolatableBuffer.createBuffer(0.5);
 
     private Pose2d startPose;
     private DriverStation.Alliance currentAlliance = DriverStation.Alliance.Blue;
@@ -86,25 +89,27 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public void addPose(double time, Pose2d pose) {
-        poseMap.put(time, pose);
+        poseRecord.addSample(time, pose);
     }
 
     public Pose2d getCurrentPose() {
         if (!Constants.Toggles.usePoseEstimator ||
-                poseMap.lastEntry() == null) {
+                poseRecord.getInternalBuffer().lastEntry() == null) {
 //            System.out.println("NOT using pose estimator. Can't get current pose!");
             return getStartPose();
         }
-        return poseMap.lastEntry().getValue();
+        return poseRecord.getInternalBuffer().lastEntry().getValue();
     }
 
     public Pose2d getLastPose() {
         if (!Constants.Toggles.usePoseEstimator ||
-                poseMap.size() < 1) {
+                poseRecord.getInternalBuffer().size() < 1) {
 //            System.out.println("NOT using pose estimator. Can't get last pose!");
             return getCurrentPose();
-        } else if (poseMap.lowerEntry(poseMap.lastKey()) == null) return getCurrentPose();
-        return poseMap.lowerEntry(poseMap.lastKey()).getValue();
+        } else if (poseRecord.getInternalBuffer().lowerEntry(poseRecord.getInternalBuffer().lastKey()) == null)
+            return getCurrentPose();
+        return poseRecord.getInternalBuffer()
+                .lowerEntry(poseRecord.getInternalBuffer().lastKey()).getValue();
     }
 
     public Pose2d getStartPose() {
@@ -119,30 +124,34 @@ public class RobotState extends StormSubsystemBase {
         startPose = pose;
     }
 
-    /** returns rotation at that time in seconds */
-    public Rotation2d getRotationAtTime(double time) {
-        var floorEntry = poseMap.floorEntry(time);
-        var ceilEntry = poseMap.ceilingEntry(time);
-
-        if (floorEntry == null) {
-            if (ceilEntry != null) 
-                return ceilEntry.getValue().getRotation();
-            return getCurrentPose().getRotation();
+    public Pose2d getPoseAtTime(double time) {
+        if (poseRecord.getSample(time).isPresent()) {
+            return poseRecord.getSample(time).get();
         }
-        if (ceilEntry == null)
-            return getCurrentPose().getRotation();
-
-        Rotation2d floorAngle = floorEntry.getValue().getRotation();
-        Rotation2d ceilAngle = ceilEntry.getValue().getRotation();
-
-        if (Math.abs(floorAngle.getDegrees() - ceilAngle.getDegrees()) >= 10)
-            return getCurrentPose().getRotation();
-
-        double timeFromFloor = time - floorEntry.getKey();
-        double timeBetween = ceilEntry.getKey() - floorEntry.getKey();
-        return floorAngle.interpolate(ceilAngle, timeFromFloor / timeBetween);
+        return getCurrentPose();
     }
 
+    /** returns rotation at that time in seconds */
+    public Rotation2d getRotationAtTime(double time) {
+        return getPoseAtTime(time).getRotation();
+    }
+
+    public Translation2d getTranslationAtTime(double time) {
+        return getPoseAtTime(time).getTranslation();
+    }
+
+    static double d = 0.02;
+    public double getLinearVelAtTime(double time) {
+        Translation2d translation = getTranslationAtTime(time);
+        Translation2d prevTranslation = getTranslationAtTime(time - d);
+        return (translation.getDistance(prevTranslation) / d) + 0.000001;
+    }
+
+    public double getRotationalVelAtTime(double time) {
+        Rotation2d rotation = getRotationAtTime(time);
+        Rotation2d prevRotation = getRotationAtTime(time - d);
+        return (Math.abs(rotation.getDegrees() - prevRotation.getDegrees()) / d) + 0.000001;
+    }
 
     public void setOdometryData(double time, OdometryData odometryData) {
         currentOdometryData = new Pair<>(time, odometryData);
@@ -199,10 +208,10 @@ public class RobotState extends StormSubsystemBase {
     @Override
     public void lastPeriodic() {
         // clear map
-        while (poseMap.size() > 5 &&
-                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
-            poseMap.pollFirstEntry();
-        }
+//        while (poseMap.size() > 5 &&
+//                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
+//            poseMap.pollFirstEntry();
+//        }
 
         Pose2d currentPose = getCurrentPose();
         xEntry.setDouble(currentPose.getX());
@@ -218,7 +227,7 @@ public class RobotState extends StormSubsystemBase {
         currentVisionData = null;
         currentGyroData = null;
 
-        poseMap = new TreeMap<>();
+        poseRecord.clear();
 
 //        setStartPose(
 //                new Pose2d(
@@ -235,7 +244,7 @@ public class RobotState extends StormSubsystemBase {
         currentVisionData = null;
         currentGyroData = null;
 
-        poseMap = new TreeMap<>();
+        poseRecord.clear();
     }
 
     public static class OdometryData {

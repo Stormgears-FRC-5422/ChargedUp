@@ -17,8 +17,6 @@ public class LidarIndicatorCommand extends CommandBase {
   public LidarIndicatorCommand(StormNet stormNet, NeoPixel neoPixel) {
     this.neoPixel = neoPixel;
     m_stormNet = stormNet;
-
-    addRequirements(neoPixel);
   }
 
   @Override

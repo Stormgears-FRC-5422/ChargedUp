@@ -16,6 +16,7 @@ public class Vision extends StormSubsystemBase {
     private int logCounter = 0;
     private final StormStruct m_struct;
     private final Vector<AprilTagData> currentAprilTags = new Vector<>();
+    private boolean visionReady = false;
 
     private NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private NetworkTable table = inst.getTable("vision-data");
@@ -33,7 +34,9 @@ public class Vision extends StormSubsystemBase {
         // a bunch of stuff for each april tag currently in view
         var infoList = m_struct.get_data("april_tag");
         // exit if there is none
+        visionReady = false;
         if (infoList.size() < 1) return;
+        visionReady = true;
         // clear the april tag vector
         currentAprilTags.clear();
         for (var info : infoList) {
@@ -44,8 +47,8 @@ public class Vision extends StormSubsystemBase {
                     info.get("yaw"),
                     info.get("leftright")
             );
-//            if (logCounter % 25 == 0)
-//                System.out.println(aprilTagData);
+            if (logCounter % 25 == 0)
+                System.out.println(aprilTagData);
             currentAprilTags.add(aprilTagData);
         }
         // convert timestamp to seconds
@@ -82,5 +85,9 @@ public class Vision extends StormSubsystemBase {
         System.out.println("Before");
         xPub.set(x);
         System.out.println("After");
+    }
+
+    public boolean getAprilTagDetected() {
+        return visionReady;
     }
 }

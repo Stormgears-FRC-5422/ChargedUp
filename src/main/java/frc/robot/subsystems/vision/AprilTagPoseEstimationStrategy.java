@@ -1,6 +1,10 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import static frc.robot.constants.FieldConstants.FIELD_LENGTH;
@@ -21,31 +25,29 @@ public final class AprilTagPoseEstimationStrategy {
 
     private static HashMap<Integer, Pose3d> tagPoses = new HashMap<>();
 
-    /** @return camera pose from list of april tag data */
-    public static Pose2d fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle) {
-        if (data.size() == 0) {
-            DriverStation.reportWarning("Can't ask pose estimation strategy with no data!", true);
-            return new Pose2d();
-        }
+    /** given data, angle at time, linearVelAtTime(m/s), and rotationalVelAtTime(deg/s) */
+    public static VisionMeasurement fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle,
+                                                     double linearVel, double rotationalVel) {
+        // sort the tags from closest to farthest
         if (data.size() > 1)
             data.sort(Comparator.comparingDouble(tag -> tag.dist));
 
         AprilTagData closest = data.get(0);
-        boolean useYaw = closest.dist <= kAprilTagYawTrustMeters;
+        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
         Pose3d closeTag = _getTagPose(closest.id);
-        
+
         // rotation is either the state as is or new one based on yaw
         Rotation2d rotation = camAngle;
         if (useYaw)
             rotation = _getCamAngleFromYaw(closeTag.getRotation().toRotation2d(), closest.yawDegrees);
-        
+
         Translation2d translation;
         if (data.size() > 1) {
             System.out.println("Using triangulation method");
             AprilTagData secondClosest = data.get(1);
             translation = _twoAprilTags(closest, secondClosest);
             // if both tags are in range then we can average their yaw values for rotation
-            if (useYaw && secondClosest.dist <= kAprilTagYawTrustMeters) {
+            if (useYaw && secondClosest.dist <= kMaxAprilTagYawTrustMeters) {
                 var secondCloseTagRotation = _getTagPose(secondClosest.id).getRotation().toRotation2d();
                 Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
                 double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
@@ -61,8 +63,52 @@ public final class AprilTagPoseEstimationStrategy {
             }
         }
 
-        return new Pose2d(translation, rotation);
+        Pose2d visionPose = new Pose2d(translation, rotation);
+        return new VisionMeasurement(visionPose, closest.dist, linearVel, rotationalVel);
     }
+
+//    /** @return camera pose from list of april tag data */
+//    private static Pose2d fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle) {
+//        if (data.size() == 0) {
+//            DriverStation.reportWarning("Can't ask pose estimation strategy with no data!", true);
+//            return new Pose2d();
+//        }
+//        if (data.size() > 1)
+//            data.sort(Comparator.comparingDouble(tag -> tag.dist));
+//
+//        AprilTagData closest = data.get(0);
+//        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
+//        Pose3d closeTag = _getTagPose(closest.id);
+//
+//        // rotation is either the state as is or new one based on yaw
+//        Rotation2d rotation = camAngle;
+//        if (useYaw)
+//            rotation = _getCamAngleFromYaw(closeTag.getRotation().toRotation2d(), closest.yawDegrees);
+//
+//        Translation2d translation;
+//        if (data.size() > 1) {
+//            System.out.println("Using triangulation method");
+//            AprilTagData secondClosest = data.get(1);
+//            translation = _twoAprilTags(closest, secondClosest);
+//            // if both tags are in range then we can average their yaw values for rotation
+//            if (useYaw && secondClosest.dist <= kMaxAprilTagYawTrustMeters) {
+//                var secondCloseTagRotation = _getTagPose(secondClosest.id).getRotation().toRotation2d();
+//                Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
+//                double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
+//                rotation = Rotation2d.fromDegrees(averageRotation);
+//            }
+//        } else {
+//            double dist2d = _get2dDist(closest.id, closest.dist);
+//            if (useYaw)
+//                translation = _oneAprilTag(closest.yawDegrees, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
+//            else {
+//                double yaw = _getYawFromCamAngle(camAngle, closeTag.getRotation().toRotation2d());
+//                translation = _oneAprilTag(yaw, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
+//            }
+//        }
+//
+//        return new Pose2d(translation, rotation);
+//    }
 
     private static Translation2d _oneAprilTag(double yawFromTag, double offset, Pose2d tagPose, double dist2d) {
         double theta = -offset + (yawFromTag + tagPose.getRotation().getDegrees());
@@ -133,5 +179,28 @@ public final class AprilTagPoseEstimationStrategy {
     private static double _getAngleFromTriangle(double a, double b, double c) {
         double x = (a*a + b*b - c*c) / (2.0 * a * b);
         return Math.acos(x);
+    }
+
+    public static class VisionMeasurement {
+        public final Pose2d pose;
+        public final Matrix<N3, N1> deviations;
+
+        public VisionMeasurement(Pose2d pose, double dist, double linearVel, double rotationalVel) {
+            this.pose = pose;
+            this.deviations = getDeviations(dist, linearVel, rotationalVel);
+        }
+
+        private static Matrix<N3, N1> getDeviations(double dist, double linearVel, double rotationalVel) {
+            double distWeight = (dist / kMaxAprilTagYawTrustMeters)
+                    * kDistanceTrustWeight;
+            double linearVelWeight = (linearVel / kMaxAprilTagLinearVelTrustMetersPerSec)
+                    * kLinearVelTrustWeight;
+            double rotationalWeight = (rotationalVel / kMaxAprilTagRotationVelTrustDegPerSec)
+                    * kRotationalVelTrustWeight;
+
+            double xyWeight = (distWeight + linearVelWeight + rotationalWeight) * kMaxTranslationDeviation;
+            double rotWeight = (distWeight + linearVelWeight + rotationalWeight) * kMaxRotationDeviation;
+            return VecBuilder.fill(xyWeight, xyWeight, rotWeight);
+        }
     }
 }

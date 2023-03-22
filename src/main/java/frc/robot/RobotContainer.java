@@ -13,18 +13,15 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
-import frc.robot.commands.auto.AutoCommand;
+import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoManeuvers.*;
-import frc.robot.commands.drive.BalanceCommand;
+import frc.robot.commands.drive.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LidarIndicatorCommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
-import frc.robot.commands.drive.BalancePitchCommand;
-import frc.robot.commands.drive.EnhancedDriveWithJoystick;
-import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
@@ -35,11 +32,11 @@ import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.stormnet.StormNet;
 import frc.robot.subsystems.Compression;
-import frc.robot.commands.drive.GyroCommand;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
+import frc.robot.subsystems.vision.AprilTagStatusCommand;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.joysticks.ButtonBoard;
 import frc.utils.joysticks.ButtonBoardConfig;
@@ -71,6 +68,7 @@ public class RobotContainer {
     BalanceCommand m_balancecommand;
     GyroCommand m_gyrocommand;
     LidarIndicatorCommand m_lidarIndicatorCommand;
+    AprilTagStatusCommand m_aprilTagStatusCommand;
     ArmCommand m_armCommand;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
@@ -90,7 +88,7 @@ public class RobotContainer {
     ButtonBoard buttonBoard;
     ButtonBoardConfig buttonBoardConfig;
 
-    private final SendableChooser<AutoCommand> autoCommandChooser = new SendableChooser<>();
+    private final SendableChooser<AutoRoutine> autoCommandChooser = new SendableChooser<>();
     private final SendableChooser<DriverStation.Alliance> allianceChooser = new SendableChooser<>();
 
     public RobotContainer() throws IllegalDriveTypeException {
@@ -137,6 +135,9 @@ public class RobotContainer {
 
         if (Toggles.useVision) {
             m_vision = new Vision();
+            if (Toggles.useStatusLights) {
+                m_aprilTagStatusCommand = new AprilTagStatusCommand(m_vision, m_neoPixel);
+            }
         } else {
             System.out.println("NOT using vision");
         }
@@ -177,7 +178,7 @@ public class RobotContainer {
             m_stormNet.test();
             if (Toggles.useStatusLights) {
                 m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
-                m_neoPixel.setDefaultCommand(m_lidarIndicatorCommand);
+//                m_neoPixel.setDefaultCommand(m_lidarIndicatorCommand);
             }
         } else {
             System.out.println("NOT using StormNet");
@@ -215,13 +216,13 @@ public class RobotContainer {
                 Toggles.usePneumatics) {
             AutoRoutines.initAutoRoutines(m_drivetrain, m_navX, m_arm, m_compression);
 
-            if (AutoRoutines.autoCommands.size() > 0) {
-                for (var autoCommand : AutoRoutines.autoCommands) {
-                    autoCommandChooser.addOption(autoCommand.name, autoCommand);
-                }
-                var command = AutoRoutines.autoCommands.get(0);
-                autoCommandChooser.setDefaultOption(command.name, command);
-            }
+//            if (AutoRoutines.autoRoutines.size() > 0) {
+//                for (var autoCommand : AutoRoutines.autoRoutines) {
+//                    autoCommandChooser.addOption(autoCommand.name, autoCommand);
+//                }
+//                var command = AutoRoutines.autoRoutines.get(0);
+//                autoCommandChooser.setDefaultOption(command.name, command);
+//            }
 
             ShuffleboardConstants.getInstance().driverTab
                     .add("Auto Selector", autoCommandChooser)
@@ -334,14 +335,18 @@ public class RobotContainer {
             // 10 SHOULD BE FORWARD AND 12 SHOULD BE BACKWARD
             BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
             new Trigger(() -> logitechController.getRawButton(10)).onTrue(new InstantCommand(
-                    () -> driveWithJoystick.setSetPoint(
-                            RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red? 180 : 0)
+                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 180 : 0)
             ));
             new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(
-                    () -> driveWithJoystick.setSetPoint(
-                            RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red? 0 : 180)
+                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 0 : 180)
             ));
 
+            if (Toggles.usePoseEstimator) {
+                new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
+                        new AlignToDoubleSubstation(m_drivetrain, logitechController::getWpiXAxis, AlignToDoubleSubstation.Side.LEFT));
+                new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
+                        new AlignToDoubleSubstation(m_drivetrain, logitechController::getWpiXAxis, AlignToDoubleSubstation.Side.RIGHT));
+            }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
             // zero angle command when we are red make sure robot pointing forwards is 180
@@ -373,8 +378,8 @@ public class RobotContainer {
 
                 new Trigger(buttonBoardConfig::stow).onTrue(
                         new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
-//                new Trigger(buttonBoardConfig::pickFloor).onTrue(
-//                        new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
+                new Trigger(buttonBoardConfig::pickFloor).onTrue(
+                        new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
 
                 new Trigger(buttonBoardConfig::cancel).onTrue(new InstantCommand(() -> {
                     m_arm.getCurrentCommand().cancel();
@@ -393,7 +398,7 @@ public class RobotContainer {
                 }));
             }
 
-            if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
+            if (Toggles.useArm) {
                 new Trigger(buttonBoardConfig::pickLeftSub).onTrue(
                         new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
                 new Trigger(buttonBoardConfig::pickRightSub).onTrue(
@@ -441,10 +446,10 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         if (Toggles.usePoseEstimator) {
-            AutoCommand selected = autoCommandChooser.getSelected();
-            System.out.println("Auto: " + selected.name);
-            m_robotState.setStartPose(selected.startPose);
-            return selected.autoCommand;
+//            AutoRoutine selected = autoCommandChooser.getSelected();
+//            System.out.println("Auto: " + selected.name);
+//            m_robotState.setStartPose(selected.startPose);
+//            return selected.autoCommand;
         }
         return new PrintCommand("Autonomous! -----");
     }
