@@ -26,12 +26,9 @@ public class AlignToDoubleSubstation extends CommandBase {
     private Side side;
     private boolean shouldFlip;
 
-    private final PIDController rotController = new PIDController(
-            0.01, 0.0, 0.0);
+    private final PIDController rotController = new PIDController(0.01, 0.0, 0.0);
 
-    private final PIDController yController = new PIDController(
-            0.01, 0.0, 0.0
-    );
+    private final PIDController yController = new PIDController(0.01, 0.0, 0.0);
 
     private static final double maxJoystickInput = 0.3;
     // can go maxJoystickInput at this amount of meters
@@ -89,7 +86,7 @@ public class AlignToDoubleSubstation extends CommandBase {
         double xScale = xError / maxDistanceX;
 //        x = Math.pow(joystickXSupplier.getAsDouble(), 2) * xScale;
 
-        double yError = target.getY() - currentPose.getY();
+        double yError = ySetpoint - currentPose.getY();
 //        y = yController.calculate(yError);
 
         drivetrain.percentOutDrive(new ChassisSpeeds(x, y, omega), true);

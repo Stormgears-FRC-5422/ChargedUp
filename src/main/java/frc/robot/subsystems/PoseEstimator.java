@@ -66,10 +66,9 @@ public class PoseEstimator extends StormSubsystemBase {
                 .getLayout("Vision Pose", BuiltInLayouts.kGrid)
                 .withProperties(Map.of("Number of columns", 3, "Number of rows", 1))
                 .withPosition(4, 4).withSize(2, 1);
-        layout.addDouble("Vision X", () -> getVisionPose().getX()).withPosition(0, 0);
-        layout.addDouble("Vision Y", () -> getVisionPose().getY()).withPosition(0, 1);
-        layout.addDouble("Vision Rotation", () -> getVisionPose().getRotation().getDegrees())
-                .withPosition(0, 2);
+        layout.addDouble("Vision X", () -> getVisionPose().getX());
+        layout.addDouble("Vision Y", () -> getVisionPose().getY());
+        layout.addDouble("Vision Rotation", () -> getVisionPose().getRotation().getDegrees());
     }
 
     @Override

@@ -293,8 +293,10 @@ public class RobotContainer {
             }
 
             if (Toggles.usePneumatics) {
-                new Trigger(secondXboxController::getRightBumperIsHeld).onTrue(new InstantCommand(m_compression::grabCubeOrCone));
-                new Trigger(secondXboxController::getLeftBumperIsHeld).onTrue(new InstantCommand(m_compression::release));
+                new Trigger(secondXboxController::getRightBumperIsHeld)
+                        .onTrue(new InstantCommand(m_compression::grabCubeOrCone));
+                new Trigger(secondXboxController::getLeftBumperIsHeld)
+                        .onTrue(new InstantCommand(m_compression::release));
             } else {
                 System.out.println("Pneumatics or controller not operational");
             }
@@ -343,9 +345,13 @@ public class RobotContainer {
 
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
-                        new AlignToDoubleSubstation(m_drivetrain, logitechController::getWpiXAxis, AlignToDoubleSubstation.Side.LEFT));
+                        new AlignToDoubleSubstation(m_drivetrain,
+                                logitechController::getWpiXAxis, logitechController::getWpiZAxis,
+                                AlignToDoubleSubstation.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
-                        new AlignToDoubleSubstation(m_drivetrain, logitechController::getWpiXAxis, AlignToDoubleSubstation.Side.RIGHT));
+                        new AlignToDoubleSubstation(m_drivetrain,
+                                logitechController::getWpiXAxis, logitechController::getWpiZAxis,
+                                AlignToDoubleSubstation.Side.RIGHT));
             }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
@@ -413,14 +419,6 @@ public class RobotContainer {
 //            }
         }
 
-        if (Toggles.useArm && Toggles.usePneumatics) {
-            ShuffleboardConstants.getInstance().driverTab
-                    .add("Move to high node cone",
-                            new SequentialCommandGroup(
-                                    new ArmToNode(m_arm, () -> FieldConstants.Grids.getGrid()[0][0]),
-                                    new InstantCommand(m_compression::release)));
-        }
-
         if (Toggles.useLogitechController && Toggles.useNavX) {
             BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(new InstantCommand(() -> {
@@ -435,12 +433,12 @@ public class RobotContainer {
                 }
             }));
 
-            if (Toggles.useDrive && Toggles.usePoseEstimator) {
-                ShuffleboardConstants.getInstance().driverTab
-                        .add("Balance Pitch*", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
-                ShuffleboardConstants.getInstance().driverTab
-                        .add("Balance", new BalanceCommand(m_navX::getPitch, m_navX::getRoll, m_drivetrain));
-            }
+//            if (Toggles.useDrive && Toggles.usePoseEstimator) {
+//                ShuffleboardConstants.getInstance().driverTab
+//                        .add("Balance Pitch*", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
+//                ShuffleboardConstants.getInstance().driverTab
+//                        .add("Balance", new BalanceCommand(m_navX::getPitch, m_navX::getRoll, m_drivetrain));
+//            }
         }
     }
 

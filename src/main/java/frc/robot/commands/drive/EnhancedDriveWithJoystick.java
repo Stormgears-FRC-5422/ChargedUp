@@ -27,7 +27,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final SlewRateLimiter tyLimiter = new SlewRateLimiter(3.5);
     private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(3.5);
 
-    private final BooleanSupplier robotRelativeSupplier, percisionModeSupplier;
+    private final BooleanSupplier robotRelativeSupplier, turboSupplier;
     private final ProfiledPIDController rotController =
             new ProfiledPIDController(0.02, 0.0, 0.0,
                 new TrapezoidProfile.Constraints(180, 60));
@@ -39,13 +39,13 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     public EnhancedDriveWithJoystick(DrivetrainBase drivetrain,
                                      DoubleSupplier txSupplier, DoubleSupplier tySupplier, DoubleSupplier omegaSupplier,
-                                     BooleanSupplier robotRelativeSupplier, BooleanSupplier speedModeSupplier) {
+                                     BooleanSupplier robotRelativeSupplier, BooleanSupplier turboSupplier) {
         m_drivetrain = drivetrain;
         this.txSupplier = txSupplier;
         this.tySupplier = tySupplier;
         this.omegaSupplier = omegaSupplier;
         this.robotRelativeSupplier = robotRelativeSupplier;
-        this.percisionModeSupplier = speedModeSupplier;
+        this.turboSupplier = turboSupplier;
 
         rotController.enableContinuousInput(-180.0, 180.0);
         rotController.setTolerance(1.5);
@@ -60,7 +60,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
                 .withPosition(0, 2).withSize(1, 1);
 
         ShuffleboardConstants.getInstance().driverTab
-                .addBoolean("Speed Mode", speedModeSupplier)
+                .addBoolean("Turbo", turboSupplier)
                 .withWidget(BuiltInWidgets.kBooleanBox)
                 .withPosition(1, 2).withSize(1, 1);
 
@@ -74,6 +74,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     @Override
     public void initialize() {
+        m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
         txLimiter.reset(txSupplier.getAsDouble());
         tyLimiter.reset(tySupplier.getAsDouble());
         omegaLimiter.reset(omegaSupplier.getAsDouble());
@@ -104,17 +105,16 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        m_drivetrain.setDriveSpeedScale(1.0);
         System.out.println("Drive command ended!");
     }
 
     private void _drive() {
-        if (!percisionModeSupplier.getAsBoolean())
+        if (!turboSupplier.getAsBoolean())
             m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
         else
             m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
 
-        if (setpointRotationMode && percisionModeSupplier.getAsBoolean()) {
+        if (setpointRotationMode && turboSupplier.getAsBoolean()) {
             m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
         }
 
