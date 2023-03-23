@@ -86,16 +86,16 @@ public class ArmPathFollowingCommand extends CommandBase {
                 new Pose2d(currentTranslation, new Rotation2d(0)),
                 setpoint);
 
-        if (count++ % 25 == 0) {
-            System.out.println("*****");
-            System.out.println("time: " + currentTime);
-            System.out.println("current: " + currentTranslation);
-            System.out.println("--");
-            System.out.println("setpoint: " + setpoint.poseMeters.getTranslation());
-            System.out.println("dX: " + outputSpeeds.vxMetersPerSecond +
-                    ", dY: " + outputSpeeds.vyMetersPerSecond + " omega: " + outputSpeeds.omegaRadiansPerSecond);
-            System.out.println("*****");
-        }
+//        if (count++ % 25 == 0) {
+//            System.out.println("*****");
+//            System.out.println("time: " + currentTime);
+//            System.out.println("current: " + currentTranslation);
+//            System.out.println("--");
+//            System.out.println("setpoint: " + setpoint.poseMeters.getTranslation());
+//            System.out.println("dX: " + outputSpeeds.vxMetersPerSecond +
+//                    ", dY: " + outputSpeeds.vyMetersPerSecond + " omega: " + outputSpeeds.omegaRadiansPerSecond);
+//            System.out.println("*****");
+//        }
         arm.xyMoveArm(new ChassisSpeeds(outputSpeeds.vxMetersPerSecond, outputSpeeds.vyMetersPerSecond, 0));
     }
 

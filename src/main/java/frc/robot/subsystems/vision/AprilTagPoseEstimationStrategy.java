@@ -28,6 +28,7 @@ public final class AprilTagPoseEstimationStrategy {
     /** given data, angle at time, linearVelAtTime(m/s), and rotationalVelAtTime(deg/s) */
     public static VisionMeasurement fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle,
                                                      double linearVel, double rotationalVel) {
+//        System.out.println(data);
         // sort the tags from closest to farthest
         if (data.size() > 1)
             data.sort(Comparator.comparingDouble(tag -> tag.dist));
@@ -112,9 +113,10 @@ public final class AprilTagPoseEstimationStrategy {
 
     private static Translation2d _oneAprilTag(double yawFromTag, double offset, Pose2d tagPose, double dist2d) {
         double theta = -offset + (yawFromTag + tagPose.getRotation().getDegrees());
+//        System.out.println(dist2d);
         double xTransform = Math.cos(Math.toRadians(theta)) * dist2d;
         double yTransform = Math.sin(Math.toRadians(theta)) * dist2d;
-
+//        System.out.println(xTransform);
         return new Translation2d(
                 tagPose.getX() + xTransform,
                 tagPose.getY() + yTransform
@@ -168,8 +170,10 @@ public final class AprilTagPoseEstimationStrategy {
     private static double _get2dDist(int tagID, double dist3d) {
         double heightDiff;
         if (heightDiffs.containsKey(tagID))
-            return heightDiffs.get(tagID);
-        heightDiff = Math.abs(_getTagPose(tagID).getZ() - CAMERA_POSITION.getZ());
+            heightDiff = heightDiffs.get(tagID);
+        else
+            heightDiff = Math.abs(_getTagPose(tagID).getZ() - CAMERA_POSITION.getZ());
+//        System.out.println(heightDiff);
         heightDiffs.put(tagID, heightDiff);
         return Math.sqrt((dist3d*dist3d) - (heightDiff*heightDiff));
     }

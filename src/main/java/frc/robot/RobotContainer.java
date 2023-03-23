@@ -104,7 +104,7 @@ public class RobotContainer {
 //                .withPosition(4, 4).withSize(2, 1);
 
         m_robotState = RobotState.getInstance();
-        m_robotState.setCurrentAlliance(DriverStation.Alliance.Red);
+//        m_robotState.setCurrentAlliance(DriverStation.Alliance.Red);
 
         if (Toggles.useNavX) {
             m_navX = new NavX();
@@ -177,6 +177,7 @@ public class RobotContainer {
             m_stormNet = StormNet.getInstance();
             m_stormNet.test();
             if (Toggles.useStatusLights) {
+//                System.out.println(m_stormNet.getLidarDistance());
                 m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
 //                m_neoPixel.setDefaultCommand(m_lidarIndicatorCommand);
             }
@@ -214,15 +215,16 @@ public class RobotContainer {
         configureBindings();
         if (Toggles.usePoseEstimator && Toggles.useNavX && Toggles.useArm &&
                 Toggles.usePneumatics) {
+//            System.out.println();
             AutoRoutines.initAutoRoutines(m_drivetrain, m_navX, m_arm, m_compression);
 
-//            if (AutoRoutines.autoRoutines.size() > 0) {
-//                for (var autoCommand : AutoRoutines.autoRoutines) {
-//                    autoCommandChooser.addOption(autoCommand.name, autoCommand);
-//                }
-//                var command = AutoRoutines.autoRoutines.get(0);
-//                autoCommandChooser.setDefaultOption(command.name, command);
-//            }
+            if (AutoRoutines.autoRoutines.size() > 0) {
+                for (var autoCommand : AutoRoutines.autoRoutines) {
+                    autoCommandChooser.addOption(autoCommand.name, autoCommand);
+                }
+                var command = AutoRoutines.autoRoutines.get(0);
+                autoCommandChooser.setDefaultOption(command.name, command);
+            }
 
             ShuffleboardConstants.getInstance().driverTab
                     .add("Auto Selector", autoCommandChooser)
@@ -337,10 +339,10 @@ public class RobotContainer {
             // 10 SHOULD BE FORWARD AND 12 SHOULD BE BACKWARD
             BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
             new Trigger(() -> logitechController.getRawButton(10)).onTrue(new InstantCommand(
-                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 180 : 0)
+                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 0 : 180)
             ));
             new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(
-                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 0 : 180)
+                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 180 : 0)
             ));
 
             if (Toggles.usePoseEstimator) {
@@ -444,10 +446,10 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         if (Toggles.usePoseEstimator) {
-//            AutoRoutine selected = autoCommandChooser.getSelected();
-//            System.out.println("Auto: " + selected.name);
-//            m_robotState.setStartPose(selected.startPose);
-//            return selected.autoCommand;
+            AutoRoutine selected = autoCommandChooser.getSelected();
+            System.out.println("Auto: " + selected.name);
+            m_robotState.setStartPose(selected.startPose);
+            return selected.autoCommand;
         }
         return new PrintCommand("Autonomous! -----");
     }

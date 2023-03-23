@@ -73,9 +73,16 @@ public class RobotState extends StormSubsystemBase {
         rotEntry = poseGridLayout
                 .add("Rot", getStartPose().getRotation().getDegrees())
                 .withPosition(2, 0).getEntry();
+
+        poseRecord.clear();
+
+        currentOdometryData = null;
+        currentGyroData = null;
+        currentVisionData = null;
     }
 
     public void setCurrentAlliance(DriverStation.Alliance alliance) {
+        System.out.println("Alliance set to: " + alliance);
         currentAlliance = alliance;
     }
 
@@ -219,7 +226,8 @@ public class RobotState extends StormSubsystemBase {
         rotEntry.setDouble(currentPose.getRotation().getDegrees());
     }
 
-    public void enabledInit() {
+    public void autoInit() {
+//        System.out.println("Enabled init in robotState!");
         m_timer.reset();
         m_timer.start();
 
@@ -238,13 +246,13 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public void disabledInit() {
-        m_timer.stop();
-
-        currentOdometryData = null;
-        currentVisionData = null;
-        currentGyroData = null;
-
-        poseRecord.clear();
+//        m_timer.stop();
+//
+//        currentOdometryData = null;
+//        currentVisionData = null;
+//        currentGyroData = null;
+//
+//        poseRecord.clear();
     }
 
     public static class OdometryData {

@@ -35,7 +35,7 @@ public class Vision extends StormSubsystemBase {
         var infoList = m_struct.get_data("april_tag");
         // exit if there is none
         visionReady = false;
-        if (infoList.size() < 1) return;
+        if (infoList.size() == 0) return;
         visionReady = true;
         // clear the april tag vector
         currentAprilTags.clear();
@@ -48,7 +48,7 @@ public class Vision extends StormSubsystemBase {
                     info.get("leftright")
             );
             if (logCounter % 25 == 0)
-                System.out.println(aprilTagData);
+//                System.out.println(aprilTagData);
             currentAprilTags.add(aprilTagData);
         }
         // convert timestamp to seconds

@@ -88,7 +88,7 @@ public class NavX extends StormSubsystemBase {
         RobotState.getInstance().setGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
     }
 
-    public void enabledInit() {
+    public void autoInit() {
         setAngle(RobotState.getInstance().getStartPose().getRotation().getDegrees());
     }
 }

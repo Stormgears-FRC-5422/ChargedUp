@@ -75,7 +75,7 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     @Override
     public void execute() {
-        double x = 0, y = 0, omega = 0;
+        double omega = 0, x = 0, y = 0;
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
 
         omega += rotController.calculate(currentPose.getRotation().getDegrees());
@@ -95,12 +95,13 @@ public class AlignToDoubleSubstation extends CommandBase {
         drivetrain.percentOutDrive(new ChassisSpeeds(x, y, omega), true);
     }
 
+    private double signedSquare(double input) {
+        return Math.signum(input) * Math.pow(input, 2);
+    }
+
     public enum Side {
         LEFT,
         RIGHT
     }
 
-    private double signedSquare(double input) {
-        return Math.signum(input) * Math.pow(input, 2);
-    }
 }

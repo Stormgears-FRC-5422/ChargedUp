@@ -32,20 +32,17 @@ public final class AutoRoutines {
 
     private static final Pair<PathPlannerTrajectory, PathPlannerTrajectory> topConeTaxi =
             new Pair<>(
-                    PathPlanner.loadPath("blue top cone taxi", new PathConstraints(1.5, 2)),
-                    PathPlanner.loadPath("red top cone taxi", new PathConstraints(1.5, 2)));
+                    PathPlanner.loadPath("blue top cone taxi", new PathConstraints(1.0, 1.5)),
+                    PathPlanner.loadPath("red top cone taxi", new PathConstraints(1.0, 1.5)));
     private static final Pair<PathPlannerTrajectory, PathPlannerTrajectory> middleConeBalance =
             new Pair<>(
                     PathPlanner.loadPath("blue middle cone balance", new PathConstraints(1.5, 2)),
                     PathPlanner.loadPath("red middle cone balance", new PathConstraints(1.5, 2)));
-//    private static final PathPlannerTrajectory bumpConeTaxi =
 
 //    private static PathPlannerTrajectory bumpConeBalance = PathPlanner.loadPath(
 //            "bump cone balance", new PathConstraints(1.5, 1.5));
 //    private static PathPlannerTrajectory topConeBalance = PathPlanner.loadPath(
 //            "top cone balance", new PathConstraints(1.5, 2));
-//    private static PathPlannerTrajectory middleConeBalance = PathPlanner.loadPath(
-//            "middle cone balance", new PathConstraints(1.5, 2));
 //    private static PathPlannerTrajectory bumpConePick = PathPlanner.loadPath(
 //            "bump cone pick", new PathConstraints(1.5, 1.5));
 //    private static PathPlannerTrajectory topConePick = PathPlanner.loadPath(
@@ -84,14 +81,14 @@ public final class AutoRoutines {
 //                PathPlanner.loadPath("red middle cone balance", new PathConstraints(1.5, 2)),
 //                        getGrid()[8][1], false, "ONLY FLUXING AUTO");
 
-//        makeAuto(topConeTaxi, 8, 0, "TOP HIGH CONE TAXI");
-//        makeAuto(topConeTaxi, 8, 1, "TOP MID CONE TAXI");
-//        makeAuto(topConeTaxi, 8, 2, "TOP HYBRID CONE TAXI");
-//
-//        makeAuto(middleConeBalance, 3, 0, "MIDDLE HIGH CONE BALANCE");
-//        makeAuto(middleConeBalance, 3, 1, "MIDDLE MID CONE BALANCE");
-//        makeAuto(middleConeBalance, 3, 2, "MIDDLE HYBRID CONE BALANCE");
-//
+        makeAuto(topConeTaxi, 8, 0, "TOP HIGH CONE TAXI");
+        makeAuto(topConeTaxi, 8, 1, "TOP MID CONE TAXI");
+        makeAuto(topConeTaxi, 8, 2, "TOP HYBRID CONE TAXI");
+
+        makeAuto(middleConeBalance, 3, 0, "MIDDLE HIGH CONE BALANCE");
+        makeAuto(middleConeBalance, 3, 1, "MIDDLE MID CONE BALANCE");
+        makeAuto(middleConeBalance, 3, 2, "MIDDLE HYBRID CONE BALANCE");
+
 //        makeAuto(bumpConeTaxi, 8, 0, "BUMP HIGH CONE TAXI");
 //        makeAuto(bumpConeTaxi, 8, 1, "BUMP MID CONE TAXI");
 //        makeAuto(bumpConeTaxi, 8, 2, "BUMP HYBRID CONE TAXI");
@@ -99,20 +96,22 @@ public final class AutoRoutines {
 
     private static void makeAuto(Pair<PathPlannerTrajectory, PathPlannerTrajectory> paths,
                                  int col, int row, String name) {
-//        var blueNode = FieldConstants.Grids.blueAllianceGrid[col][row];
-////        System.out.println(blueNode);
-//        SequentialCommandGroup blueCommand = new SequentialCommandGroup(
-//                _getInitialPlaceCommand(arm, compression, blueNode),
-//                new WaitCommand(0.1),
-//                _getPathFollow(paths.getFirst(), drivetrain));
-////        if (shouldBalance)
-////            command = command.andThen(balanceCommand);
-//
-//        var redNode = FieldConstants.Grids.redAllianceGrid[col][row];
-//        SequentialCommandGroup redCommand = new SequentialCommandGroup(
-//                _getInitialPlaceCommand(arm, compression, redNode),
-//                new WaitCommand(0.1),
-//                _getPathFollow(paths.getSecond(), drivetrain));
+        var blueNode = FieldConstants.Grids.blueAllianceGrid[col][row];
+//        System.out.println(blueNode);
+        SequentialCommandGroup blueCommand = new SequentialCommandGroup(
+                _getInitialPlaceCommand(arm, compression, blueNode),
+                new WaitCommand(0.1),
+                getPathFollow(paths.getFirst(), drivetrain));
+//        if (shouldBalance)
+//            command = command.andThen(balanceCommand);
+        new AutoRoutine(blueCommand, blueNode.scoringPosition, "BLUE: " + name);
+
+        var redNode = FieldConstants.Grids.redAllianceGrid[col][row];
+        SequentialCommandGroup redCommand = new SequentialCommandGroup(
+                _getInitialPlaceCommand(arm, compression, redNode),
+                new WaitCommand(0.1),
+                getPathFollow(paths.getSecond(), drivetrain));
+        new AutoRoutine(redCommand, redNode.scoringPosition, "RED: " + name);
     }
 
     public static FollowPathWithEvents getPathFollow(PathPlannerTrajectory path, DrivetrainBase drivetrain) {

@@ -56,7 +56,7 @@ public class LEDLightStrip {
     effectiveLength = (segment.endPosition + 1) / 3;
     segments.add(segment);
 
-    System.out.println("start" + segment.startPosition + ", end: " + segment.endPosition + ", size: " + segments.size() + ", effective length: " + effectiveLength + ", num of LEDS: " + segment.numLEDs );
+//    System.out.println("start" + segment.startPosition + ", end: " + segment.endPosition + ", size: " + segments.size() + ", effective length: " + effectiveLength + ", num of LEDS: " + segment.numLEDs );
 
   }
 
@@ -91,7 +91,7 @@ public class LEDLightStrip {
       this.buffer.setRGBW4(segment.startPosition, index, color.red, color.green, color.blue, 0);
     } else if (segment.lightType.equals(LightType.RGB)) {
       this.buffer.setRGB3(segment.startPosition, index, color.red, color.green, color.blue);
-      System.out.println("Segment Number: " + segmentNumber + " Index: " + index);
+//      System.out.println("Segment Number: " + segmentNumber + " Index: " + index);
     }
 
   }

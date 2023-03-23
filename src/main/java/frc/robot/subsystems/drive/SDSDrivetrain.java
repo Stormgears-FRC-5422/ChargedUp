@@ -219,12 +219,12 @@ public class SDSDrivetrain extends DrivetrainBase {
         RobotState.getInstance().setOdometryData(Timer.getFPGATimestamp(), currentOdometryData);
     }
 
-    public void enabledInit() {
+    public void autoInit() {
         resetDriveEncoders();
     }
 
     public void disabledInit() {
-        resetDriveEncoders();
+//        resetDriveEncoders();
     }
 
     private void initEncoders() {

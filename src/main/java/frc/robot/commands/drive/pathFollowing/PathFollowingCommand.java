@@ -76,22 +76,22 @@ public class PathFollowingCommand extends CommandBase {
                     new Pose2d(1, 0, new Rotation2d()),
                     1.0, 1.0);
         }
-        transformedPath = m_path;
-        if (transformForAlliance) {
-            transformedPath = PathPlannerTrajectory
-                    .transformTrajectoryForAlliance(m_path, RobotState.getInstance().getCurrentAlliance());
-            System.out.println("Transforming!");
-            System.out.println(transformedPath);
-        }
+//        transformedPath = m_path;
+//        if (transformForAlliance) {
+//            transformedPath = PathPlannerTrajectory
+//                    .transformTrajectoryForAlliance(m_path, RobotState.getInstance().getCurrentAlliance());
+//            System.out.println("Transforming!");
+//            System.out.println(transformedPath);
+//        }
         System.out.println(m_path.getInitialHolonomicPose());
 
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         Pose2d endPose = new Pose2d(
-                transformedPath.getEndState().poseMeters.getTranslation(),
-                transformedPath.getEndState().holonomicRotation
+                m_path.getEndState().poseMeters.getTranslation(),
+                m_path.getEndState().holonomicRotation
         );
         startTime = RobotState.getInstance().getTimeSeconds();
-        totalTime = transformedPath.getTotalTimeSeconds();
+        totalTime = m_path.getTotalTimeSeconds();
         System.out.println("Following path starting at: " + startTime);
         System.out.println("Pose at start: " + currentPose + " to: " + endPose);
 
@@ -101,7 +101,7 @@ public class PathFollowingCommand extends CommandBase {
     @Override
     public void execute() {
         currentTime = RobotState.getInstance().getTimeSeconds() - startTime;
-        var goalState = (PathPlannerTrajectory.PathPlannerState) transformedPath.sample(currentTime);
+        var goalState = (PathPlannerTrajectory.PathPlannerState) m_path.sample(currentTime);
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         //Path Planner states are different to trajectory states
         Pose2d goalPose = new Pose2d(

@@ -34,7 +34,7 @@ public final class StormSubsystemScheduler {
                 subsystem.stormPeriodic();
                 // rising edge of enabled-ness
                 if (!wasEnabled) {
-                    subsystem.enabledInit();
+                    if (!autoWasEnabled && !teleopWasEnabled) subsystem.enabledInit();
                     if (autoEnabled && !autoWasEnabled) subsystem.autoInit();
                     if (teleopEnabled && !teleopWasEnabled) subsystem.teleopInit();
                 }
@@ -53,6 +53,7 @@ public final class StormSubsystemScheduler {
         }
 
         wasEnabled = isEnabled;
+//        System.out.println(wasEnabled);
         autoWasEnabled = autoEnabled;
         teleopWasEnabled = teleopEnabled;
         double timeThroughLoop = Timer.getFPGATimestamp() - timeAtStart;
