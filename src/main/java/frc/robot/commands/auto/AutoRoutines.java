@@ -85,9 +85,9 @@ public final class AutoRoutines {
         makeAuto(topConeTaxi, 8, 1, "TOP MID CONE TAXI");
         makeAuto(topConeTaxi, 8, 2, "TOP HYBRID CONE TAXI");
 
-        makeAuto(middleConeBalance, 3, 0, "MIDDLE HIGH CONE BALANCE");
-        makeAuto(middleConeBalance, 3, 1, "MIDDLE MID CONE BALANCE");
-        makeAuto(middleConeBalance, 3, 2, "MIDDLE HYBRID CONE BALANCE");
+//        makeAuto(middleConeBalance, 3, 0, "MIDDLE HIGH CONE BALANCE");
+//        makeAuto(middleConeBalance, 3, 1, "MIDDLE MID CONE BALANCE");
+//        makeAuto(middleConeBalance, 3, 2, "MIDDLE HYBRID CONE BALANCE");
 
 //        makeAuto(bumpConeTaxi, 8, 0, "BUMP HIGH CONE TAXI");
 //        makeAuto(bumpConeTaxi, 8, 1, "BUMP MID CONE TAXI");

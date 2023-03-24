@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
@@ -31,6 +32,8 @@ public class ArmPathFollowingCommand extends CommandBase {
             new PIDController(0, 0, 0));
 
     private Translation2d currentTranslation, goalTranslation;
+
+    private Timer timer = new Timer();
 
     public ArmPathFollowingCommand(Arm arm) {
         this.arm = arm;
@@ -61,8 +64,9 @@ public class ArmPathFollowingCommand extends CommandBase {
             path = new PathPlannerTrajectory();
             return;
         }
-        startTime = RobotState.getInstance().getTimeSeconds();
-        currentTime = 0;
+
+        timer.reset();
+        timer.start();
 
         currentTranslation = arm.getGripperPose().getTranslation();
         goalTranslation = path.getEndState().poseMeters.getTranslation();
@@ -73,7 +77,7 @@ public class ArmPathFollowingCommand extends CommandBase {
 
     @Override
     public void execute() {
-        currentTime = RobotState.getInstance().getTimeSeconds() - startTime;
+        currentTime = timer.get();
         currentTranslation = arm.getGripperPose().getTranslation();
 
         var setpoint = (PathPlannerTrajectory.PathPlannerState) path.sample(currentTime);

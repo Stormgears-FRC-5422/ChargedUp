@@ -8,16 +8,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.*;
 
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoManeuvers.*;
 import frc.robot.commands.drive.*;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LidarIndicatorCommand;
 import frc.robot.commands.arm.ArmCommand;
@@ -156,15 +153,6 @@ public class RobotContainer {
         } else
             System.out.println("NOT using pneumatics");
 
-//        if (Toggles.useStormNet) {
-//          StormNet.init();
-//          m_stormNet = StormNet.getInstance();
-//          if (Toggles.useStatusLights && Toggles.useStormNet) {
-//                m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
-//            }
-//        } else
-//            System.out.println("NOT using stormnet");
-
         if (Toggles.useDrive && DriveConstants.driveType.equals("SwerveDrive")) {
             m_poseEstimator = new PoseEstimator(m_drivetrain.getSwerveDriveKinematics());
             System.out.println("USING pose estimator");
@@ -239,35 +227,48 @@ public class RobotContainer {
                 EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                         m_drivetrain,
                         firstXboxController::getLeftJoystickY,
-                        firstXboxController::getLeftJoystickX,
-                        firstXboxController::getRightJoystickX,
-                        firstXboxController::getLeftBumperIsHeld,
-                        () -> firstXboxController.getLeftTrigger() > 0.2
+                        () -> -firstXboxController.getLeftJoystickX(),
+                        () -> -firstXboxController.getRightJoystickX(),
+                        firstXboxController::getRightBumperIsHeld,
+                        () -> firstXboxController.getRightTrigger() > 0.2
                 );
                 m_drivetrain.setDefaultCommand(driveWithJoystick);
 
-                BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
                 new Trigger(firstXboxController::getYButtonIsHeld).onTrue(new InstantCommand(() -> {
-                    driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 180 : 0);
+                    driveWithJoystick.setSetPoint(0);
                 }));
                 new Trigger(firstXboxController::getAButtonIsHeld).onTrue(new InstantCommand(() -> {
-                    driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 0 : 180);
+                    driveWithJoystick.setSetPoint(180);
                 }));
                 new Trigger(firstXboxController::getXButtonIsHeld).onTrue(new InstantCommand(() -> {
-                    driveWithJoystick.setSetPoint(isRed.getAsBoolean()? -90 : 90);
+                    driveWithJoystick.setSetPoint(90);
                 }));
                 new Trigger(firstXboxController::getBButtonIsHeld).onTrue(new InstantCommand(() -> {
-                    driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 90 : -90);
+                    driveWithJoystick.setSetPoint(-90);
                 }));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
                     m_drivetrain.getCurrentCommand().cancel();
                     driveWithJoystick.schedule();
-                    if (Toggles.useArm) {
-                        m_arm.getCurrentCommand().cancel();
-                        m_arm.getDefaultCommand().schedule();
-                    }
                 }));
+
+                if (Toggles.useNodeSelector) {
+                    new Trigger(firstXboxController::getUpArrowPressed)
+                            .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedRow(-1)));
+                    new Trigger(firstXboxController::getDownArrowPressed)
+                            .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedRow(1)));
+                    new Trigger(firstXboxController::getLeftArrowPressed)
+                            .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedCol(-1)));
+                    new Trigger(firstXboxController::getRightArrowPressed)
+                            .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedCol(1)));
+                    System.out.println("using controller to control node selector");
+
+                    if (Toggles.usePoseEstimator) {
+                        new Trigger(firstXboxController::getRightLittleButtonIsHeld).onTrue(
+                                new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
+                        );
+                    }
+                }
             }
         }
 
@@ -292,6 +293,13 @@ public class RobotContainer {
                             secondXboxController::getRightJoystickY);
                 }
                 m_arm.setDefaultCommand(m_armCommand);
+
+                new Trigger(secondXboxController::getLeftLittleButtonIsHeld).onTrue(
+                        Commands.runOnce(() -> {
+                            m_arm.getCurrentCommand().cancel();
+                            m_arm.getDefaultCommand().schedule();
+                        })
+                );
             }
 
             if (Toggles.usePneumatics) {
@@ -303,17 +311,6 @@ public class RobotContainer {
                 System.out.println("Pneumatics or controller not operational");
             }
 
-            if (Toggles.useNodeSelector) {
-                new Trigger(secondXboxController::getUpArrowPressed)
-                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedRow(-1)));
-                new Trigger(secondXboxController::getDownArrowPressed)
-                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedRow(1)));
-                new Trigger(secondXboxController::getLeftArrowPressed)
-                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedCol(-1)));
-                new Trigger(secondXboxController::getRightArrowPressed)
-                        .onTrue(new InstantCommand(() -> nodeSelector.moveSelectedCol(1)));
-                System.out.println("using controller to control node selector");
-            }
         }
 
         if (Toggles.useDrive && Toggles.useLogitechController) {
@@ -336,13 +333,12 @@ public class RobotContainer {
 //                        })
 //            );
 
-            // 10 SHOULD BE FORWARD AND 12 SHOULD BE BACKWARD
-            BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
+            // 10 SHOULD BE FORWARD AND 12 SHOULD BE BACKWARD]
             new Trigger(() -> logitechController.getRawButton(10)).onTrue(new InstantCommand(
-                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 0 : 180)
+                    () -> driveWithJoystick.setSetPoint(0)
             ));
             new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(
-                    () -> driveWithJoystick.setSetPoint(isRed.getAsBoolean()? 180 : 0)
+                    () -> driveWithJoystick.setSetPoint(180)
             ));
 
             if (Toggles.usePoseEstimator) {
