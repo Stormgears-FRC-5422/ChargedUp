@@ -10,11 +10,13 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 
+import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoManeuvers.*;
 import frc.robot.commands.drive.*;
+import frc.robot.commands.drive.BalanceCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LEDcommand;
 import frc.robot.commands.arm.ArmCommand;
@@ -34,9 +36,7 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-import frc.robot.subsystems.vision.AprilTagStatusCommand;
 import frc.robot.subsystems.vision.Vision;
-import frc.utils.joysticks.ButtonBoard;
 import frc.utils.joysticks.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
@@ -74,6 +74,7 @@ public class RobotContainer {
     // Other
     // **********
     final RobotState m_robotState;
+    public DriveToDoubleSubstation.Position m_Position = DriveToDoubleSubstation.Position.NONE;
 
 
     // **********
@@ -83,8 +84,7 @@ public class RobotContainer {
     NodeSelector nodeSelector;
     StormXboxController firstXboxController;
     StormXboxController secondXboxController;
-    ButtonBoard buttonBoard;
-    ButtonBoardConfig buttonBoardConfig;
+    ButtonBoardConfig m_buttonBoardConfig;
 
     private final SendableChooser<AutoRoutine> autoCommandChooser = new SendableChooser<>();
     private final SendableChooser<DriverStation.Alliance> allianceChooser = new SendableChooser<>();
@@ -124,7 +124,7 @@ public class RobotContainer {
 //                System.out.println("Successfully created Drivetrain!");
             } catch (Exception e) {
                 e.printStackTrace();
-                 Toggles.useDrive = false;
+                Toggles.useDrive = false;
                 System.out.println("NOT using drive - caught exception!");
             }
         } else {
@@ -133,7 +133,7 @@ public class RobotContainer {
 
         if (Toggles.useVision) {
             m_vision = new Vision();
-            m_aprilTagStatusCommand = new AprilTagStatusCommand(m_vision, m_neoPixel);
+            m_aprilTagStatusCommand = new AprilTagStatusCommand(m_neoPixel, m_vision);
         } else {
             System.out.println("NOT using vision");
         }
@@ -173,12 +173,6 @@ public class RobotContainer {
             System.out.println("NOT using StormNet");
         }
 
-
-        // create controllers
-        if (Toggles.useButtonBoard){
-            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression, m_arm);
-            buttonBoardConfig.buttonBoardSetup();
-        }
         if (Toggles.useLogitechController) {
             logitechController = new StormLogitechController(kLogitechControllerPort);
             System.out.println("using logitech controller");
@@ -198,8 +192,6 @@ public class RobotContainer {
         } else
             System.out.println("NOT using second xbox controller");
 
-        // Configure the trigger bindings
-        configureBindings();
         if (Toggles.usePoseEstimator && Toggles.useNavX && Toggles.useArm &&
                 Toggles.usePneumatics) {
 //            System.out.println();
@@ -218,9 +210,24 @@ public class RobotContainer {
                     .withWidget(BuiltInWidgets.kComboBoxChooser)
                     .withPosition(2, 3).withSize(2, 1);
         }
+
+        // Configure the controller bindings
+        configureControllerBindings();
+
+        if (Toggles.useButtonBoard) {
+            m_buttonBoardConfig = new ButtonBoardConfig();
+            configureButtonBoardBindings();
+            System.out.println("using ButtonBoard");
+        } else {
+            System.out.println("NOT using ButtonBoard");
+        }
+
+        configureOtherCommands();
     }
 
-    private void configureBindings() {
+
+
+    private void configureControllerBindings() {
         if (Toggles.useFirstXboxController) {
             if (Toggles.useDrive) {
                 EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
@@ -367,54 +374,18 @@ public class RobotContainer {
 //        new Trigger(() -> logitechController.getRawButton(11)).onTrue(new InstantCommand(() -> {m_vision.setMode(1);
 //            System.out.println("11 Ran");}));
 
-        //BUTTONBOARD TRIGGERS
-        if (Toggles.useButtonBoard) {
-
-            if (Toggles.useStatusLights) {
-                m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, buttonBoardConfig);
-                m_neoPixel.setDefaultCommand(m_LEDcommand);
-            }
-
-            // Button board can only do XY arm mode
-            if (Toggles.useArm) {
-                m_armCommand = new XYArm(m_arm,
-                        buttonBoardConfig::armInOut,
-                        buttonBoardConfig::armUpDown);
-                m_arm.setDefaultCommand(m_armCommand);
-
-                new Trigger(buttonBoardConfig::stow).onTrue(
-                        new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
-                new Trigger(buttonBoardConfig::pickFloor).onTrue(
-                        new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
-
-
-
-            }
-            if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useArm &&  Toggles.useNodeSelector) {
-                new Trigger(() -> buttonBoardConfig.confirm() && !buttonBoardConfig.m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue
-                        (new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression, buttonBoardConfig.m_Position, m_stormNet));
-
-                new Trigger(() -> buttonBoardConfig.confirm() && buttonBoardConfig.m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue(
-                    new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
-            }
-
-            new Trigger(buttonBoardConfig::cancel).onTrue(new InstantCommand(() ->
-                    CommandScheduler.getInstance().cancelAll()
-            ));
-
-        }
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
             BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(new InstantCommand(() -> {
-                double angle = isRed.getAsBoolean()?
+                double angle = isRed.getAsBoolean() ?
                         180.0 : 0;
                 m_navX.setAngle(angle);
                 if (Toggles.usePoseEstimator) {
                     m_poseEstimator.resetEstimator(
                             new Pose2d(
-                                RobotState.getInstance().getCurrentPose().getTranslation(),
-                                m_navX.getAbsoluteRotation()));
+                                    RobotState.getInstance().getCurrentPose().getTranslation(),
+                                    m_navX.getAbsoluteRotation()));
                 }
             }));
 
@@ -425,6 +396,95 @@ public class RobotContainer {
 //                        .add("Balance", new BalanceCommand(m_navX::getPitch, m_navX::getRoll, m_drivetrain));
 //            }
         }
+    }
+
+    private void configureButtonBoardBindings() {
+        System.out.println("configButtonBoardBindings starting");
+        int[] allRingSegments = {1, 2, 3, 4};
+
+        // **********
+        // Major safety triggers
+        // **********
+        new Trigger(m_buttonBoardConfig::kill).onTrue(new InstantCommand(() -> System.exit(0)));
+
+        new Trigger(m_buttonBoardConfig::cancel).onTrue(new InstantCommand(() -> {
+            CommandScheduler.getInstance().cancelAll();
+            m_Position = DriveToDoubleSubstation.Position.NONE;
+        }));
+
+        // **********
+        // Switches for state - cone/cube, node levels
+        // **********
+        new Trigger(m_buttonBoardConfig::topGrid)
+                .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
+        new Trigger(m_buttonBoardConfig::middleGrid )
+                .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
+        new Trigger(m_buttonBoardConfig::bottomGrid)
+                .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
+        new Trigger(m_buttonBoardConfig::cubeCone).onTrue(new InstantCommand(() ->
+                m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR)));
+        new Trigger(m_buttonBoardConfig::cubeCone).onFalse(new InstantCommand(() ->
+                m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR)));
+
+        // **********
+        // Gripper
+        // **********
+        new Trigger(m_buttonBoardConfig::gripperClosed)
+                .onTrue(new InstantCommand(() -> m_compression.release()));
+        new Trigger(m_buttonBoardConfig::gripperClosed)
+                .onFalse(new InstantCommand(() -> m_compression.grabCubeOrCone()));
+
+        // **********
+        // Automated routines for arm placement
+        // **********
+        if (Toggles.useArm) {
+            // Stow, pick floor
+            new Trigger(m_buttonBoardConfig::stow).onTrue(
+                    new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
+            new Trigger(m_buttonBoardConfig::pickFloor).onTrue(
+                    new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
+
+            // Set grid 1 - 9
+            for (int i = 1; i <= 9 ; i++) {
+                int tmpI = i; // Need a final value for the lambda function
+                new Trigger(() -> m_buttonBoardConfig.getGridButton(tmpI))
+                        .onTrue(new InstantCommand(() -> {
+                            nodeSelector.setSelectedCol(tmpI);
+                        }));
+            }
+
+            if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
+                new Trigger(() -> m_buttonBoardConfig.confirm() && !m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue
+                        (new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression, m_Position, m_stormNet));
+
+                new Trigger(() -> m_buttonBoardConfig.confirm() && m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue(
+                        new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
+            }
+
+            new Trigger(m_buttonBoardConfig::confirm).onTrue(
+                    new ArmToNode(m_arm, nodeSelector::getSelectedNode));
+        }
+
+        if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
+            new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(
+                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
+            new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(
+                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
+            //        // set pickup substation info
+            //        new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(new InstantCommand(() -> {
+            //            m_Position = DriveToDoubleSubstation.Position.LEFT;
+            //        }));
+            //        new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(new InstantCommand(() -> {
+            //            m_Position = DriveToDoubleSubstation.Position.RIGHT;
+            //        }));
+        }
+
+            //            if (Toggles.useNodeSelector && Toggles.usePoseEstimator &&
+            //                    Toggles.useVision && Toggles.useXYArmMode) {
+            //                new Trigger(buttonBoardConfig::).onTrue(
+            //                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode));
+            //
+            //            }
     }
 
     public Command getAutonomousCommand() {
@@ -438,6 +498,28 @@ public class RobotContainer {
             return selected.autoCommand;
         }
         return new PrintCommand("Autonomous! -----");
+    }
+
+    private void configureOtherCommands() {
+        if (Toggles.useArm && Toggles.usePneumatics) {
+            ShuffleboardConstants.getInstance().driverTab
+                    .add("Move to high node cone",
+                            new SequentialCommandGroup(
+                                    new ArmToNode(m_arm, () -> FieldConstants.Grids.getGrid()[0][0]),
+                                    new InstantCommand(m_compression::release)));
+        }
+
+        if (Toggles.useButtonBoard && Toggles.useStatusLights && Toggles.useStormNet) {
+            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, m_buttonBoardConfig);
+            m_neoPixel.setDefaultCommand(m_LEDcommand);
+        }
+
+        if (Toggles.useButtonBoard && Toggles.useArm) {
+            m_armCommand = new XYArm(m_arm,
+                    m_buttonBoardConfig::armInOut,
+                    m_buttonBoardConfig::armUpDown);
+            m_arm.setDefaultCommand(m_armCommand);
+        }
     }
 
     public void enabledInit() {
