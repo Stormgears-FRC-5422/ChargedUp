@@ -5,7 +5,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.DriverStation;
 
 import static frc.robot.constants.FieldConstants.FIELD_LENGTH;
 import static frc.robot.constants.FieldConstants.getTagPose;
@@ -71,7 +70,6 @@ public final class AprilTagPoseEstimationStrategy {
 
     private static Translation2d _oneAprilTag(double yawFromTag, double offset, Pose2d tagPose, double dist2d) {
         double theta = -offset + (yawFromTag + tagPose.getRotation().getDegrees());
-//        System.out.println(dist2d);
         double xTransform = Math.cos(Math.toRadians(theta)) * dist2d;
         double yTransform = Math.sin(Math.toRadians(theta)) * dist2d;
 //        System.out.println(xTransform);
@@ -84,8 +82,8 @@ public final class AprilTagPoseEstimationStrategy {
     /** only get translation of robot from tag distances */
     private static Translation2d _twoAprilTags(AprilTagData closerTag, AprilTagData fartherTag) {
         // grab pose2d objects for tags
-        var closerTagTranslation = _getTagPose(closerTag.id).getTranslation().toTranslation2d();
-        var fartherTagTranslation = _getTagPose(fartherTag.id).getTranslation().toTranslation2d();
+        var closerTagTranslation = _get2dTagPose(closerTag.id).getTranslation();
+        var fartherTagTranslation = _get2dTagPose(fartherTag.id).getTranslation();
         double distBetween = closerTagTranslation.getDistance(fartherTagTranslation);
         // get distances in 2d
         double closerDist = _get2dDist(closerTag.id, closerTag.dist);

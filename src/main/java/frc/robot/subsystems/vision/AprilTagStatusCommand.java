@@ -17,11 +17,11 @@ public class AprilTagStatusCommand extends CommandBase {
 
     @Override
     public void execute() {
-        if (vision.getAprilTagDetected() && !pastAprilTagStatus) {
+        if (vision.getAprilTagStatus() && !pastAprilTagStatus) {
             neoPixel.setColor(0, NeoPixel.RED_COLOR);
             pastAprilTagStatus = true;
-        } else if (!vision.getAprilTagDetected() && pastAprilTagStatus) {
-            neoPixel.setColor(0, NeoPixel.BLACK_COLOR);
+        } else if (!vision.getAprilTagStatus() && pastAprilTagStatus) {
+            neoPixel.setColor(0, NeoPixel.NO_COLOR);
             pastAprilTagStatus = false;
         }
     }

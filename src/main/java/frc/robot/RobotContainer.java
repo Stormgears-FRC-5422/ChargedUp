@@ -6,12 +6,10 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 
-import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
@@ -21,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.LEDcommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
-import frc.robot.commands.drive.BalancePitchCommand;
 import frc.robot.commands.drive.EnhancedDriveWithJoystick;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
@@ -136,7 +133,7 @@ public class RobotContainer {
 
         if (Toggles.useVision) {
             m_vision = new Vision();
-            m_aprilTagStatusCommand = new AprilTagStatusCommand(m_neoPixel,m_vision);
+            m_aprilTagStatusCommand = new AprilTagStatusCommand(m_vision, m_neoPixel);
         } else {
             System.out.println("NOT using vision");
         }

@@ -96,8 +96,8 @@ public class EnhancedDriveWithJoystick extends CommandBase {
 
         if (setpointRotationMode && !rotController.atGoal()) {
             omegaSpeed = rotController.calculate(currentAngle);
-            System.out.println("USING setpoint rotation mode!");
-            System.out.println(omegaSpeed);
+//            System.out.println("USING setpoint rotation mode!");
+//            System.out.println(omegaSpeed);
         } else {
             omegaSpeed = omegaSupplier.getAsDouble();
             // FIXME: do I have to make the vel negative?
