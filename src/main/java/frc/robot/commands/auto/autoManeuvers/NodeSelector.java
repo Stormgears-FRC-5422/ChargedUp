@@ -12,6 +12,9 @@ public class NodeSelector {
 
     private int logCounter = 0;
     private int selectedRow = 0;
+
+
+
     private int selectedCol = 0;
 
     private final ScoringNode[][] currentGrid;
@@ -60,5 +63,9 @@ public class NodeSelector {
 
     public void moveSelectedRow(int moveDist) {
         setSelectedRow(selectedRow - moveDist);
+    }
+
+    public int getSelectedCol() {
+        return selectedCol;
     }
 }

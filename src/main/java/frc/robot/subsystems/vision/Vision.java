@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -41,22 +42,22 @@ public class Vision extends StormSubsystemBase {
         // clear the april tag vector
         currentAprilTags.clear();
         for (var info : infoList) {
-//            System.out.println("yaw from vision" + info.get("yaw"));
+            System.out.println("raw info" + info.toString());
             var aprilTagData = new AprilTagData(
                     info.get("id").intValue(),
                     info.get("distance"),
                     info.get("yaw"),
                     info.get("leftright")
             );
-//            if (logCounter % 25 == 0)
-//                System.out.println(aprilTagData);
+            if (logCounter % 25 == 0)
+                System.out.println(aprilTagData);
             currentAprilTags.add(aprilTagData);
         }
         // convert timestamp to seconds
         double timeSeconds = infoList.get(0).get("timestamp") / Math.pow(10, 6);
         if (logCounter % 25 == 0) {
-//            System.out.println("timestamp: " + timeSeconds);
-//            System.out.println(AprilTagPoseEstimationStrategy.fromAprilTagData(currentAprilTags, new Rotation2d()));
+            System.out.println("timestamp: " + timeSeconds);
+            System.out.println("AprilTagData: " + AprilTagPoseEstimationStrategy.fromAprilTagData(currentAprilTags, new Rotation2d()));
         }
         RobotState.getInstance().setVisionData(timeSeconds, currentAprilTags);
     }

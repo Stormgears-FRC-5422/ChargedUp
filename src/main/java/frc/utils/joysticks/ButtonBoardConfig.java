@@ -1,15 +1,17 @@
 package frc.utils.joysticks;
 
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.RobotState;
+import frc.robot.commands.auto.autoManeuvers.DriveToDoubleSubstation;
 import frc.robot.commands.auto.autoManeuvers.NodeSelector;
 import frc.robot.constants.Constants;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
+
+import javax.swing.text.Position;
+
+import java.util.function.Supplier;
 
 import static frc.robot.constants.Constants.kXYArmManualSpeed;
 
@@ -19,13 +21,18 @@ public class ButtonBoardConfig {
   ButtonBoard m_buttonboard2;
   NeoPixel neoPixel;
   Arm arm;
-  public int grid;
-
   public NodeSelector nodeSelector;
 
   Compression compression;
 
+  public CubeCone m_cubeCone = CubeCone.CONE;
+
+  public DriveToDoubleSubstation.Position m_Position = DriveToDoubleSubstation.Position.NONE;
+
+  public boolean confirmCondition;
+
   public ButtonBoardConfig(NeoPixel neoPixel, NodeSelector nodeSelector, Compression compression, Arm arm) {
+
     m_buttonboard1 = new ButtonBoard(1);
     m_buttonboard2 = new ButtonBoard(2);
     this.neoPixel = neoPixel;
@@ -35,10 +42,11 @@ public class ButtonBoardConfig {
 
   public void buttonBoardSetup(){
     int[] segments1 = {1, 2};
-    int[] allRingSegments = {1,2,3,4};
+    int[] allRingSegments = {1,2,3};
     int[] segmentsoff = {3, 4};
     int[] segmentsoff2 = {1, 2, 4};
     int[] segmentsoff3 = {1, 2, 3};
+
 
     System.out.println("buttonBoardSetup starting");
 
@@ -67,7 +75,6 @@ public class ButtonBoardConfig {
 //    new Trigger(() -> m_buttonboard1.getRawButton(10) && !m_buttonboard1.getRawButton(7))
 //            .onTrue(new InstantCommand(() -> neoPixel.setColor(4, NeoPixel.YELLOW_COLOR)));
 
-
 //    CODE BELOW CAN BE USED WHEN WE FLOOR,LEFT, and RIGHT SUBS WORKS
 
 //    new Trigger(() -> m_buttonboard1.getRawButton(12) && m_buttonboard1.getRawButton(7))
@@ -91,25 +98,31 @@ public class ButtonBoardConfig {
 //            .onTrue(new InstantCommand(() -> {neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
 //              neoPixel.setSpecificSegmentColor(segmentsoff3, NeoPixel.NO_COLOR);}));
 
-    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() ->
-    neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR)));
-    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() ->
-            neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR)));
+    if (Constants.Toggles.useStatusLights) {
+      new Trigger(m_buttonboard1::cubeCone).whileTrue(new InstantCommand(() -> {
+        neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
+        m_cubeCone = CubeCone.CUBE;
+      }));
+      new Trigger(m_buttonboard1::cubeCone).whileFalse(new InstantCommand(() -> {
+        neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
+        m_cubeCone = CubeCone.CONE;
+      }));
+    }
+//    new Trigger(m_buttonboard1::floor).onTrue(new InstantCommand(() -> m_Position = Position.FLOOR));
+
+    new Trigger(m_buttonboard1::leftSub).onTrue(new InstantCommand(() -> {
+      m_Position = DriveToDoubleSubstation.Position.LEFT;
+    }));
+    new Trigger(m_buttonboard1::rightSub).onTrue(new InstantCommand(() -> {
+      m_Position = DriveToDoubleSubstation.Position.RIGHT;
+    }));
 
 
-    new Trigger(m_buttonboard1::store).onTrue(new InstantCommand(() -> System.out.println("Store Selected")));
-
-//    new Trigger(m_buttonboard1::manualOverride).onTrue(new InstantCommand(() -> System.out.println("Manuel Arm Override")));
 
 
-
-//    new Trigger(m_buttonboard1::cubeCone).onTrue(new InstantCommand(() -> m_gamePiece = gamePiece.CUBE));
-//    new Trigger(m_buttonboard1::cubeCone).onFalse(new InstantCommand(() -> m_gamePiece = gamePiece.CONE));
-
-    //TODO: change later
     if (Constants.Toggles.usePneumatics) {
-      new Trigger(() -> m_buttonboard2.getRawButton(3)).onTrue(new InstantCommand(compression::grabCubeOrCone));
-      new Trigger(() -> m_buttonboard2.getRawButton(3)).onFalse(new InstantCommand(compression::release));
+      new Trigger(m_buttonboard2::gripper).whileTrue(new InstantCommand(compression::grabCubeOrCone));
+      new Trigger(m_buttonboard2::gripper).whileFalse(new InstantCommand(compression::release));
     }
 
     // set row of node selector
@@ -127,7 +140,7 @@ public class ButtonBoardConfig {
       new Trigger(() -> m_buttonboard2.getRawButton(temp + offset))
               .onTrue(new InstantCommand(() -> {
                 nodeSelector.setSelectedCol(temp);
-
+                m_Position = DriveToDoubleSubstation.Position.NONE;
               }));
     }
   }

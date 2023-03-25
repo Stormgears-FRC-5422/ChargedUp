@@ -23,9 +23,9 @@ public class AprilTagStatusCommand extends CommandBase {
   public void execute() {
     if (vision.getAprilTagStatus() != pastAprilTagStatus) {
       if (vision.getAprilTagStatus()) {
-        neoPixel.setColor(1, NeoPixel.GREEN_COLOR);
+        neoPixel.setColor(0, NeoPixel.GREEN_COLOR);
       } else {
-        neoPixel.setColor(1, NeoPixel.NO_COLOR);
+        neoPixel.setColor(0, NeoPixel.NO_COLOR);
       }
       pastAprilTagStatus = vision.getAprilTagStatus();
     }

@@ -8,10 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.LidarIndicatorCommand;
-import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.subsystemUtils.StormSubsystemScheduler;
 
 import java.time.LocalDateTime;
@@ -88,6 +85,7 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
     }
 
+
     @Override
     public void disabledPeriodic() {
     }
@@ -122,8 +120,6 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
-        m_robotContainer.m_lidarIndicatorCommand.schedule();
-        m_robotContainer.m_aprilTagStatusCommand.schedule();
         RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
     }
 
