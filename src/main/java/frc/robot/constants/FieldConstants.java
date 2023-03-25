@@ -183,7 +183,7 @@ public final class FieldConstants {
                     blueAllianceGrid[wpiY][wpiX] = node;
                     var transformedNode = ScoringNode.transformBlueToRed(node);
                     redAllianceGrid[wpiY][wpiX] = transformedNode;
-                    System.out.println(node.scoringPosition);
+//                    System.out.println(transformedNode);
                 }
             }
         }

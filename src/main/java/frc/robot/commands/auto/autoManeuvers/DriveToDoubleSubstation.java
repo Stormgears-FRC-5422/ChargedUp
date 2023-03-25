@@ -57,6 +57,6 @@ public class DriveToDoubleSubstation extends PathFollowingCommand {
     }
 
     public enum Position {
-        LEFT, RIGHT
+        LEFT, RIGHT, FLOOR, NONE
     }
 }

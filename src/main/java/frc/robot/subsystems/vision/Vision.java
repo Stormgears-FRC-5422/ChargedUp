@@ -87,7 +87,7 @@ public class Vision extends StormSubsystemBase {
         System.out.println("After");
     }
 
-    public boolean getAprilTagDetected() {
+    public boolean getAprilTagStatus() {
         return visionReady;
     }
 }

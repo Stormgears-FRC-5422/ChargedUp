@@ -11,15 +11,18 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 
+import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoManeuvers.*;
 import frc.robot.commands.drive.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.LidarIndicatorCommand;
+import frc.robot.commands.LEDcommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
+import frc.robot.commands.drive.BalancePitchCommand;
+import frc.robot.commands.drive.EnhancedDriveWithJoystick;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
@@ -65,7 +68,7 @@ public class RobotContainer {
     // **********
     BalanceCommand m_balancecommand;
     GyroCommand m_gyrocommand;
-    LidarIndicatorCommand m_lidarIndicatorCommand;
+    LEDcommand m_LEDcommand;
     AprilTagStatusCommand m_aprilTagStatusCommand;
     ArmCommand m_armCommand;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
@@ -133,9 +136,7 @@ public class RobotContainer {
 
         if (Toggles.useVision) {
             m_vision = new Vision();
-            if (Toggles.useStatusLights) {
-                m_aprilTagStatusCommand = new AprilTagStatusCommand(m_vision, m_neoPixel);
-            }
+            m_aprilTagStatusCommand = new AprilTagStatusCommand(m_neoPixel,m_vision);
         } else {
             System.out.println("NOT using vision");
         }
@@ -160,27 +161,27 @@ public class RobotContainer {
             Toggles.usePoseEstimator = true;
         }
 
-        if (Toggles.useStormNet) {
-            System.out.println("Using StormNet");
-            StormNet.init();
-            m_stormNet = StormNet.getInstance();
-            m_stormNet.test();
-            if (Toggles.useStatusLights) {
-//                System.out.println(m_stormNet.getLidarDistance());
-                m_lidarIndicatorCommand = new LidarIndicatorCommand(m_stormNet, m_neoPixel);
-//                m_neoPixel.setDefaultCommand(m_lidarIndicatorCommand);
-            }
-        } else {
-            System.out.println("NOT using StormNet");
-        }
-
         if (Toggles.useNodeSelector) {
             nodeSelector = new NodeSelector();
         } else {
             System.out.println("NOT using node selector");
         }
 
+        if (Toggles.useStormNet) {
+            System.out.println("Using StormNet");
+            StormNet.init();
+            m_stormNet = StormNet.getInstance();
+            m_stormNet.test();
+        } else {
+            System.out.println("NOT using StormNet");
+        }
+
+
         // create controllers
+        if (Toggles.useButtonBoard){
+            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression, m_arm);
+            buttonBoardConfig.buttonBoardSetup();
+        }
         if (Toggles.useLogitechController) {
             logitechController = new StormLogitechController(kLogitechControllerPort);
             System.out.println("using logitech controller");
@@ -371,8 +372,11 @@ public class RobotContainer {
 
         //BUTTONBOARD TRIGGERS
         if (Toggles.useButtonBoard) {
-            buttonBoardConfig = new ButtonBoardConfig(m_neoPixel, nodeSelector, m_compression, m_arm);
-            buttonBoardConfig.buttonBoardSetup();
+
+            if (Toggles.useStatusLights) {
+                m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, buttonBoardConfig);
+                m_neoPixel.setDefaultCommand(m_LEDcommand);
+            }
 
             // Button board can only do XY arm mode
             if (Toggles.useArm) {
@@ -386,36 +390,21 @@ public class RobotContainer {
                 new Trigger(buttonBoardConfig::pickFloor).onTrue(
                         new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
 
-                new Trigger(buttonBoardConfig::cancel).onTrue(new InstantCommand(() -> {
-                    m_arm.getCurrentCommand().cancel();
-                    m_arm.getDefaultCommand().schedule();
-                }));
 
-                new Trigger(buttonBoardConfig::confirm).onTrue(
-                        new ArmToNode(m_arm, nodeSelector::getSelectedNode));
+
+            }
+            if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useArm &&  Toggles.useNodeSelector) {
+                new Trigger(() -> buttonBoardConfig.confirm() && !buttonBoardConfig.m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue
+                        (new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression, buttonBoardConfig.m_Position, m_stormNet));
+
+                new Trigger(() -> buttonBoardConfig.confirm() && buttonBoardConfig.m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue(
+                    new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
             }
 
+            new Trigger(buttonBoardConfig::cancel).onTrue(new InstantCommand(() ->
+                    CommandScheduler.getInstance().cancelAll()
+            ));
 
-            if (Toggles.useDrive) {
-                new Trigger(buttonBoardConfig::cancel).onTrue(new InstantCommand(() -> {
-                    m_drivetrain.getCurrentCommand().cancel();
-                    m_drivetrain.getDefaultCommand().cancel();
-                }));
-            }
-
-            if (Toggles.useArm) {
-                new Trigger(buttonBoardConfig::pickLeftSub).onTrue(
-                        new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
-                new Trigger(buttonBoardConfig::pickRightSub).onTrue(
-                        new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
-            }
-
-//            if (Toggles.useNodeSelector && Toggles.usePoseEstimator &&
-//                    Toggles.useVision && Toggles.useXYArmMode) {
-//                new Trigger(buttonBoardConfig::).onTrue(
-//                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode));
-//
-//            }
         }
 
         if (Toggles.useLogitechController && Toggles.useNavX) {

@@ -9,11 +9,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.LidarIndicatorCommand;
-import frc.robot.constants.Constants;
-import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
-import frc.robot.subsystems.stormnet.StormNet;
 import frc.utils.subsystemUtils.StormSubsystemScheduler;
 
 import java.time.LocalDateTime;
@@ -53,8 +49,6 @@ public class Robot extends TimedRobot {
         } catch (IllegalDriveTypeException e) {
             throw new RuntimeException(e);
         }
-
-        DataLogManager.start();
     }
 
     /**
@@ -102,6 +96,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         // schedule the autonomous command (example)
+
         RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
         if (m_autonomousCommand != null) {
@@ -127,13 +122,6 @@ public class Robot extends TimedRobot {
         }
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
         RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
-
-        if (Constants.Toggles.useStatusLights) {
-            if (Constants.Toggles.useStormNet)
-                m_robotContainer.m_lidarIndicatorCommand.schedule();
-            if (Constants.Toggles.useVision)
-                m_robotContainer.m_aprilTagStatusCommand.schedule();
-        }
     }
 
     /**

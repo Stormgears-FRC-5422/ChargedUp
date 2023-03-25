@@ -379,7 +379,7 @@ public class Arm extends StormSubsystemBase {
     /** returns a translation in arm space given a translation from robot origin */
     public static Translation2d fromGlobalTranslation(Translation3d global) {
         return new Translation2d(
-                global.getY() - armTranslation.getX(),
+                global.getX() - armTranslation.getX(),
                 global.getZ() - armTranslation.getY()
         );
     }
