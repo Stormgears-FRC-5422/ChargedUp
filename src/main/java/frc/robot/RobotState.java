@@ -15,6 +15,7 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -279,6 +280,14 @@ public class RobotState extends StormSubsystemBase {
 
         public SwerveModulePosition[] getModulePositions() {
             return modulePositions;
+        }
+
+        @Override
+        public String toString() {
+            return "OdometryData{" +
+                    "modulePositions=" + Arrays.toString(modulePositions) +
+                    ", gyroAngle=" + gyroAngle +
+                    '}';
         }
     }
     public static class ArmData {

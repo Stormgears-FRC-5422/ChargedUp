@@ -32,7 +32,6 @@ public class DriveToNode extends PathFollowingCommand {
     @Override
     public void initialize() {
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
-        double currentVel = RobotState.getInstance().getCurrentLinearVel();
 
         var goalNode = goalNodeSupplier.get();
         System.out.println("Driving to node: " + goalNode);
@@ -48,12 +47,13 @@ public class DriveToNode extends PathFollowingCommand {
             PathPoint startPoint = new PathPoint(
                     currentPose.getTranslation(),
                     Rotation2d.fromRadians(calcHeading(currentPose.getTranslation(), scorePose.getTranslation())),
-                    currentPose.getRotation(), currentVel);
+                    currentPose.getRotation());
                     
             PathPoint endPoint = new PathPoint(
                     scorePose.getTranslation(),
                     scorePose.getRotation(),
-                    scorePose.getRotation()).withPrevControlLength(distForAligned);
+                    scorePose.getRotation())
+                    .withPrevControlLength(distForAligned);
                     
             path = PathPlanner.generatePath(
                     new PathConstraints(1.0, 1.0),
@@ -74,7 +74,7 @@ public class DriveToNode extends PathFollowingCommand {
             PathPoint startPoint = new PathPoint(
                     currentPose.getTranslation(),
                     Rotation2d.fromRadians(calcHeading(currentPose.getTranslation(), alignedToGrid)),
-                    currentPose.getRotation(), currentVel);
+                    currentPose.getRotation());
 
             PathPoint alignToGrids = new PathPoint(
                     alignedToGrid,

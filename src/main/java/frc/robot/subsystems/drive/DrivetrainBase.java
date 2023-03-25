@@ -86,4 +86,5 @@ public abstract class DrivetrainBase extends StormSubsystemBase {
     public SwerveModulePosition[] getSwerveModulePositions() {return new SwerveModulePosition[4];}
     public void goToPPTrajectoryState(PathPlannerTrajectory.PathPlannerState goalState) {}
     public boolean atReferenceState() {return true;}
+    public void updateOdometryData() {}
 }

@@ -21,6 +21,7 @@ import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.AprilTagPoseEstimationStrategy;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static frc.robot.constants.Constants.VisionConstants.CAMERA_POSITION;
@@ -46,6 +47,8 @@ public class PoseEstimator extends StormSubsystemBase {
     private final Matrix<N3, N1> visionMeasurementStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
 
     private double currentOdometryEntryTime, currentVisionEntryTime;
+
+    private static Rotation2d cam2dRotation = CAMERA_POSITION.getRotation().toRotation2d();
 
     public PoseEstimator(SwerveDriveKinematics kinematics) {
         var startPose = RobotState.getInstance().getStartPose();
@@ -105,7 +108,7 @@ public class PoseEstimator extends StormSubsystemBase {
                 if (time != currentVisionEntryTime && info.size() >= 1) {
                     // calculate camera angle by adding to the gyro angle
                     Rotation2d robotRotation = RobotState.getInstance().getRotationAtTime(time);
-                    Rotation2d cameraAngle = robotRotation.rotateBy(CAMERA_POSITION.getRotation().toRotation2d());
+                    Rotation2d cameraAngle = robotRotation.rotateBy(cam2dRotation);
                     double linearVel = RobotState.getInstance().getLinearVelAtTime(time);
                     double rotationalVel = RobotState.getInstance().getRotationalVelAtTime(time);
                     // just call the pose estimation strategy class
@@ -113,15 +116,15 @@ public class PoseEstimator extends StormSubsystemBase {
                             .fromAprilTagData(info, cameraAngle, linearVel, rotationalVel);
                     // have to transform to robot pose
                     visionPose = visionMeasurement.pose;
-                    if (++counter % 25 == 0)
-                        System.out.println("pose before transform: " + visionPose);
+//                    if (++counter % 25 == 0)
+//                        System.out.println("pose before transform: " + visionPose);
                     visionPose = visionPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
-                    if (counter % 25 == 0)
-                        System.out.println("pose after transform: " + visionPose);
+//                    if (counter % 25 == 0)
+//                        System.out.println("pose after transform: " + visionPose);
                     // if we are basically stopped just reset the pose
-                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
-                        RobotState.getInstance().getCurrentDegPerSecVel() <= 5)
-                        resetEstimator(visionPose);
+//                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
+//                        RobotState.getInstance().getCurrentDegPerSecVel() <= 5)
+//                        resetEstimator(visionPose);
                     m_poseEstimator.addVisionMeasurement(visionPose, time, visionMeasurement.deviations);
                     // log the position
                     visionPoseSim.setPose(visionPose);
@@ -138,6 +141,9 @@ public class PoseEstimator extends StormSubsystemBase {
 
     public void resetEstimator(Rotation2d angle, SwerveModulePosition[] modulePositions, Pose2d pose) {
         System.out.println("Pose reset to: " + pose);
+        System.out.println("");
+        System.out.println("module positions on reset: " + Arrays.toString(modulePositions)
+                + " angle on reset: " + angle);
         m_poseEstimator.resetPosition(angle, modulePositions, pose);
     }
 

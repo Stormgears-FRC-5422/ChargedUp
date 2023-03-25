@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import frc.robot.RobotState;
 
+import java.util.Arrays;
+
 import static frc.robot.constants.Constants.DriveConstants.*;
 import static frc.robot.constants.Constants.kNeoFreeSpeedRPM;
 
@@ -198,6 +200,9 @@ public class SDSDrivetrain extends DrivetrainBase {
         ((CANSparkMax) m_frontRightModule.getDriveMotor()).getEncoder().setPosition(0);
         ((CANSparkMax) m_backLeftModule.getDriveMotor()).getEncoder().setPosition(0);
         ((CANSparkMax) m_backRightModule.getDriveMotor()).getEncoder().setPosition(0);
+        System.out.println("-------------------------");
+        System.out.println("DRIVE ENCODERS RESET");
+        System.out.println("-------------------------");
     }
 
     public void stormPeriodic() {
@@ -208,23 +213,31 @@ public class SDSDrivetrain extends DrivetrainBase {
         m_frontRightModule.set(MAX_VOLTAGE * states[1].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[1].angle.getRadians());
         m_backLeftModule.set(MAX_VOLTAGE * states[2].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[2].angle.getRadians());
         m_backRightModule.set(MAX_VOLTAGE * states[3].speedMetersPerSecond / m_maxVelocityMetersPerSecond, states[3].angle.getRadians());
+
+        updateOdometryData();
     }
 
-    @Override
-    public void enabledPeriodic() {
-        RobotState.OdometryData currentOdometryData = new RobotState.OdometryData(
-                getSwerveModulePositions(),
-                getGyroscopeRotation()
-        );
-        RobotState.getInstance().setOdometryData(Timer.getFPGATimestamp(), currentOdometryData);
-    }
+//    @Override
+//    public void enabledPeriodic() {
+//    }
 
     public void autoInit() {
-        resetDriveEncoders();
+//        resetDriveEncoders();
+        updateOdometryData();
     }
 
     public void disabledInit() {
 //        resetDriveEncoders();
+    }
+
+    @Override
+    public void updateOdometryData() {
+        RobotState.OdometryData currentOdometryData = new RobotState.OdometryData(
+                getSwerveModulePositions(),
+                getGyroscopeRotation()
+        );
+//        System.out.println(currentOdometryData);
+        RobotState.getInstance().setOdometryData(Timer.getFPGATimestamp(), currentOdometryData);
     }
 
     private void initEncoders() {

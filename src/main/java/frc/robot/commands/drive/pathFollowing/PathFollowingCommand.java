@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -25,7 +26,8 @@ public class PathFollowingCommand extends CommandBase {
     private PathPlannerTrajectory transformedPath;
     private boolean transformForAlliance = false;
 
-    private double startTime, currentTime, totalTime;
+    private double currentTime, totalTime;
+    private Timer timer = new Timer();
     private boolean hasPassedTotalTime = false;
 
     private final Field2d fieldSim;
@@ -83,16 +85,19 @@ public class PathFollowingCommand extends CommandBase {
 //            System.out.println("Transforming!");
 //            System.out.println(transformedPath);
 //        }
-        System.out.println(m_path.getInitialHolonomicPose());
 
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         Pose2d endPose = new Pose2d(
                 m_path.getEndState().poseMeters.getTranslation(),
                 m_path.getEndState().holonomicRotation
         );
-        startTime = RobotState.getInstance().getTimeSeconds();
+
+        timer.reset();
+        timer.start();
+        currentTime = timer.get();
         totalTime = m_path.getTotalTimeSeconds();
-        System.out.println("Following path starting at: " + startTime);
+
+        System.out.println("Following path starting at: " + RobotState.getInstance().getTimeSeconds());
         System.out.println("Pose at start: " + currentPose + " to: " + endPose);
 
         m_drivetrain.setDriveSpeedScale(1.0);
@@ -100,7 +105,7 @@ public class PathFollowingCommand extends CommandBase {
 
     @Override
     public void execute() {
-        currentTime = RobotState.getInstance().getTimeSeconds() - startTime;
+        currentTime = timer.get();
         var goalState = (PathPlannerTrajectory.PathPlannerState) m_path.sample(currentTime);
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         //Path Planner states are different to trajectory states

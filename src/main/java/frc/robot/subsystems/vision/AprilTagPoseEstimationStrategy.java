@@ -21,9 +21,10 @@ public final class AprilTagPoseEstimationStrategy {
 
     private static int logCounter = 0;
 
-    private static HashMap<Integer, Double> heightDiffs = new HashMap<>();
 
     private static HashMap<Integer, Pose3d> tagPoses = new HashMap<>();
+    private static HashMap<Integer, Pose2d> tag2dPoses = new HashMap<>();
+    private static HashMap<Integer, Double> heightDiffs = new HashMap<>();
 
     /** given data, angle at time, linearVelAtTime(m/s), and rotationalVelAtTime(deg/s) */
     public static VisionMeasurement fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle,
@@ -35,12 +36,12 @@ public final class AprilTagPoseEstimationStrategy {
 
         AprilTagData closest = data.get(0);
         boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
-        Pose3d closeTag = _getTagPose(closest.id);
+        Pose2d closeTag = _get2dTagPose(closest.id);
 
         // rotation is either the state as is or new one based on yaw
         Rotation2d rotation = camAngle;
         if (useYaw)
-            rotation = _getCamAngleFromYaw(closeTag.getRotation().toRotation2d(), closest.yawDegrees);
+            rotation = _getCamAngleFromYaw(closeTag.getRotation(), closest.yawDegrees);
 
         Translation2d translation;
         if (data.size() > 1) {
@@ -48,68 +49,25 @@ public final class AprilTagPoseEstimationStrategy {
             translation = _twoAprilTags(closest, secondClosest);
             // if both tags are in range then we can average their yaw values for rotation
             if (useYaw && secondClosest.dist <= kMaxAprilTagYawTrustMeters) {
-                var secondCloseTagRotation = _getTagPose(secondClosest.id).getRotation().toRotation2d();
+                var secondCloseTagRotation = _get2dTagPose(secondClosest.id).getRotation();
                 Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
                 // FIXME: what happens when the rotations are -179 and 179
-                double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
-                rotation = Rotation2d.fromDegrees(averageRotation);
+//                double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
+//                rotation = Rotation2d.fromDegrees(averageRotation);
             }
         } else {
             double dist2d = _get2dDist(closest.id, closest.dist);
             if (useYaw)
-                translation = _oneAprilTag(closest.yawDegrees, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
+                translation = _oneAprilTag(closest.yawDegrees, closest.offCenterDegrees, closeTag, dist2d);
             else {
-                double yaw = _getYawFromCamAngle(camAngle, closeTag.getRotation().toRotation2d());
-                translation = _oneAprilTag(yaw, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
+                double yaw = _getYawFromCamAngle(camAngle, closeTag.getRotation());
+                translation = _oneAprilTag(yaw, closest.offCenterDegrees, closeTag, dist2d);
             }
         }
 
         Pose2d visionPose = new Pose2d(translation, rotation);
         return new VisionMeasurement(visionPose, closest.dist, linearVel, rotationalVel);
     }
-
-//    /** @return camera pose from list of april tag data */
-//    private static Pose2d fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle) {
-//        if (data.size() == 0) {
-//            DriverStation.reportWarning("Can't ask pose estimation strategy with no data!", true);
-//            return new Pose2d();
-//        }
-//        if (data.size() > 1)
-//            data.sort(Comparator.comparingDouble(tag -> tag.dist));
-//
-//        AprilTagData closest = data.get(0);
-//        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
-//        Pose3d closeTag = _getTagPose(closest.id);
-//
-//        // rotation is either the state as is or new one based on yaw
-//        Rotation2d rotation = camAngle;
-//        if (useYaw)
-//            rotation = _getCamAngleFromYaw(closeTag.getRotation().toRotation2d(), closest.yawDegrees);
-//
-//        Translation2d translation;
-//        if (data.size() > 1) {
-//            System.out.println("Using triangulation method");
-//            AprilTagData secondClosest = data.get(1);
-//            translation = _twoAprilTags(closest, secondClosest);
-//            // if both tags are in range then we can average their yaw values for rotation
-//            if (useYaw && secondClosest.dist <= kMaxAprilTagYawTrustMeters) {
-//                var secondCloseTagRotation = _getTagPose(secondClosest.id).getRotation().toRotation2d();
-//                Rotation2d secondRotation = _getCamAngleFromYaw(secondCloseTagRotation, secondClosest.yawDegrees);
-//                double averageRotation = (secondRotation.getDegrees() + rotation.getDegrees()) / 2.0;
-//                rotation = Rotation2d.fromDegrees(averageRotation);
-//            }
-//        } else {
-//            double dist2d = _get2dDist(closest.id, closest.dist);
-//            if (useYaw)
-//                translation = _oneAprilTag(closest.yawDegrees, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
-//            else {
-//                double yaw = _getYawFromCamAngle(camAngle, closeTag.getRotation().toRotation2d());
-//                translation = _oneAprilTag(yaw, closest.offCenterDegrees, closeTag.toPose2d(), dist2d);
-//            }
-//        }
-//
-//        return new Pose2d(translation, rotation);
-//    }
 
     private static Translation2d _oneAprilTag(double yawFromTag, double offset, Pose2d tagPose, double dist2d) {
         double theta = -offset + (yawFromTag + tagPose.getRotation().getDegrees());
@@ -164,6 +122,16 @@ public final class AprilTagPoseEstimationStrategy {
     /** get angle of camera from yaw value */
     private static Rotation2d _getCamAngleFromYaw(Rotation2d tagAngle, double yaw) {
         return Rotation2d.fromDegrees(yaw + tagAngle.getDegrees() - 180.0);
+    }
+
+    private static Pose2d _get2dTagPose(int tagID) {
+        if (tag2dPoses.containsKey(tagID))
+            return tag2dPoses.get(tagID);
+        else {
+            var pose = _getTagPose(tagID).toPose2d();
+            tag2dPoses.put(tagID, pose);
+            return pose;
+        }
     }
 
     /** get distance to tag in 2d field positions */

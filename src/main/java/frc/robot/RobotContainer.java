@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
@@ -445,6 +446,9 @@ public class RobotContainer {
             AutoRoutine selected = autoCommandChooser.getSelected();
             System.out.println("Auto: " + selected.name);
             m_robotState.setStartPose(selected.startPose);
+//            m_navX.setAngle(selected.startPose.getRotation().getDegrees());
+//            m_robotState.setGyroData(Timer.getFPGATimestamp(), m_navX.getAbsoluteRotation());
+//            m_drivetrain.updateOdometryData();
             return selected.autoCommand;
         }
         return new PrintCommand("Autonomous! -----");

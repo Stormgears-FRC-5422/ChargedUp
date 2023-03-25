@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -76,19 +77,24 @@ public class NavX extends StormSubsystemBase {
     /** get absolute rotation (-180, 180) inverted so counter-clockwise is positive with offset */
     public Rotation2d getAbsoluteRotation() {
         double invertedYaw = -1.0 * getYaw();
-        double abs0to360 = invertedYaw + 180.0;
-        double offsetModified = offset + 360.0;
-        abs0to360 += offsetModified;
-        abs0to360 = (abs0to360 > 360)? abs0to360 % 360 : abs0to360;
-        return Rotation2d.fromDegrees(abs0to360 - 180.0);
+        double withOffset = invertedYaw + offset;
+        return Rotation2d.fromDegrees(
+                MathUtil.inputModulus(withOffset, -180, 180)
+        );
+//        double abs0to360 = invertedYaw + 180.0;
+//        double offsetModified = offset + 360.0;
+//        abs0to360 += offsetModified;
+//        abs0to360 = (abs0to360 > 360)? abs0to360 % 360 : abs0to360;
+//        return Rotation2d.fromDegrees(abs0to360 - 180.0);
     }
 
     @Override
-    public void enabledPeriodic() {
+    public void stormPeriodic() {
         RobotState.getInstance().setGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
     }
 
     public void autoInit() {
         setAngle(RobotState.getInstance().getStartPose().getRotation().getDegrees());
+        RobotState.getInstance().setGyroData(Timer.getFPGATimestamp(), getAbsoluteRotation());
     }
 }

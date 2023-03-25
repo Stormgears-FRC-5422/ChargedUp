@@ -54,7 +54,7 @@ public class Robot extends TimedRobot {
             throw new RuntimeException(e);
         }
 
-//        DataLogManager.start();
+        DataLogManager.start();
     }
 
     /**
