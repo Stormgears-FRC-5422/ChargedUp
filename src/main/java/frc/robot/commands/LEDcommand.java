@@ -31,7 +31,7 @@ public class LEDcommand extends CommandBase {
   @Override
   public void execute() {
     double distance = stormNet.getLidarDistance();
-    CubeCone m_cubeCone = buttonBoardConfig.m_cubeCone;
+    CubeCone m_cubeCone = buttonBoardConfig.cubeCone() ? CubeCone.CUBE : CubeCone.CONE;
     if (distance < 0.5) {
       if (m_cubeCone.equals(CubeCone.CONE)) {
         if (distance <0.13) {

@@ -173,13 +173,5 @@ public final class AprilTagPoseEstimationStrategy {
             double rotWeight = (distWeight + linearVelWeight + rotationalWeight) * kMaxRotationDeviation;
             return VecBuilder.fill(xyWeight, xyWeight, rotWeight);
         }
-
-        @Override
-        public String toString() {
-            return "VisionMeasurement{" +
-                    "pose=" + pose +
-                    ", deviations=" + deviations.toString() +
-                    '}';
-        }
     }
 }
