@@ -42,6 +42,7 @@ import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.constants.Constants.*;
 
@@ -230,15 +231,20 @@ public class RobotContainer {
     private void configureControllerBindings() {
         if (Toggles.useFirstXboxController) {
             if (Toggles.useDrive) {
+                final DoubleSupplier WPIXSupplier = firstXboxController::getLeftJoystickY;
+                final DoubleSupplier WPIYSupplier = () -> -firstXboxController.getLeftJoystickX();
+                final DoubleSupplier omegaSupplier = () -> -firstXboxController.getRightJoystickX();
                 EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                         m_drivetrain,
-                        firstXboxController::getLeftJoystickY,
-                        () -> -firstXboxController.getLeftJoystickX(),
-                        () -> -firstXboxController.getRightJoystickX(),
-                        firstXboxController::getRightBumperIsHeld,
+                        WPIXSupplier,
+                        WPIYSupplier,
+                        omegaSupplier,
+                        () -> firstXboxController.getLeftTrigger() > 0.2,
                         () -> firstXboxController.getRightTrigger() > 0.2
                 );
                 m_drivetrain.setDefaultCommand(driveWithJoystick);
+
+                new Trigger(firstXboxController::getStickRightButton).onTrue(zeroRotationCommand());
 
                 new Trigger(firstXboxController::getYButtonIsHeld).onTrue(new InstantCommand(() -> {
                     driveWithJoystick.setSetPoint(0);
@@ -252,6 +258,13 @@ public class RobotContainer {
                 new Trigger(firstXboxController::getBButtonIsHeld).onTrue(new InstantCommand(() -> {
                     driveWithJoystick.setSetPoint(-90);
                 }));
+
+                new Trigger(firstXboxController::getLeftBumperIsHeld)
+                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, WPIXSupplier,
+                                omegaSupplier, AlignToDoubleSubstation.Side.LEFT));
+                new Trigger(firstXboxController::getRightBumperIsHeld)
+                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, WPIXSupplier,
+                                omegaSupplier, AlignToDoubleSubstation.Side.LEFT));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
                     m_drivetrain.getCurrentCommand().cancel();
@@ -524,5 +537,20 @@ public class RobotContainer {
 
     public void enabledInit() {
 //        m_robotState.setCurrentAlliance(allianceChooser.getSelected());
+    }
+
+    private Command zeroRotationCommand() {
+        BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
+        return new InstantCommand(() -> {
+            double angle = isRed.getAsBoolean() ?
+                    180.0 : 0;
+            m_navX.setAngle(angle);
+            if (Toggles.usePoseEstimator) {
+                m_poseEstimator.resetEstimator(
+                        new Pose2d(
+                                RobotState.getInstance().getCurrentPose().getTranslation(),
+                                m_navX.getAbsoluteRotation()));
+            }
+        });
     }
 }

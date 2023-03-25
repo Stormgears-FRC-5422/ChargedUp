@@ -39,13 +39,13 @@ public class LEDcommand extends CommandBase {
         } else if (distance <= 0.257) {
           neoPixel.setSpecificSegmentColor(segments, NeoPixel.YELLOW_COLOR);
         } else {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR);
+          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
         }
       } else {
         if (distance <= 0.257) {
           neoPixel.setSpecificSegmentColor(segments, NeoPixel.PURPLE_COLOR);
         } else {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR);
+          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
         }
       }
     } else {
