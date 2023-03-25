@@ -357,7 +357,9 @@ public class RobotContainer {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
                         new AlignToDoubleSubstation(m_drivetrain,
                                 logitechController::getWpiXAxis, logitechController::getWpiZAxis,
-                                AlignToDoubleSubstation.Side.LEFT));
+                                AlignToDoubleSubstation.Side.LEFT)
+                                .alongWith(new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 3, 3)));
+
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
                         new AlignToDoubleSubstation(m_drivetrain,
                                 logitechController::getWpiXAxis, logitechController::getWpiZAxis,
@@ -404,10 +406,12 @@ public class RobotContainer {
 
             }
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useArm &&  Toggles.useNodeSelector) {
-                new Trigger(() -> buttonBoardConfig.confirm() && !buttonBoardConfig.m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue
-                        (new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression, buttonBoardConfig.m_Position, m_stormNet));
+//                new Trigger(() -> buttonBoardConfig.confirm() && !buttonBoardConfig.m_side.equals(AlignToDoubleSubstation.Side.NONE)).onTrue
+//                        (new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression, buttonBoardConfig.m_side, m_stormNet,
+//                                logitechController::getWpiXAxis, logitechController::getWpiZAxis, buttonBoardConfig.m_cubeCone));
+                new Trigger(() -> buttonBoardConfig.confirm()).onTrue(new ArmToPickUp(m_arm, m_stormNet, buttonBoardConfig.m_cubeCone));
 
-                new Trigger(() -> buttonBoardConfig.confirm() && buttonBoardConfig.m_Position.equals(DriveToDoubleSubstation.Position.NONE)).onTrue(
+                new Trigger(() -> buttonBoardConfig.confirm() && buttonBoardConfig.m_side.equals(AlignToDoubleSubstation.Side.NONE)).onTrue(
                     new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
             }
 

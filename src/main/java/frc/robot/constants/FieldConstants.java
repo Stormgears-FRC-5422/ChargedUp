@@ -65,8 +65,8 @@ public final class FieldConstants {
         public final static double substationHeight = Units.inchesToMeters(39.938);
 
         private final static double substationAlignDist = Units.feetToMeters(3.0);
-        private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS + substationAlignDist);
-        private final static double wallToPortalClose = Units.inchesToMeters(34.881);
+        private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS);
+        private final static double wallToPortalClose = Units.feetToMeters(2) + Units.inchesToMeters(8.125);
         private final static double wallToPortalFar = Units.inchesToMeters(64.861);
         private final static double portalToFar = Units.inchesToMeters(24.126);
 
@@ -74,7 +74,7 @@ public final class FieldConstants {
 
         private final static Regions.RectangleRegion blueLeftRegion = new Regions.RectangleRegion(
                 wallToRobotPadding - BUMPER_THICKNESS, alignDist,
-                wallToRobotPadding - wallToPortalClose, alignDist);
+                (FIELD_WIDTH - wallToPortalClose) + (ROBOT_WIDTH / 2.0), alignDist);
 
         private final static Regions.RectangleRegion blueRightRegion = new Regions.RectangleRegion(
                 wallToRobotPadding - wallToPortalFar, alignDist,

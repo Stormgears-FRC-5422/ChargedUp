@@ -34,8 +34,8 @@ public final class AprilTagPoseEstimationStrategy {
             data.sort(Comparator.comparingDouble(tag -> tag.dist));
 
         AprilTagData closest = data.get(0);
-//        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
-        boolean useYaw = false;
+        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
+//        boolean useYaw = false;
         Pose2d closeTag = _get2dTagPose(closest.id);
 
         // rotation is either the state as is or new one based on yaw

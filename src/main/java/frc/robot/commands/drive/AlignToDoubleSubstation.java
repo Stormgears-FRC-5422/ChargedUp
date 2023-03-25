@@ -105,7 +105,8 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     public enum Side {
         LEFT,
-        RIGHT
+        RIGHT,
+        NONE
     }
 
 }
