@@ -34,7 +34,8 @@ public final class AprilTagPoseEstimationStrategy {
             data.sort(Comparator.comparingDouble(tag -> tag.dist));
 
         AprilTagData closest = data.get(0);
-        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
+//        boolean useYaw = closest.dist <= kMaxAprilTagYawTrustMeters;
+        boolean useYaw = false;
         Pose2d closeTag = _get2dTagPose(closest.id);
 
         // rotation is either the state as is or new one based on yaw
@@ -171,6 +172,14 @@ public final class AprilTagPoseEstimationStrategy {
             double xyWeight = (distWeight + linearVelWeight + rotationalWeight) * kMaxTranslationDeviation;
             double rotWeight = (distWeight + linearVelWeight + rotationalWeight) * kMaxRotationDeviation;
             return VecBuilder.fill(xyWeight, xyWeight, rotWeight);
+        }
+
+        @Override
+        public String toString() {
+            return "VisionMeasurement{" +
+                    "pose=" + pose +
+                    ", deviations=" + deviations.toString() +
+                    '}';
         }
     }
 }

@@ -28,13 +28,14 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     private final PIDController rotController = new PIDController(0.01, 0.0, 0.0);
 
-    private final PIDController yController = new PIDController(0.01, 0.0, 0.0);
+    private final PIDController yController = new PIDController(0.7, 0.0, 0.0);
 
     private static final double maxRotationSpeed = 0.5;
     private static final double maxYSpeed = 0.5;
     private static final double maxJoystickInput = 0.3;
+    private static final double minJoystickInput = 0.07;
     // can go maxJoystickInput at this amount of meters
-    private static final double maxDistanceX = 2.0;
+    private static final double maxDistanceX = 4.0;
 
     public AlignToDoubleSubstation(DrivetrainBase drivetrain,
                                    DoubleSupplier joystickXSupplier,
@@ -46,6 +47,9 @@ public class AlignToDoubleSubstation extends CommandBase {
         this.side = side;
 
         rotController.enableContinuousInput(-180.0, 180.0);
+        rotController.setTolerance(1.0);
+
+        yController.setTolerance(0.05);
 
         addRequirements(drivetrain);
     }
@@ -68,6 +72,7 @@ public class AlignToDoubleSubstation extends CommandBase {
         }
         xSetpoint = target.getX();
         ySetpoint = target.getY();
+        System.out.println(target);
 
         rotController.setSetpoint(rotationSetpoint);
         yController.setSetpoint(ySetpoint);
@@ -83,11 +88,10 @@ public class AlignToDoubleSubstation extends CommandBase {
         omega += joystickZ;
 
         double xError = (shouldFlip? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
-        double xScale = xError / maxDistanceX;
-//        x = signedSquare(joystickXSupplier.getAsDouble()) * xScale;
+        double xScale = Math.abs(xError / maxDistanceX) + minJoystickInput;
+        x = signedSquare(joystickXSupplier.getAsDouble()) * xScale;
 
-        double yError = ySetpoint - currentPose.getY();
-//        y = yController.calculate(yError);
+        y = yController.calculate(currentPose.getY());
 
         omega = MathUtil.clamp(omega, -maxRotationSpeed, maxRotationSpeed);
         x = MathUtil.clamp(x, -maxJoystickInput, maxJoystickInput);
