@@ -1,10 +1,12 @@
 package frc.robot.commands.drive;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
@@ -30,8 +32,9 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final BooleanSupplier robotRelativeSupplier, turboSupplier;
     private final ProfiledPIDController rotController =
             new ProfiledPIDController(0.02, 0.0, 0.0,
-                new TrapezoidProfile.Constraints(180, 60));
+                new TrapezoidProfile.Constraints(360, 120));
     private final DoubleSupplier robotAngleSupplier;
+    private double currentAngle = 0;
 
     private double omegaSpeed;
     private boolean setpointRotationMode = false;
@@ -78,16 +81,19 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         txLimiter.reset(txSupplier.getAsDouble());
         tyLimiter.reset(tySupplier.getAsDouble());
         omegaLimiter.reset(omegaSupplier.getAsDouble());
+
+        currentAngle = robotAngleSupplier.getAsDouble();
         setpointRotationMode = false;
         System.out.println("Drive command starting!");
     }
 
     @Override
     public void execute() {
-        double currentAngle = robotAngleSupplier.getAsDouble();
+        currentAngle = robotAngleSupplier.getAsDouble();
 
         if (setpointRotationMode)
             setpointRotationMode = !(Math.abs(omegaSupplier.getAsDouble()) >= 0.2);
+
         if (setpointRotationMode && !rotController.atGoal()) {
             omegaSpeed = rotController.calculate(currentAngle);
             System.out.println("USING setpoint rotation mode!");
@@ -95,7 +101,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         } else {
             omegaSpeed = omegaSupplier.getAsDouble();
             // FIXME: do I have to make the vel negative?
-            rotController.reset(currentAngle, RobotState.getInstance().getCurrentDegPerSecVel());
+//            rotController.reset(currentAngle, RobotState.getInstance().getCurrentDegPerSecVel());
             setpointRotationMode = false;
             setpointDirection = "NONE";
         }
@@ -114,13 +120,13 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         else
             m_drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
 
-        if (setpointRotationMode && turboSupplier.getAsBoolean()) {
-            m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
-        }
+//        if (setpointRotationMode && turboSupplier.getAsBoolean()) {
+//            m_drivetrain.setDriveSpeedScale(Constants.kPrecisionSpeedScale);
+//        }
 
         double tx = txLimiter.calculate(txSupplier.getAsDouble());
         double ty = tyLimiter.calculate(tySupplier.getAsDouble());
-        double omega = (setpointRotationMode)? omegaSpeed : omegaLimiter.calculate(omegaSpeed);
+        double omega = omegaLimiter.calculate(omegaSpeed);
 
         m_drivetrain.percentOutDrive(
                 new ChassisSpeeds(tx, ty, omega),
@@ -151,6 +157,15 @@ public class EnhancedDriveWithJoystick extends CommandBase {
                 break;
         }
         rotController.setGoal(angle);
+        rotController.reset(currentAngle, getRotVel());
         setpointRotationMode = true;
+    }
+
+    private double getRotVel() {
+        var currAngle = RobotState.getInstance().getRotationAtTime(Timer.getFPGATimestamp());
+        var pastAngle = RobotState.getInstance().getRotationAtTime(Timer.getFPGATimestamp() - 0.02);
+        double delta = MathUtil
+                .inputModulus(currAngle.getDegrees() - pastAngle.getDegrees(), -180, 180);
+        return delta / 0.02;
     }
 }

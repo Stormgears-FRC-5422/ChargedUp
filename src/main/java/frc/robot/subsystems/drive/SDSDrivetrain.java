@@ -217,17 +217,8 @@ public class SDSDrivetrain extends DrivetrainBase {
         updateOdometryData();
     }
 
-//    @Override
-//    public void enabledPeriodic() {
-//    }
-
     public void autoInit() {
-//        resetDriveEncoders();
         updateOdometryData();
-    }
-
-    public void disabledInit() {
-//        resetDriveEncoders();
     }
 
     @Override
