@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.*;
 
 import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
+import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.autoManeuvers.*;
@@ -37,12 +38,8 @@ import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
-
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import static frc.robot.constants.Constants.*;
 
@@ -256,12 +253,16 @@ public class RobotContainer {
                     driveWithJoystick.setSetPoint(-90);
                 }));
 
-                new Trigger(firstXboxController::getLeftBumperIsHeld)
-                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, firstXboxController,
-                                AlignToDoubleSubstation.Side.LEFT));
-                new Trigger(firstXboxController::getRightBumperIsHeld)
-                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, firstXboxController,
-                                AlignToDoubleSubstation.Side.RIGHT));
+//                new Trigger(firstXboxController::getLeftBumperIsHeld)
+//                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, firstXboxController,
+//                                AlignToDoubleSubstation.Side.LEFT));
+//                new Trigger(firstXboxController::getRightBumperIsHeld)
+//                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, firstXboxController,
+//                                AlignToDoubleSubstation.Side.RIGHT));
+
+                new Trigger(firstXboxController::getLeftBumperIsHeld).whileTrue(
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
+                                firstXboxController, AlignToDoubleSubstation.Side.LEFT));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
                     m_drivetrain.getCurrentCommand().cancel();
@@ -301,7 +302,7 @@ public class RobotContainer {
                     new Trigger(secondXboxController::getXButtonIsHeld).onTrue(
                             new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
                     new Trigger(secondXboxController::getBButtonIsHeld).onTrue(
-                            new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
+                            new StowArm(m_arm));
                 } else {
                     System.out.println("Using Angle mode for arm movement");
                     m_armCommand = new BasicArm(m_arm,
@@ -378,13 +379,6 @@ public class RobotContainer {
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(zeroRotationCommand());
-
-//            if (Toggles.useDrive && Toggles.usePoseEstimator) {
-//                ShuffleboardConstants.getInstance().driverTab
-//                        .add("Balance Pitch*", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
-//                ShuffleboardConstants.getInstance().driverTab
-//                        .add("Balance", new BalanceCommand(m_navX::getPitch, m_navX::getRoll, m_drivetrain));
-//            }
         }
     }
 
@@ -412,20 +406,23 @@ public class RobotContainer {
                 .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
         new Trigger(m_buttonBoardConfig::bottomGrid)
                 .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
-        new Trigger(m_buttonBoardConfig::cubeCone).onTrue(new InstantCommand(() -> {
-                m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
 
+        new Trigger(m_buttonBoardConfig::cubeCone).whileTrue(new InstantCommand(() -> {
+            m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
+            RobotState.getInstance().setLidarRange(LidarRange.CUBE);
         }));
-        new Trigger(m_buttonBoardConfig::cubeCone).onFalse(new InstantCommand(() ->
-                m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR)));
+        new Trigger(m_buttonBoardConfig::cubeCone).whileFalse(new InstantCommand(() -> {
+            m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
+            RobotState.getInstance().setLidarRange(LidarRange.CONE);
+        }));
 
         // **********
         // Gripper
         // **********
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .onTrue(new InstantCommand(() -> m_compression.release()));
+                .onTrue(m_compression.closeGripper());
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .onFalse(new InstantCommand(() -> m_compression.grabCubeOrCone()));
+                .onFalse(m_compression.openGripper());
 
         // **********
         // Automated routines for arm placement
@@ -433,7 +430,7 @@ public class RobotContainer {
         if (Toggles.useArm) {
             // Stow, pick floor
             new Trigger(m_buttonBoardConfig::stow).onTrue(
-                    new ArmToTranslation(m_arm, ArmConstants.stowPosition, 2, 2));
+                    new StowArm(m_arm));
             new Trigger(m_buttonBoardConfig::pickFloor).onTrue(
                     new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
 
@@ -504,7 +501,7 @@ public class RobotContainer {
         }
 
         if (Toggles.useButtonBoard && Toggles.useStatusLights && Toggles.useStormNet) {
-            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, m_buttonBoardConfig);
+            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel);
             m_neoPixel.setDefaultCommand(m_LEDcommand);
         }
 

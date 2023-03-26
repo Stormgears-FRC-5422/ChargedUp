@@ -20,9 +20,7 @@ public class AlignToDoubleSubstation extends CommandBase {
     private final DrivetrainBase drivetrain;
     private final DoubleSupplier joystickXSupplier, joystickYSupplier, joystickOmegaSupplier;
 
-    private double rotationSetpoint = 0;
-    private double xSetpoint = 0;
-    private double ySetpoint = 0;
+    private double rotationSetpoint = 0, xSetpoint = 0, ySetpoint = 0;
     private Translation2d target = new Translation2d();
     private Side side;
     private boolean shouldFlip;

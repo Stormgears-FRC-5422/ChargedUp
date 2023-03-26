@@ -1,5 +1,6 @@
 package frc.utils.joysticks;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Joystick;
 
 import static frc.robot.constants.Constants.kStickNullSize;
@@ -16,10 +17,11 @@ public class StormLogitechController extends Joystick implements DriveJoystick {
     }
 
     private double applyNullZone(double value) {
-        if (Math.abs(value) < kStickNullSize)
-            return 0;
-
-        return ((value - Math.signum(value) * kStickNullSize) / (1.0 - kStickNullSize));
+//        if (Math.abs(value) < kStickNullSize)
+//            return 0;
+//
+//        return ((value - Math.signum(value) * kStickNullSize) / (1.0 - kStickNullSize));
+        return MathUtil.applyDeadband(value, kStickNullSize);
     }
 
     public double getXAxis() {

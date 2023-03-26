@@ -29,23 +29,23 @@ public class ArmToTranslation extends ArmPathFollowingCommand {
     @Override
     public void initialize() {
         Translation2d current = arm.getGripperPose().getTranslation();
-        final boolean isRight = current.getX() >= goal.getX();
+//        final boolean isRight = current.getX() >= goal.getX();
         final boolean isLower = current.getY() <= goal.getY();
-//        Translation2d intermediate = isRight?
-//                new Translation2d(goal.getX(), current.getY()) :
-//                new Translation2d(current.getX(), goal.getY());
+        Translation2d intermediate = isLower?
+                new Translation2d(current.getX(), goal.getY()) :
+                new Translation2d(goal.getX(), current.getY());
 
-        Translation2d intermediate = new Translation2d();
-
-        if (!isRight && isLower) {
-            intermediate = new Translation2d(current.getX(), goal.getY());
-        } else if (isRight && isLower) {
-            intermediate = new Translation2d(current.getX(), goal.getY());
-        } else if (!isRight && !isLower) {
-            intermediate = new Translation2d(goal.getX(), current.getY());
-        } else if (isRight && !isLower) {
-            intermediate = new Translation2d(goal.getX(), current.getY());
-        }
+//        Translation2d intermediate = new Translation2d();
+//
+//        if (!isRight && isLower) {
+//            intermediate = new Translation2d(current.getX(), goal.getY());
+//        } else if (isRight && isLower) {
+//            intermediate = new Translation2d(current.getX(), goal.getY());
+//        } else if (!isRight && !isLower) {
+//            intermediate = new Translation2d(goal.getX(), current.getY());
+//        } else if (isRight && !isLower) {
+//            intermediate = new Translation2d(goal.getX(), current.getY());
+//        }
 
         // control radius of arc using divisor
         final double startControlLength = current.getDistance(intermediate) * 1.2;

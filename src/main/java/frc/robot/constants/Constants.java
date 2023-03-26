@@ -99,6 +99,29 @@ public final class Constants {
     public static final int kMagEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
+    public enum LidarRange {
+        CONE(0.13, 0.257),
+        CUBE(0.09, 0.26);
+
+        private final double min, max, center;
+
+        private LidarRange(double min, double max) {
+            this.min = min;
+            this.max = max;
+            this.center = (min + max) / 2.0;
+        }
+
+        public double getMin() {
+            return min;
+        }
+        public double getMax() {
+            return max;
+        }
+        public double getCenter() {
+            return center;
+        }
+    }
+
     public static class ArmConstants {
 
         public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);

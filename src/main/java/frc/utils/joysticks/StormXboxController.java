@@ -1,6 +1,7 @@
 package frc.utils.joysticks;
 
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Joystick;
 
 import static frc.robot.constants.Constants.kStickNullSize;
@@ -34,10 +35,11 @@ public class StormXboxController extends Joystick implements DriveJoystick {
     }
 
     protected double applyNullZone(double value) {
-        if (abs(value) < kStickNullSize) return 0;
-
-        // Scale up from 0 rather than jumping to the input value
-        return ( (value - signum(value) * kStickNullSize) / (1.0 - kStickNullSize) );
+//        if (abs(value) < kStickNullSize) return 0;
+//
+//        // Scale up from 0 rather than jumping to the input value
+//        return ( (value - signum(value) * kStickNullSize) / (1.0 - kStickNullSize) );
+        return MathUtil.applyDeadband(value, kStickNullSize);
     }
 
     @Override
