@@ -351,7 +351,7 @@ public class RobotContainer {
 
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
-                        new AlignToDoubleSubstation(m_drivetrain,
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
                                 logitechController,
                                 FieldConstants.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
@@ -447,20 +447,22 @@ public class RobotContainer {
                 new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
                         .onTrue(new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression,
                                 m_side, m_stormNet, logitechController));
+//                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
+//                        .onTrue(new ArmToPickUp(m_arm, m_stormNet));
 
                 new Trigger(() -> m_buttonBoardConfig.confirm() && m_side == FieldConstants.Side.NONE).onTrue(
                         new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
             }
 
-            new Trigger(m_buttonBoardConfig::confirm).onTrue(
-                    new ArmToNode(m_arm, nodeSelector::getSelectedNode));
+//            new Trigger(m_buttonBoardConfig::confirm).onTrue(
+//                    new ArmToNode(m_arm, nodeSelector::getSelectedNode));
         }
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
-            new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(
-                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
-            new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(
-                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
+//            new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(
+//                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
+//            new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(
+//                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
                     // set pickup substation info
                     new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(new InstantCommand(() -> {
                         m_side = FieldConstants.Side.LEFT;

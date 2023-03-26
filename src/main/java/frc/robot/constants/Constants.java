@@ -157,7 +157,7 @@ public final class Constants {
         public static final Translation2d stowPosition = new Translation2d(0.19, 0.13);
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstation = Arm.fromGlobalTranslation(
-                new Translation3d(0.9, 0.0, 1.235));
+                new Translation3d(0.9, 0.0, 1.226));
 
         public static final Translation2d tempArmPickUpLocation = Arm.fromGlobalTranslation(
                 new Translation3d(1.15, 0.0, 1.235)

@@ -38,13 +38,13 @@ public class LEDcommand extends CommandBase {
 
         if (distance <= 0.5) {
             double error = distance - currentRange.getCenter();
-            blinkRate = (int) MathUtil
+            blinkRate = (int) (MathUtil
                     .applyDeadband(error,
                             currentRange.getMax() - currentRange.getCenter(),
-                            lowestBlinkRate - 1) + 1;
+                            0.5 - currentRange.getCenter()) * lowestBlinkRate - 1) + 1;
 
             // by default set the color to yellow or correct
-            Color8Bit color = NeoPixel.YELLOW_COLOR;
+            Color8Bit color = (currentRange == Constants.LidarRange.CONE)? NeoPixel.YELLOW_COLOR : NeoPixel.PURPLE_COLOR;
             // blink rate will be positive or negative if too far or close
             if (blinkRate < 0)
                 color = NeoPixel.RED_COLOR;
@@ -53,6 +53,11 @@ public class LEDcommand extends CommandBase {
 
             // make sure we are doing modulo of positive number... does it matter?
             blinkRate = Math.abs(blinkRate);
+            if (blinkRate == 0) {
+                neoPixel.setSpecificSegmentColor(segments, color);
+                return;
+            }
+
             if (++count % blinkRate == 0)
                 neoPixel.setSpecificSegmentColor(segments, color);
             else

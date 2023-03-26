@@ -20,28 +20,28 @@ public class PickFromSubstationSequence extends SequentialCommandGroup {
   public PickFromSubstationSequence(DrivetrainBase drivetrain, Arm arm, Compression compression,
                                     FieldConstants.Side side, StormNet stormNet, DriveJoystick joystick) {
     if (Constants.Toggles.useStormNet) {
-//      addCommands(
-//              new ParallelCommandGroup(
-//                      new InstantCommand(compression::release),
-//                      new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 3, 3)),
-//              new ArmToPickUp(arm, stormNet),
-//              new InstantCommand(compression::grabCubeOrCone),
-//              new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 3, 3),
-//              new ArmToTranslation(arm, Constants.ArmConstants.stowPosition, 3, 3)
-//      );
       addCommands(
               new ParallelCommandGroup(
-                      new AlignToDoubleSubstation(drivetrain, joystick, side),
-                      new SequentialCommandGroup(
-                              new InstantCommand(compression::release),
-                              new ArmToTranslation(arm, pickDoubleSubstation, 3, 3),
-                              new ArmToPickUp(arm, stormNet),
-                              new PrintCommand("Arm to PICK up ended!"),
-                              new InstantCommand(compression::grabCubeOrCone),
-                              new StowArm(arm)
-                      )
-              )
+                      compression.openGripper(),
+                      new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 3, 3)),
+              new ArmToPickUp(arm, stormNet),
+              new InstantCommand(compression::grabCubeOrCone),
+              new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 3, 3),
+              new ArmToTranslation(arm, Constants.ArmConstants.stowPosition, 3, 3)
       );
+////      addCommands(
+////              new ParallelCommandGroup(
+////                      new AlignToDoubleSubstation(drivetrain, joystick, side),
+////                      new SequentialCommandGroup(
+////                              new InstantCommand(compression::release),
+////                              new ArmToTranslation(arm, pickDoubleSubstation, 3, 3),
+////                              new ArmToPickUp(arm, stormNet),
+////                              new PrintCommand("Arm to PICK up ended!"),
+////                              new InstantCommand(compression::grabCubeOrCone),
+////                              new StowArm(arm)
+////                      )
+//              )
+//      );
       addRequirements(drivetrain, arm, compression);
     }
     else {
