@@ -42,6 +42,6 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
         Rotation2d goalRotation = RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red ?
                 new Rotation2d(2 * Math.PI) : new Rotation2d();
         // if 30 degrees within aligned
-        return Math.abs(currentRotation.getDegrees() - goalRotation.getDegrees()) <= 30;
+        return Math.abs(Math.abs(currentRotation.getDegrees()) - goalRotation.getDegrees()) <= 30;
     }
 }
