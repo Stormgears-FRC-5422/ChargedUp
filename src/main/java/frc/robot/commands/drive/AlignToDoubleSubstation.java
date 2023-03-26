@@ -11,13 +11,14 @@ import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
+import frc.utils.joysticks.DriveJoystick;
 
 import java.util.function.DoubleSupplier;
 
 public class AlignToDoubleSubstation extends CommandBase {
 
     private final DrivetrainBase drivetrain;
-    private final DoubleSupplier joystickXSupplier, joystickZSupplier;
+    private final DoubleSupplier joystickXSupplier, joystickYSupplier, joystickOmegaSupplier;
 
     private double rotationSetpoint = 0;
     private double xSetpoint = 0;
@@ -28,24 +29,27 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     private final PIDController rotController = new PIDController(0.01, 0.0, 0.0);
 
-    private final PIDController yController = new PIDController(0.01, 0.0, 0.0);
+    private final PIDController yController = new PIDController(0.7, 0.0, 0.0);
 
     private static final double maxRotationSpeed = 0.5;
     private static final double maxYSpeed = 0.5;
     private static final double maxJoystickInput = 0.3;
+    private static final double minJoystickInput = 0.07;
     // can go maxJoystickInput at this amount of meters
-    private static final double maxDistanceX = 2.0;
+    private static final double maxDistanceX = 4.0;
 
-    public AlignToDoubleSubstation(DrivetrainBase drivetrain,
-                                   DoubleSupplier joystickXSupplier,
-                                   DoubleSupplier joystickZSupplier,
+    public AlignToDoubleSubstation(DrivetrainBase drivetrain, DriveJoystick driveJoystick,
                                    Side side) {
         this.drivetrain = drivetrain;
-        this.joystickXSupplier = joystickXSupplier;
-        this.joystickZSupplier = joystickZSupplier;
+        this.joystickXSupplier = driveJoystick::getWpiXSpeed;
+        this.joystickYSupplier = driveJoystick::getWpiYSpeed;
+        this.joystickOmegaSupplier = driveJoystick::getOmegaSpeed;
         this.side = side;
 
         rotController.enableContinuousInput(-180.0, 180.0);
+        rotController.setTolerance(1.0);
+
+        yController.setTolerance(0.05);
 
         addRequirements(drivetrain);
     }
@@ -79,15 +83,16 @@ public class AlignToDoubleSubstation extends CommandBase {
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
 
         omega += rotController.calculate(currentPose.getRotation().getDegrees());
-        double joystickZ = signedSquare(joystickZSupplier.getAsDouble()) * maxJoystickInput;
+        double joystickZ = signedSquare(joystickOmegaSupplier.getAsDouble()) * maxJoystickInput;
         omega += joystickZ;
 
         double xError = (shouldFlip? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
-        double xScale = xError / maxDistanceX;
-//        x = signedSquare(joystickXSupplier.getAsDouble()) * xScale;
+        double xScale = Math.abs(xError / maxDistanceX) + minJoystickInput;
+        x = signedSquare(joystickXSupplier.getAsDouble()) * xScale;
 
-        double yError = ySetpoint - currentPose.getY();
-//        y = yController.calculate(yError);
+        y = yController.calculate(currentPose.getY());
+        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput;
+        y += joystickY;
 
         omega = MathUtil.clamp(omega, -maxRotationSpeed, maxRotationSpeed);
         x = MathUtil.clamp(x, -maxJoystickInput, maxJoystickInput);
@@ -104,5 +109,4 @@ public class AlignToDoubleSubstation extends CommandBase {
         RIGHT,
         NONE
     }
-
 }

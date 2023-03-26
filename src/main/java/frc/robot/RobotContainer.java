@@ -37,8 +37,7 @@ import frc.robot.subsystems.drive.DrivetrainFactory;
 
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.robot.subsystems.vision.Vision;
-import frc.utils.joysticks.ButtonBoardConfig;
-import frc.utils.joysticks.CubeCone;
+import frc.robot.ButtonBoardConfig;
 import frc.utils.joysticks.StormLogitechController;
 import frc.utils.joysticks.StormXboxController;
 
@@ -232,14 +231,11 @@ public class RobotContainer {
     private void configureControllerBindings() {
         if (Toggles.useFirstXboxController) {
             if (Toggles.useDrive) {
-                final DoubleSupplier WPIXSupplier = firstXboxController::getLeftJoystickY;
-                final DoubleSupplier WPIYSupplier = () -> -firstXboxController.getLeftJoystickX();
-                final DoubleSupplier omegaSupplier = () -> -firstXboxController.getRightJoystickX();
                 EnhancedDriveWithJoystick driveWithJoystick = new EnhancedDriveWithJoystick(
                         m_drivetrain,
-                        WPIXSupplier,
-                        WPIYSupplier,
-                        omegaSupplier,
+                        firstXboxController::getWpiXSpeed,
+                        firstXboxController::getWpiYSpeed,
+                        firstXboxController::getOmegaSpeed,
                         () -> firstXboxController.getLeftTrigger() > 0.2,
                         () -> firstXboxController.getRightTrigger() > 0.2
                 );
@@ -261,11 +257,11 @@ public class RobotContainer {
                 }));
 
                 new Trigger(firstXboxController::getLeftBumperIsHeld)
-                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, WPIXSupplier,
-                                omegaSupplier, AlignToDoubleSubstation.Side.LEFT));
+                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, firstXboxController,
+                                AlignToDoubleSubstation.Side.LEFT));
                 new Trigger(firstXboxController::getRightBumperIsHeld)
-                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, WPIXSupplier,
-                                omegaSupplier, AlignToDoubleSubstation.Side.LEFT));
+                        .whileTrue(new AlignToDoubleSubstation(m_drivetrain, firstXboxController,
+                                AlignToDoubleSubstation.Side.RIGHT));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
                     m_drivetrain.getCurrentCommand().cancel();
@@ -343,17 +339,8 @@ public class RobotContainer {
                     () -> logitechController.getRawButton(2)
             );
             m_drivetrain.setDefaultCommand(driveWithJoystick);
-            // set setpoints using pov angle
-//            new Trigger(() -> logitechController.getWPIPOVAngle() != -1).onTrue(
-//                    new InstantCommand(
-//                        () -> {
-//                            double angle = logitechController.getWPIPOVAngle();
-//                            System.out.println("Set point angle: " + angle);
-//                            driveWithJoystick.setSetPoint(angle);
-//                        })
-//            );
 
-            // 10 SHOULD BE FORWARD AND 12 SHOULD BE BACKWARD]
+            // 10 SHOULD BE FORWARD AND 12 SHOULD BE BACKWARD
             new Trigger(() -> logitechController.getRawButton(10)).onTrue(new InstantCommand(
                     () -> driveWithJoystick.setSetPoint(0)
             ));
@@ -364,11 +351,11 @@ public class RobotContainer {
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
                         new AlignToDoubleSubstation(m_drivetrain,
-                                logitechController::getWpiXAxis, logitechController::getWpiZAxis,
+                                logitechController,
                                 AlignToDoubleSubstation.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
                         new AlignToDoubleSubstation(m_drivetrain,
-                                logitechController::getWpiXAxis, logitechController::getWpiZAxis,
+                                logitechController,
                                 AlignToDoubleSubstation.Side.RIGHT));
             }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
@@ -390,18 +377,7 @@ public class RobotContainer {
 
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
-            BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
-            new Trigger(() -> logitechController.getRawButton(8)).onTrue(new InstantCommand(() -> {
-                double angle = isRed.getAsBoolean() ?
-                        180.0 : 0;
-                m_navX.setAngle(angle);
-                if (Toggles.usePoseEstimator) {
-                    m_poseEstimator.resetEstimator(
-                            new Pose2d(
-                                    RobotState.getInstance().getCurrentPose().getTranslation(),
-                                    m_navX.getAbsoluteRotation()));
-                }
-            }));
+            new Trigger(() -> logitechController.getRawButton(8)).onTrue(zeroRotationCommand());
 
 //            if (Toggles.useDrive && Toggles.usePoseEstimator) {
 //                ShuffleboardConstants.getInstance().driverTab
@@ -471,10 +447,9 @@ public class RobotContainer {
             }
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
-                new Trigger(() -> m_buttonBoardConfig.confirm() && !m_side.equals(AlignToDoubleSubstation.Side.NONE)).onTrue
-                        (new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression, m_side, m_stormNet,
-                                logitechController::getWpiXAxis, logitechController::getWpiZAxis,
-                                m_buttonBoardConfig.cubeCone() ? CubeCone.CUBE : CubeCone.CONE));
+                new Trigger(() -> m_buttonBoardConfig.confirm() && !m_side.equals(AlignToDoubleSubstation.Side.NONE))
+                        .onTrue(new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression,
+                                m_side, m_stormNet, logitechController));
 
                 new Trigger(() -> m_buttonBoardConfig.confirm() && m_side.equals(AlignToDoubleSubstation.Side.NONE)).onTrue(
                         new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
@@ -546,9 +521,8 @@ public class RobotContainer {
     }
 
     private Command zeroRotationCommand() {
-        BooleanSupplier isRed = () -> m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red;
         return new InstantCommand(() -> {
-            double angle = isRed.getAsBoolean() ?
+            double angle = m_robotState.getCurrentAlliance() == DriverStation.Alliance.Red ?
                     180.0 : 0;
             m_navX.setAngle(angle);
             if (Toggles.usePoseEstimator) {

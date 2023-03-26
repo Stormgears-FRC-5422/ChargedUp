@@ -3,9 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.stormnet.StormNet;
-import frc.utils.joysticks.ButtonBoardConfig;
-import frc.utils.joysticks.CubeCone;
-
+import frc.robot.ButtonBoardConfig;
 
 public class LEDcommand extends CommandBase {
   NeoPixel neoPixel;
@@ -31,26 +29,26 @@ public class LEDcommand extends CommandBase {
   @Override
   public void execute() {
     double distance = stormNet.getLidarDistance();
-    CubeCone m_cubeCone = buttonBoardConfig.cubeCone() ? CubeCone.CUBE : CubeCone.CONE;
-    if (distance < 0.5) {
-      if (m_cubeCone.equals(CubeCone.CONE)) {
-        if (distance <0.13) {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.RED_COLOR);
-        } else if (distance <= 0.257) {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.YELLOW_COLOR);
-        } else {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
-        }
-      } else {
-        if (distance <= 0.257) {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.PURPLE_COLOR);
-        } else {
-          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
-        }
-      }
-    } else {
-      neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
-    }
+//    CubeCone m_cubeCone = buttonBoardConfig.cubeCone() ? CubeCone.CUBE : CubeCone.CONE;
+//    if (distance < 0.5) {
+//      if (m_cubeCone.equals(CubeCone.CONE)) {
+//        if (distance <0.13) {
+//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.RED_COLOR);
+//        } else if (distance <= 0.257) {
+//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.YELLOW_COLOR);
+//        } else {
+//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
+//        }
+//      } else {
+//        if (distance <= 0.257) {
+//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.PURPLE_COLOR);
+//        } else {
+//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
+//        }
+//      }
+//    } else {
+//      neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
+//    }
   }
 
   @Override

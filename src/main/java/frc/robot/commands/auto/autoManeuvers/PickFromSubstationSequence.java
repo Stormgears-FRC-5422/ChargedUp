@@ -8,8 +8,7 @@ import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.stormnet.StormNet;
-import frc.utils.joysticks.ButtonBoardConfig;
-import frc.utils.joysticks.CubeCone;
+import frc.utils.joysticks.DriveJoystick;
 
 import static frc.robot.constants.Constants.ArmConstants.*;
 
@@ -19,8 +18,7 @@ import java.util.function.DoubleSupplier;
 public class PickFromSubstationSequence extends SequentialCommandGroup {
 
   public PickFromSubstationSequence(DrivetrainBase drivetrain, Arm arm, Compression compression,
-                                    AlignToDoubleSubstation.Side side, StormNet stormNet, DoubleSupplier joystickXSupplier,
-                                    DoubleSupplier joystickZSupplier, CubeCone cubeCone) {
+                                    AlignToDoubleSubstation.Side side, StormNet stormNet, DriveJoystick joystick) {
     if (Constants.Toggles.useStormNet) {
 //      addCommands(
 //              new ParallelCommandGroup(
@@ -33,11 +31,11 @@ public class PickFromSubstationSequence extends SequentialCommandGroup {
 //      );
       addCommands(
               new ParallelCommandGroup(
-                      new AlignToDoubleSubstation(drivetrain, joystickXSupplier, joystickZSupplier, side),
+                      new AlignToDoubleSubstation(drivetrain, joystick, side),
                       new SequentialCommandGroup(
                               new InstantCommand(compression::release),
                               new ArmToTranslation(arm, pickDoubleSubstation, 3, 3),
-                              new ArmToPickUp(arm, stormNet, cubeCone),
+                              new ArmToPickUp(arm, stormNet),
                               new PrintCommand("Arm to PICK up ended!"),
                               new InstantCommand(compression::grabCubeOrCone),
                               new ArmToTranslation(arm, pickDoubleSubstation, 3, 3),
@@ -48,16 +46,16 @@ public class PickFromSubstationSequence extends SequentialCommandGroup {
       addRequirements(drivetrain, arm, compression);
     }
     else {
-      addCommands(
-              new ParallelCommandGroup(
-                      new AlignToDoubleSubstation(drivetrain, joystickXSupplier, joystickZSupplier, side),
-                      new InstantCommand(compression::release),
-                      new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 2, 2)),
-              new ArmToTranslation(arm, Constants.ArmConstants.tempArmPickUpLocation, 2, 2),
-              new InstantCommand(compression::grabCubeOrCone),
-              new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 2, 2),
-              new ArmToTranslation(arm, Constants.ArmConstants.stowPosition, 2, 2)
-      );
+//      addCommands(
+//              new ParallelCommandGroup(
+//                      new AlignToDoubleSubstation(drivetrain, joystickXSupplier, joystickZSupplier, side),
+//                      new InstantCommand(compression::release),
+//                      new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 2, 2)),
+//              new ArmToTranslation(arm, Constants.ArmConstants.tempArmPickUpLocation, 2, 2),
+//              new InstantCommand(compression::grabCubeOrCone),
+//              new ArmToTranslation(arm, Constants.ArmConstants.pickDoubleSubstation, 2, 2),
+//              new ArmToTranslation(arm, Constants.ArmConstants.stowPosition, 2, 2)
+//      );
       addRequirements(drivetrain, arm, compression);
     }
   }

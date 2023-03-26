@@ -7,4 +7,8 @@ public interface DriveJoystick {
     double getRightTrigger();
 
     double getLeftTrigger();
+
+    double getWpiXSpeed();
+    double getWpiYSpeed();
+    double getOmegaSpeed();
 }

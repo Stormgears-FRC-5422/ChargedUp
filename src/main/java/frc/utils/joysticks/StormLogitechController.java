@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 import static frc.robot.constants.Constants.kStickNullSize;
 
-public class StormLogitechController extends Joystick {
+public class StormLogitechController extends Joystick implements DriveJoystick {
 
     public static final int XAxis = 0;
     public static final int YAxis = 1;
@@ -53,6 +53,36 @@ public class StormLogitechController extends Joystick {
         double inverse = 360.0 - povAngle;
         if (inverse > 180) return  (inverse % 180) - 180.0;
         return inverse;
+    }
+
+    @Override
+    public double getTriggerSpeed() {
+        return 0;
+    }
+
+    @Override
+    public double getRightTrigger() {
+        return 0;
+    }
+
+    @Override
+    public double getLeftTrigger() {
+        return 0;
+    }
+
+    @Override
+    public double getWpiXSpeed() {
+        return getWpiXAxis();
+    }
+
+    @Override
+    public double getWpiYSpeed() {
+        return getWpiYAxis();
+    }
+
+    @Override
+    public double getOmegaSpeed() {
+        return getWpiZAxis();
     }
 }
 

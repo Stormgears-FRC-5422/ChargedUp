@@ -51,6 +51,21 @@ public class StormXboxController extends Joystick implements DriveJoystick {
     }
 
     @Override
+    public double getWpiXSpeed() {
+        return getLeftJoystickY();
+    }
+
+    @Override
+    public double getWpiYSpeed() {
+        return -getLeftJoystickX();
+    }
+
+    @Override
+    public double getOmegaSpeed() {
+        return -getRightJoystickX();
+    }
+
+    @Override
     public double getTriggerSpeed(){ return getRawAxis(rightTrigger) - getRawAxis(leftTrigger); }
 
     public boolean getAButtonIsHeld() {

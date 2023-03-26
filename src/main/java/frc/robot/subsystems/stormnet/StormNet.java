@@ -78,7 +78,6 @@ public class StormNet {
 	}
 
 	public boolean getLidarQuality() {
-		return m_lidar.getSensorQuality(); // true is good}
+		return m_lidar.getSensorQuality(); // true is good
 	}
-
 }

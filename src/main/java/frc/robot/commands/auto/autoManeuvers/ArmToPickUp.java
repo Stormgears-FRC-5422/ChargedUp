@@ -1,19 +1,10 @@
 package frc.robot.commands.auto.autoManeuvers;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.RobotState;
-import frc.robot.commands.arm.ArmTrajectoryToPose;
-import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
-import frc.robot.constants.Constants;
-import frc.robot.constants.Constants.ArmConstants.*;
-import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.stormnet.StormNet;
-import frc.utils.joysticks.ButtonBoardConfig;
-import frc.utils.joysticks.CubeCone;
 
 import static frc.robot.constants.Constants.kXYArmManualSpeed;
 
@@ -28,13 +19,10 @@ public class ArmToPickUp extends CommandBase {
 
   private boolean commandCondition;
 
-  CubeCone cubeCone;
 
-
-  public ArmToPickUp(Arm arm, StormNet stormNet, CubeCone cubeCone){
+  public ArmToPickUp(Arm arm, StormNet stormNet){
     this.arm = arm;
     this.stormNet = stormNet;
-    this.cubeCone = cubeCone;
   }
 
   @Override
