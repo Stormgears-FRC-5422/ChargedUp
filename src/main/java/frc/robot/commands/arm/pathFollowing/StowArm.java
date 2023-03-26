@@ -23,7 +23,7 @@ public class StowArm extends ArmPathFollowingCommand {
 
         PathPoint startPoint = new PathPoint(
                 current,
-                new Rotation2d(Math.PI),
+                new Rotation2d(-Math.PI),
                 new Rotation2d()
         ).withNextControlLength(0.5);
 
