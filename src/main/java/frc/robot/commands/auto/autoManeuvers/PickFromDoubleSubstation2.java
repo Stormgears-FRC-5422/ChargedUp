@@ -41,7 +41,8 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         compression.getGrabCommand(),
 //                        new WaitUntilCommand(
 //                                () -> atXToleranceForStow(() -> alignCommand.getTarget().getTranslation())),
-                        new StowArm(arm), new InstantCommand(() -> neoPixel.setLEDBlinkingState(false)))
+                        new StowArm(arm),
+                        new InstantCommand(() -> neoPixel.setLEDBlinkingState(false)))
                 );
     }
 
