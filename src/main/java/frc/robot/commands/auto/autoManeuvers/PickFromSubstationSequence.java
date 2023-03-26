@@ -2,6 +2,7 @@ package frc.robot.commands.auto.autoManeuvers;
 
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
+import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.drive.AlignToDoubleSubstation;
 import frc.robot.constants.Constants;
 import frc.robot.subsystems.Compression;
@@ -38,8 +39,7 @@ public class PickFromSubstationSequence extends SequentialCommandGroup {
                               new ArmToPickUp(arm, stormNet),
                               new PrintCommand("Arm to PICK up ended!"),
                               new InstantCommand(compression::grabCubeOrCone),
-                              new ArmToTranslation(arm, pickDoubleSubstation, 3, 3),
-                              new ArmToTranslation(arm, stowPosition, 3, 3)
+                              new StowArm(arm)
                       )
               )
       );

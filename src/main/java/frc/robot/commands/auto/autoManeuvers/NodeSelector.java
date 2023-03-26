@@ -23,9 +23,12 @@ public class NodeSelector {
         ScoringNode[][] currentGrid = getGrid();
         boolean[] CUBE_COLUMNS = new boolean[]{false, true, false, false, true, false, false, true, false};
         for (int col = 0; col < 9; col++) {
+            // make the gui be opposite to array in field constants
+            // bc drivers will see the opposite
             int colTransformed = currentGrid.length - 1 - col;
             Color color = CUBE_COLUMNS[colTransformed]? Color.kPurple : Color.kYellow;
             for (int row = 0; row < 3; row++) {
+                // again the top most row in the gui will be the hybrid not top
                 int rowTransformed = currentGrid[colTransformed].length - 1 - row;
                 ShuffleboardConstants.getInstance().gridLayout
                         .addBoolean("Column " + col + " Row " + row,
@@ -42,6 +45,7 @@ public class NodeSelector {
 //        System.out.println("Selected Col: " + selectedCol + " Selected Row: " + selectedRow);
 //        System.out.println(getGrid()[selectedCol][selectedRow]);
         int col = selectedCol;
+        // red team will have to mirror their nodes again
         if (RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red)
             col = 8 - selectedCol;
         return getGrid()[col][selectedRow];

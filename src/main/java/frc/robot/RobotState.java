@@ -36,6 +36,7 @@ public class RobotState extends StormSubsystemBase {
 
     private Pose2d startPose;
     private DriverStation.Alliance currentAlliance = DriverStation.Alliance.Blue;
+    private Constants.LidarRange lidarRange = Constants.LidarRange.CONE;
 
     private GenericEntry xEntry, yEntry, rotEntry;
 
@@ -211,6 +212,14 @@ public class RobotState extends StormSubsystemBase {
 
     public double getCurrentDegPerSecVel() {
         return getDeltaDegrees() / 0.02;
+    }
+
+    public void setLidarRange(Constants.LidarRange type) {
+        lidarRange = type;
+    }
+
+    public Constants.LidarRange getLidarRange() {
+        return lidarRange;
     }
 
     @Override

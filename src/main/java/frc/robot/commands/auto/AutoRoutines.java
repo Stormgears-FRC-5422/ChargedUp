@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
+import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.autoManeuvers.ArmToNode;
 import frc.robot.commands.drive.BalancePitchCommand;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
@@ -136,7 +137,7 @@ public final class AutoRoutines {
                 new WaitCommand(0.2),
                 _getPlaceCommand(arm, compression, node),
                 new WaitCommand(0.2),
-                new ArmToTranslation(arm, stowPosition, 2, 2)
+                new StowArm(arm)
         );
     }
 }
