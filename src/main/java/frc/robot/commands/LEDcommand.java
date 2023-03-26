@@ -18,6 +18,9 @@ public class LEDcommand extends CommandBase {
     // slowest it goes at the max distance away
     private static int lowestBlinkRate = 30;
 
+
+    private boolean blink;
+
     int[] segments = {4, 5};
 
     public LEDcommand(StormNet stormNet, NeoPixel neoPixel) {
@@ -37,6 +40,7 @@ public class LEDcommand extends CommandBase {
         Constants.LidarRange currentRange = RobotState.getInstance().getLidarRange();
 //        System.out.println("Lidar: " + distance);
         if (distance <= 0.75) {
+            if (blink) {
             double error = distance - currentRange.getCenter();
             blinkRate = (int) (MathUtil
                     .applyDeadband(error,
@@ -64,28 +68,28 @@ public class LEDcommand extends CommandBase {
                 neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
 
         } else {
+                if (currentRange == Constants.LidarRange.CONE) {
+                    if (distance < currentRange.getMin()) {
+                        neoPixel.setSpecificSegmentColor(segments, NeoPixel.RED_COLOR);
+                    } else if (distance <= currentRange.getMax()) {
+                        neoPixel.setSpecificSegmentColor(segments, NeoPixel.YELLOW_COLOR);
+                    } else {
+                        neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR);
+                    }
+                } else {
+                    if (distance < currentRange.getMin()) {
+                        neoPixel.setSpecificSegmentColor(segments, NeoPixel.RED_COLOR);
+                    }
+                    else if (distance <= currentRange.getMax()) {
+                        neoPixel.setSpecificSegmentColor(segments, NeoPixel.PURPLE_COLOR);
+                    } else {
+                        neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR);
+                    }
+                }
+            }
+        } else {
             neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
         }
-//    CubeCone m_cubeCone = buttonBoardConfig.cubeCone() ? CubeCone.CUBE : CubeCone.CONE;
-//    if (distance < 0.5) {
-//      if (m_cubeCone == CubeCone.CONE)) {
-//        if (distance <0.13) {
-//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.RED_COLOR);
-//        } else if (distance <= 0.257) {
-//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.YELLOW_COLOR);
-//        } else {
-//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
-//        }
-//      } else {
-//        if (distance <= 0.257) {
-//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.PURPLE_COLOR);
-//        } else {
-//          neoPixel.setSpecificSegmentColor(segments, NeoPixel.BLUE_COLOR, distance);
-//        }
-//      }
-//    } else {
-//      neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
-//    }
     }
 
     @Override
@@ -97,6 +101,11 @@ public class LEDcommand extends CommandBase {
     public boolean isFinished() {
         return false;
     }
+
+    public void setBlink(boolean blink) {
+        this.blink = blink;
+    }
+
 }
 
 

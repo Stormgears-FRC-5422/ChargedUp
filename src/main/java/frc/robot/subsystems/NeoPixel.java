@@ -1,14 +1,10 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.LEDcommand;
 import frc.utils.lights.LEDLightStrip;
 import frc.utils.lights.LightType;
 import frc.utils.subsystemUtils.StormSubsystemBase;
-
-import java.lang.reflect.Array;
-import java.util.Collection;
 
 public class NeoPixel extends StormSubsystemBase {
 
@@ -27,6 +23,8 @@ public class NeoPixel extends StormSubsystemBase {
   boolean ledColorRequested;
 
   public int countLED = 0;
+
+
 
   public NeoPixel() {
     ledLightStrip = new LEDLightStrip();
@@ -100,5 +98,9 @@ public class NeoPixel extends StormSubsystemBase {
     }
   }
 
+  public void setLEDBlinkingState(boolean blinkingState) {
+    LEDcommand ledCommand = (LEDcommand)this.getDefaultCommand();
+    ledCommand.setBlink(blinkingState);
+  }
 
 }

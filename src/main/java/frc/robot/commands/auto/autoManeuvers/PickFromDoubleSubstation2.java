@@ -2,9 +2,7 @@ package frc.robot.commands.auto.autoManeuvers;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotState;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
@@ -12,6 +10,7 @@ import frc.robot.commands.drive.AlignToDoubleSubstation;
 import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.Compression;
+import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.stormnet.StormNet;
@@ -25,13 +24,14 @@ import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCub
 public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
 
     /** written to be triggered with while true trigger */
-    public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Compression compression, StormNet stormNet,
+    public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Compression compression, StormNet stormNet, NeoPixel neoPixel,
                                      DriveJoystick joystick, FieldConstants.Side side) {
         AlignToDoubleSubstation alignCommand = new AlignToDoubleSubstation(drivetrain, joystick, side);
         Translation2d pickingHeight = (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
                 pickDoubleSubstationCone : pickDoubleSubstationCube;
         addCommands(
-                alignCommand,
+                new InstantCommand(() -> neoPixel.setLEDBlinkingState(true)),
+                        alignCommand,
                 new SequentialCommandGroup(
                         compression.getReleaseCommand(),
                         new WaitUntilCommand(
@@ -41,9 +41,8 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         compression.getGrabCommand(),
 //                        new WaitUntilCommand(
 //                                () -> atXToleranceForStow(() -> alignCommand.getTarget().getTranslation())),
-                        new StowArm(arm)
-                )
-        );
+                        new StowArm(arm), new InstantCommand(() -> neoPixel.setLEDBlinkingState(false)))
+                );
     }
 
     private boolean atRotationTolerance(Supplier<Rotation2d> rotSetpoint) {

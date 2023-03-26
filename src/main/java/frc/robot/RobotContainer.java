@@ -261,7 +261,7 @@ public class RobotContainer {
 //                                AlignToDoubleSubstation.Side.RIGHT));
 
                 new Trigger(firstXboxController::getLeftBumperIsHeld).whileTrue(
-                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
                                 firstXboxController, FieldConstants.Side.LEFT));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
@@ -351,11 +351,11 @@ public class RobotContainer {
 
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
-                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
-                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.RIGHT));
             }
