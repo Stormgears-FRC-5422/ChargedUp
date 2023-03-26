@@ -33,7 +33,7 @@ public class ButtonBoardConfig {
         return m_joystickBoard2.getRawButton(3);
     }
 
-    public boolean cubeCone() {
+    public boolean cubeSelected() {
         return m_joystickBoard1.getRawButton(7);
     }
 

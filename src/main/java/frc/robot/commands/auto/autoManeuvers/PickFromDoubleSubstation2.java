@@ -10,6 +10,7 @@ import frc.robot.RobotState;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.drive.AlignToDoubleSubstation;
+import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -22,7 +23,7 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
 
     /** written to be triggered with while true trigger */
     public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Compression compression, StormNet stormNet,
-                                     DriveJoystick joystick, AlignToDoubleSubstation.Side side) {
+                                     DriveJoystick joystick, FieldConstants.Side side) {
         addCommands(
                 new AlignToDoubleSubstation(drivetrain, joystick, side),
                 new SequentialCommandGroup(

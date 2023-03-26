@@ -22,7 +22,7 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     private double rotationSetpoint = 0, xSetpoint = 0, ySetpoint = 0;
     private Translation2d target = new Translation2d();
-    private Side side;
+    private FieldConstants.Side side;
     private boolean shouldFlip;
 
     private final PIDController rotController = new PIDController(0.01, 0.0, 0.0);
@@ -37,7 +37,7 @@ public class AlignToDoubleSubstation extends CommandBase {
     private static final double maxDistanceX = 4.0;
 
     public AlignToDoubleSubstation(DrivetrainBase drivetrain, DriveJoystick driveJoystick,
-                                   Side side) {
+                                   FieldConstants.Side side) {
         this.drivetrain = drivetrain;
         this.joystickXSupplier = driveJoystick::getWpiXSpeed;
         this.joystickYSupplier = driveJoystick::getWpiYSpeed;
@@ -102,9 +102,4 @@ public class AlignToDoubleSubstation extends CommandBase {
         return Math.signum(input) * Math.pow(input, 2);
     }
 
-    public enum Side {
-        LEFT,
-        RIGHT,
-        NONE
-    }
 }

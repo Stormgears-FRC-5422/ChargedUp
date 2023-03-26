@@ -63,7 +63,7 @@ public class LEDcommand extends CommandBase {
         }
 //    CubeCone m_cubeCone = buttonBoardConfig.cubeCone() ? CubeCone.CUBE : CubeCone.CONE;
 //    if (distance < 0.5) {
-//      if (m_cubeCone.equals(CubeCone.CONE)) {
+//      if (m_cubeCone == CubeCone.CONE)) {
 //        if (distance <0.13) {
 //          neoPixel.setSpecificSegmentColor(segments, NeoPixel.RED_COLOR);
 //        } else if (distance <= 0.257) {

@@ -60,6 +60,12 @@ public final class FieldConstants {
                 redChargingStation : blueChargingStation;
     }
 
+    public enum Side {
+        LEFT,
+        RIGHT,
+        NONE
+    }
+
     public final static class Substations {
 
         public final static double substationHeight = Units.inchesToMeters(39.938);

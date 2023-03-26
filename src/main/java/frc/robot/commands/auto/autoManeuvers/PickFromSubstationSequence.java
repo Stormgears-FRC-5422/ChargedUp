@@ -5,6 +5,7 @@ import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.drive.AlignToDoubleSubstation;
 import frc.robot.constants.Constants;
+import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -13,13 +14,11 @@ import frc.utils.joysticks.DriveJoystick;
 
 import static frc.robot.constants.Constants.ArmConstants.*;
 
-import java.util.function.DoubleSupplier;
-
 
 public class PickFromSubstationSequence extends SequentialCommandGroup {
 
   public PickFromSubstationSequence(DrivetrainBase drivetrain, Arm arm, Compression compression,
-                                    AlignToDoubleSubstation.Side side, StormNet stormNet, DriveJoystick joystick) {
+                                    FieldConstants.Side side, StormNet stormNet, DriveJoystick joystick) {
     if (Constants.Toggles.useStormNet) {
 //      addCommands(
 //              new ParallelCommandGroup(

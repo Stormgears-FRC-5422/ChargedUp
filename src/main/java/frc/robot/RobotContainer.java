@@ -72,7 +72,7 @@ public class RobotContainer {
     // Other
     // **********
     final RobotState m_robotState;
-    public AlignToDoubleSubstation.Side m_side = AlignToDoubleSubstation.Side.NONE;
+    public FieldConstants.Side m_side = FieldConstants.Side.NONE;
 
 
     // **********
@@ -262,7 +262,7 @@ public class RobotContainer {
 
                 new Trigger(firstXboxController::getLeftBumperIsHeld).whileTrue(
                         new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
-                                firstXboxController, AlignToDoubleSubstation.Side.LEFT));
+                                firstXboxController, FieldConstants.Side.LEFT));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
                     m_drivetrain.getCurrentCommand().cancel();
@@ -353,11 +353,11 @@ public class RobotContainer {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
                         new AlignToDoubleSubstation(m_drivetrain,
                                 logitechController,
-                                AlignToDoubleSubstation.Side.LEFT));
+                                FieldConstants.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
                         new AlignToDoubleSubstation(m_drivetrain,
                                 logitechController,
-                                AlignToDoubleSubstation.Side.RIGHT));
+                                FieldConstants.Side.RIGHT));
             }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
@@ -393,7 +393,7 @@ public class RobotContainer {
 
         new Trigger(m_buttonBoardConfig::cancel).onTrue(new InstantCommand(() -> {
             CommandScheduler.getInstance().cancelAll();
-            m_side = AlignToDoubleSubstation.Side.NONE;
+            m_side = FieldConstants.Side.NONE;
         }));
 
         // **********
@@ -407,11 +407,11 @@ public class RobotContainer {
         new Trigger(m_buttonBoardConfig::bottomGrid)
                 .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
 
-        new Trigger(m_buttonBoardConfig::cubeCone).whileTrue(new InstantCommand(() -> {
+        new Trigger(m_buttonBoardConfig::cubeSelected).whileTrue(new InstantCommand(() -> {
             m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
             RobotState.getInstance().setLidarRange(LidarRange.CUBE);
         }));
-        new Trigger(m_buttonBoardConfig::cubeCone).whileFalse(new InstantCommand(() -> {
+        new Trigger(m_buttonBoardConfig::cubeSelected).whileFalse(new InstantCommand(() -> {
             m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
             RobotState.getInstance().setLidarRange(LidarRange.CONE);
         }));
@@ -444,11 +444,11 @@ public class RobotContainer {
             }
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
-                new Trigger(() -> m_buttonBoardConfig.confirm() && !m_side.equals(AlignToDoubleSubstation.Side.NONE))
+                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
                         .onTrue(new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression,
                                 m_side, m_stormNet, logitechController));
 
-                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side.equals(AlignToDoubleSubstation.Side.NONE)).onTrue(
+                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side == FieldConstants.Side.NONE).onTrue(
                         new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
             }
 
@@ -463,10 +463,10 @@ public class RobotContainer {
                     new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
                     // set pickup substation info
                     new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(new InstantCommand(() -> {
-                        m_side = AlignToDoubleSubstation.Side.LEFT;
+                        m_side = FieldConstants.Side.LEFT;
                     }));
                     new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(new InstantCommand(() -> {
-                        m_side = AlignToDoubleSubstation.Side.RIGHT;
+                        m_side = FieldConstants.Side.RIGHT;
                     }));
         }
 
