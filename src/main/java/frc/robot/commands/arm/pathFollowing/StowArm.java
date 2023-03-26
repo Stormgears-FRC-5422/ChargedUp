@@ -23,15 +23,15 @@ public class StowArm extends ArmPathFollowingCommand {
 
         PathPoint startPoint = new PathPoint(
                 current,
-                new Rotation2d(Math.PI),
+                new Rotation2d(Math.PI / 2.0),
                 new Rotation2d()
-        ).withNextControlLength(0.5);
+        ).withNextControlLength(0.75);
 
         PathPoint endPoint = new PathPoint(
                 Constants.ArmConstants.stowPosition,
-                new Rotation2d(-Math.PI),
+                new Rotation2d(-(Math.PI / 2.0)),
                 new Rotation2d()
-        ).withPrevControlLength(0.5);
+        ).withPrevControlLength(0.75);
 
         var path = PathPlanner.generatePath(
                 new PathConstraints(3, 3),

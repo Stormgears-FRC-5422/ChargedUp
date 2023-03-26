@@ -336,7 +336,7 @@ public class RobotContainer {
                     logitechController::getWpiXAxis,
                     logitechController::getWpiYAxis,
                     logitechController::getWpiZAxis,
-                    () -> logitechController.getRawButton(1),
+                    () -> logitechController.getRawButton(11),
                     () -> logitechController.getRawButton(2)
             );
             m_drivetrain.setDefaultCommand(driveWithJoystick);
@@ -355,9 +355,15 @@ public class RobotContainer {
                                 logitechController,
                                 FieldConstants.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
-                        new AlignToDoubleSubstation(m_drivetrain,
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet,
                                 logitechController,
                                 FieldConstants.Side.RIGHT));
+            }
+
+            if (Toggles.useNodeSelector) {
+                new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
+                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
+                );
             }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
@@ -420,9 +426,9 @@ public class RobotContainer {
         // Gripper
         // **********
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .onTrue(m_compression.closeGripper());
+                .onTrue(m_compression.getGrabCommand());
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .onFalse(m_compression.openGripper());
+                .onFalse(m_compression.getReleaseCommand());
 
         // **********
         // Automated routines for arm placement
@@ -435,7 +441,7 @@ public class RobotContainer {
                     new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
 
             // Set grid 1 - 9
-            for (int i = 1; i <= 9 ; i++) {
+            for (int i = 0; i <= 8 ; i++) {
                 int tmpI = i; // Need a final value for the lambda function
                 new Trigger(() -> m_buttonBoardConfig.getGridButton(tmpI))
                         .onTrue(new InstantCommand(() -> {

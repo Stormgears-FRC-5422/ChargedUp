@@ -5,7 +5,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotState;
 
@@ -70,25 +69,29 @@ public final class FieldConstants {
 
         public final static double substationHeight = Units.inchesToMeters(39.938);
 
-        private final static double substationAlignDist = Units.feetToMeters(3.0);
-        private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS);
-        private final static double wallToPortalClose = Units.feetToMeters(2) + Units.inchesToMeters(8.125);
-        private final static double wallToPortalFar = Units.inchesToMeters(64.861);
-        private final static double portalToFar = Units.inchesToMeters(24.126);
-
+        private final static double shelfDepth = Units.feetToMeters(1.0) + Units.inchesToMeters(1.0);
+        private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS)
+                - shelfDepth - Units.inchesToMeters(15.0);
+        private final static double shelfLength = Units.feetToMeters(2) + Units.inchesToMeters(8.125);
+        private final static double portalWidth = 2 * 0.35;
+//        private final static double portalToFarWall = wallToPortalFar + shelfLength;
         private final static double wallToRobotPadding = FIELD_WIDTH - (ROBOT_WIDTH / 2.0);
 
         private final static Regions.RectangleRegion blueLeftRegion = new Regions.RectangleRegion(
                 wallToRobotPadding - BUMPER_THICKNESS, alignDist,
-                (FIELD_WIDTH - wallToPortalClose) + (ROBOT_WIDTH / 2.0), alignDist);
+                (FIELD_WIDTH - shelfLength) + (ROBOT_WIDTH / 2.0), alignDist);
 
+        private final static double wallToPortalFar =
+                FIELD_WIDTH - shelfLength - portalWidth - ROBOT_WIDTH / 2.0;
         private final static Regions.RectangleRegion blueRightRegion = new Regions.RectangleRegion(
-                wallToRobotPadding - wallToPortalFar, alignDist,
-                wallToRobotPadding - wallToPortalFar - portalToFar, alignDist
+                wallToPortalFar, alignDist,
+                wallToPortalFar + ROBOT_WIDTH / 2.0 + BUMPER_THICKNESS, alignDist
         );
 
-        public final static DoubleSubstation blueDoubleSubstation = new DoubleSubstation(blueLeftRegion, blueRightRegion);
-        public final static DoubleSubstation redDoubleSubstation = new DoubleSubstation(blueRightRegion.getMirrored(), blueLeftRegion.getMirrored());
+        public final static DoubleSubstation blueDoubleSubstation =
+                new DoubleSubstation(blueLeftRegion, blueRightRegion);
+        public final static DoubleSubstation redDoubleSubstation =
+                new DoubleSubstation(blueRightRegion.getMirrored(), blueLeftRegion.getMirrored());
 
         public static DoubleSubstation getDoubleSubstation() {
             return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
@@ -334,7 +337,8 @@ public final class FieldConstants {
 
             @Override
             public RectangleRegion getMirrored() {
-                return new RectangleRegion(maxY, mirrorXPosition(maxX),
+                return new RectangleRegion(
+                        maxY, mirrorXPosition(maxX),
                         minY, mirrorXPosition(minX));
             }
 

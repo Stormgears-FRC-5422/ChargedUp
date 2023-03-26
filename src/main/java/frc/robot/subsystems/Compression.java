@@ -65,11 +65,11 @@ public class Compression extends StormSubsystemBase {
         onOffSolenoid.set(true);
     }
 
-    public Command closeGripper() {
+    public Command getGrabCommand() {
         return new InstantCommand(this::grabCubeOrCone);
     }
 
-    public Command openGripper() {
+    public Command getReleaseCommand() {
         return new InstantCommand(this::release);
     }
 

@@ -3,6 +3,7 @@ package frc.robot.commands.drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -31,7 +32,7 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     private static final double maxRotationSpeed = 0.5;
     private static final double maxYSpeed = 0.5;
-    private static final double maxJoystickInput = 0.3;
+    private static final double maxJoystickInput = 0.4;
     private static final double minJoystickInput = 0.07;
     // can go maxJoystickInput at this amount of meters
     private static final double maxDistanceX = 4.0;
@@ -70,6 +71,8 @@ public class AlignToDoubleSubstation extends CommandBase {
         }
         xSetpoint = target.getX();
         ySetpoint = target.getY();
+        System.out.println("current pose: " + RobotState.getInstance().getCurrentPose() +
+                " target: " + getTarget());
 
         rotController.setSetpoint(rotationSetpoint);
         yController.setSetpoint(ySetpoint);
@@ -85,10 +88,16 @@ public class AlignToDoubleSubstation extends CommandBase {
         omega += joystickZ;
 
         double xError = (shouldFlip? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
-        double xScale = Math.abs(xError / maxDistanceX) + minJoystickInput;
+        double xScale = Math.abs(xError / maxDistanceX);
+        xScale = MathUtil.clamp(xScale, Constants.kPrecisionSpeedScale, 1);
+//        if (xError <= 0.02)
+//            xScale = 0;
         x += signedSquare(joystickXSupplier.getAsDouble()) * xScale;
+        if (xError <= 0.05)
+            x = 0;
 
-        y += yController.calculate(currentPose.getY());
+        y += ((RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red)?
+                -1.0 : 1.0) * yController.calculate(currentPose.getY());
         double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput;
         y += joystickY;
 
@@ -102,4 +111,7 @@ public class AlignToDoubleSubstation extends CommandBase {
         return Math.signum(input) * Math.pow(input, 2);
     }
 
+    public Pose2d getTarget() {
+        return new Pose2d(target, Rotation2d.fromDegrees(rotationSetpoint));
+    }
 }

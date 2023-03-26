@@ -122,9 +122,9 @@ public class PoseEstimator extends StormSubsystemBase {
 //                    if (counter % 25 == 0)
 //                        System.out.println("pose after transform: " + visionPose);
                     // if we are basically stopped just reset the pose
-//                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
-//                        RobotState.getInstance().getCurrentDegPerSecVel() <= 5)
-//                        resetEstimator(visionPose);
+                    if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
+                        RobotState.getInstance().getCurrentDegPerSecVel() <= 5)
+                        resetEstimator(visionPose);
                     m_poseEstimator.addVisionMeasurement(visionPose, time, visionMeasurement.deviations);
                     // log the position
                     visionPoseSim.setPose(visionPose);
@@ -140,10 +140,10 @@ public class PoseEstimator extends StormSubsystemBase {
     }
 
     public void resetEstimator(Rotation2d angle, SwerveModulePosition[] modulePositions, Pose2d pose) {
-        System.out.println("Pose reset to: " + pose);
-        System.out.println("");
-        System.out.println("module positions on reset: " + Arrays.toString(modulePositions)
-                + " angle on reset: " + angle);
+//        System.out.println("Pose reset to: " + pose);
+//        System.out.println("");
+//        System.out.println("module positions on reset: " + Arrays.toString(modulePositions)
+//                + " angle on reset: " + angle);
         m_poseEstimator.resetPosition(angle, modulePositions, pose);
     }
 

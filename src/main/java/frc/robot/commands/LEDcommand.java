@@ -35,13 +35,13 @@ public class LEDcommand extends CommandBase {
     public void execute() {
         double distance = stormNet.getLidarDistance();
         Constants.LidarRange currentRange = RobotState.getInstance().getLidarRange();
-
-        if (distance <= 0.5) {
+//        System.out.println("Lidar: " + distance);
+        if (distance <= 0.75) {
             double error = distance - currentRange.getCenter();
             blinkRate = (int) (MathUtil
                     .applyDeadband(error,
                             currentRange.getMax() - currentRange.getCenter(),
-                            0.5 - currentRange.getCenter()) * lowestBlinkRate - 1) + 1;
+                            0.75 - currentRange.getCenter()) * lowestBlinkRate - 1) + 1;
 
             // by default set the color to yellow or correct
             Color8Bit color = (currentRange == Constants.LidarRange.CONE)? NeoPixel.YELLOW_COLOR : NeoPixel.PURPLE_COLOR;

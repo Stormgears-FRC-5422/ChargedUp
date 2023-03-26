@@ -9,6 +9,8 @@ import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.stormnet.StormNet;
 
 import static frc.robot.constants.Constants.kXYArmManualSpeed;
+import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCone;
+import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCube;
 
 public class ArmToPickUp extends CommandBase {
   Arm arm;
@@ -19,6 +21,7 @@ public class ArmToPickUp extends CommandBase {
   double dx;
   double dy;
   boolean closeToTarget;
+  private static double tooFar = 0.75;
 
   public ArmToPickUp(Arm arm, StormNet stormNet){
     this.arm = arm;
@@ -31,7 +34,6 @@ public class ArmToPickUp extends CommandBase {
     System.out.println("ArmToPickUp command running");
 
     gripperPose = arm.getGripperPose();
-    yTarget = Constants.ArmConstants.pickDoubleSubstation.getY();
     dx = 0;
     dy = 0;
   }
@@ -41,13 +43,15 @@ public class ArmToPickUp extends CommandBase {
     gripperPose = arm.getGripperPose();
     double distance = stormNet.getLidarDistance();
     var currentRange = RobotState.getInstance().getLidarRange();
+    yTarget = (currentRange == Constants.LidarRange.CONE?
+            pickDoubleSubstationCone : pickDoubleSubstationCube).getY();
 
     closeToTarget = false;
     if (distance <= currentRange.getMin()) { // Too close to target
       dx = -kXYArmManualSpeed;
-    } else if (distance >= currentRange.getMax() && distance < 0.5) {  // Too far from target
+    } else if (distance >= currentRange.getMax() && distance < tooFar) {  // Too far from target
       dx = kXYArmManualSpeed;
-    } else if (distance >= 0.5) { // Way to far from target
+    } else if (distance >= tooFar) { // Way to far from target
       dx = 0;
     } else { // close to target
       dx = 0;

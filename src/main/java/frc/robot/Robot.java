@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.subsystemUtils.StormSubsystemScheduler;
 
@@ -102,6 +103,7 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
+        m_robotContainer.m_aprilTagStatusCommand.schedule();
     }
 
     /**
@@ -122,6 +124,7 @@ public class Robot extends TimedRobot {
         }
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
         RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
+        m_robotContainer.m_aprilTagStatusCommand.schedule();
     }
 
     /**
