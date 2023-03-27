@@ -36,6 +36,7 @@ public class AlignToDoubleSubstation extends CommandBase {
     private static final double minJoystickInput = 0.07;
     // can go maxJoystickInput at this amount of meters
     private static final double maxDistanceX = 4.0;
+    private boolean isRed = false;
 
     public AlignToDoubleSubstation(DrivetrainBase drivetrain, DriveJoystick driveJoystick,
                                    FieldConstants.Side side) {
@@ -56,10 +57,10 @@ public class AlignToDoubleSubstation extends CommandBase {
     @Override
     public void initialize() {
         drivetrain.setDriveSpeedScale(Constants.kDriveSpeedScale);
-        shouldFlip = RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red;
-        if (shouldFlip)
-            rotationSetpoint = 180;
+        isRed = RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red;
 
+        if (isRed)
+            rotationSetpoint = 180;
         var substation = FieldConstants.Substations.getDoubleSubstation();
         switch (side) {
             case LEFT:
@@ -88,7 +89,7 @@ public class AlignToDoubleSubstation extends CommandBase {
         double joystickZ = signedSquare(joystickOmegaSupplier.getAsDouble()) * maxJoystickInput;
         omega += joystickZ;
 
-        double xError = (shouldFlip? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
+        double xError = (isRed? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
         double xScale = Math.abs(xError / maxDistanceX);
         xScale = MathUtil.clamp(xScale, Constants.kPrecisionSpeedScale, 1);
 //        if (xError <= 0.02)
@@ -98,9 +99,11 @@ public class AlignToDoubleSubstation extends CommandBase {
             x = 0;
 
         double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput * 0.02;
+        if (isRed)
+            joystickY *= -1.0;
         ySetpoint += joystickY;
         yController.setSetpoint(ySetpoint);
-        y += ((RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red)?
+        y += ((isRed)?
                 -1.0 : 1.0) * yController.calculate(currentPose.getY());
 //        y += joystickY;
 

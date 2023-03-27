@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,7 +31,6 @@ public class RobotState extends StormSubsystemBase {
     private Pair<Double, Rotation2d> currentGyroData = null;
     private int visionLogCounter = 0;
 
-    private TreeMap<Double, Pose2d> poseMap = new TreeMap<>();
     private final TimeInterpolatableBuffer<Pose2d> poseRecord =
             TimeInterpolatableBuffer.createBuffer(0.5);
 
@@ -203,7 +203,15 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public double getCurrentLinearVel() {
-        return getDeltaDistanceMeters() / 0.02;
+        var lastEntry = poseRecord.getInternalBuffer().lastEntry();
+        if (lastEntry == null)
+            return 0;
+        var lowerEntry = poseRecord.getInternalBuffer()
+                .lowerEntry(poseRecord.getInternalBuffer().lastKey());
+        if (lowerEntry == null)
+            return 0;
+        return lastEntry.getValue().getTranslation().getDistance(lowerEntry.getValue().getTranslation()) /
+                (lastEntry.getKey() - lowerEntry.getKey());
     }
 
     public double getDeltaDegrees() {
@@ -211,7 +219,16 @@ public class RobotState extends StormSubsystemBase {
     }
 
     public double getCurrentDegPerSecVel() {
-        return getDeltaDegrees() / 0.02;
+        var lastEntry = poseRecord.getInternalBuffer().lastEntry();
+        if (lastEntry == null)
+            return 0;
+        var lowerEntry = poseRecord.getInternalBuffer()
+                .lowerEntry(poseRecord.getInternalBuffer().lastKey());
+        if (lowerEntry == null)
+            return 0;
+        double deltaDegrees = lastEntry.getValue().getRotation().getDegrees() - lowerEntry.getValue().getRotation().getDegrees();
+        deltaDegrees = MathUtil.inputModulus(deltaDegrees, -180, 180);
+        return deltaDegrees / (lastEntry.getKey() - lowerEntry.getKey());
     }
 
     public void setLidarRange(Constants.LidarRange type) {

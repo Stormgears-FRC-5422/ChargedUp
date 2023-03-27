@@ -156,16 +156,9 @@ public class EnhancedDriveWithJoystick extends CommandBase {
                 setpointDirection = "NONE";
                 break;
         }
-        rotController.setGoal(angle);
-        rotController.reset(currentAngle, getRotVel());
-        setpointRotationMode = true;
-    }
 
-    private double getRotVel() {
-        var currAngle = RobotState.getInstance().getRotationAtTime(Timer.getFPGATimestamp());
-        var pastAngle = RobotState.getInstance().getRotationAtTime(Timer.getFPGATimestamp() - 0.02);
-        double delta = MathUtil
-                .inputModulus(currAngle.getDegrees() - pastAngle.getDegrees(), -180, 180);
-        return delta / 0.02;
+        rotController.setGoal(angle);
+        rotController.reset(currentAngle, RobotState.getInstance().getCurrentDegPerSecVel());
+        setpointRotationMode = true;
     }
 }
