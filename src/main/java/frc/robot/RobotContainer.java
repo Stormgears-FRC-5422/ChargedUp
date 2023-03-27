@@ -351,11 +351,13 @@ public class RobotContainer {
 
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
-                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
+                        new PickFromDoubleSubstation2(
+                                m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
-                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
+                        new PickFromDoubleSubstation2(
+                                m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.RIGHT));
             }
@@ -364,6 +366,13 @@ public class RobotContainer {
                 new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
                         new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
                 );
+
+                // TODO: possible control for driver which automatically places the piece
+//                if (Toggles.useArm && Toggles.usePneumatics) {
+//                    new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
+//                            new AutoScore(m_drivetrain, m_arm, m_compression, nodeSelector::getSelectedNode)
+//                    );
+//                }
             }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));

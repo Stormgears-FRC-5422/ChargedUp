@@ -125,7 +125,7 @@ public class PoseEstimator extends StormSubsystemBase {
                     if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
                         RobotState.getInstance().getCurrentDegPerSecVel() <= 5)
                         resetEstimator(visionPose);
-                    m_poseEstimator.addVisionMeasurement(visionPose, time, visionMeasurement.deviations);
+                    m_poseEstimator.addVisionMeasurement(visionPose, time);
                     // log the position
                     visionPoseSim.setPose(visionPose);
                     currentVisionEntryTime = time;

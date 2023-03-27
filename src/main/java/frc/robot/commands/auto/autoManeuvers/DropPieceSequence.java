@@ -7,12 +7,13 @@ import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
 
 public class DropPieceSequence extends SequentialCommandGroup {
-  public DropPieceSequence(DrivetrainBase drivetrain, Arm arm, Compression compression, NodeSelector nodeSelector){
-    addCommands(
+    public DropPieceSequence(DrivetrainBase drivetrain, Arm arm, Compression compression, NodeSelector nodeSelector) {
+        addCommands(
 //            new DriveToNode(drivetrain, nodeSelector::getSelectedNode ),
-            new ArmToNode(arm, nodeSelector::getSelectedNode),
-            new InstantCommand(compression::release),
-            new StowArm(arm),
-            new PrintCommand("Finished with DropPiece command"));
-    };
-  }
+                new ArmToNode(arm, nodeSelector::getSelectedNode),
+                new WaitCommand(0.1),
+                compression.getReleaseCommand(),
+                new StowArm(arm),
+                new PrintCommand("Finished with DropPiece command"));
+    }
+}

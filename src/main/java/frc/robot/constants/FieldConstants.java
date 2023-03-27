@@ -77,15 +77,15 @@ public final class FieldConstants {
 //        private final static double portalToFarWall = wallToPortalFar + shelfLength;
         private final static double wallToRobotPadding = FIELD_WIDTH - (ROBOT_WIDTH / 2.0);
 
+        // just get the center pole for both
         private final static Regions.RectangleRegion blueLeftRegion = new Regions.RectangleRegion(
-                wallToRobotPadding - BUMPER_THICKNESS, alignDist,
-                (FIELD_WIDTH - shelfLength) + (ROBOT_WIDTH / 2.0), alignDist);
-
+                Units.inchesToMeters(294.3), alignDist,
+                Units.inchesToMeters(294.3), alignDist);
         private final static double wallToPortalFar =
                 FIELD_WIDTH - shelfLength - portalWidth - ROBOT_WIDTH / 2.0;
         private final static Regions.RectangleRegion blueRightRegion = new Regions.RectangleRegion(
-                wallToPortalFar, alignDist,
-                wallToPortalFar + ROBOT_WIDTH / 2.0 + BUMPER_THICKNESS, alignDist
+                Units.inchesToMeters(237.5), alignDist,
+                Units.inchesToMeters(237.5), alignDist
         );
 
         public final static DoubleSubstation blueDoubleSubstation =
@@ -151,8 +151,8 @@ public final class FieldConstants {
         // Calculate regions for every 3 by 3 of nodes
         private static final double distBetweenChargingStationGrid = Units.inchesToMeters(59.0);
         private static final double regionMinX = Units.inchesToMeters(54.05);
-        private static final double regionMaxWidth = regionMinX + distBetweenChargingStationGrid;
-        private static final double[] regionMaxWidths = new double[] {regionMaxWidth - halfRobotLengthWithBumper, regionMaxWidth, regionMaxWidth};
+        private static final double regionMaxX = regionMinX + distBetweenChargingStationGrid;
+        private static final double[] regionMaxWidths = new double[] {regionMaxX - halfRobotLengthWithBumper, regionMaxX, regionMaxX};
         private static final double firstRegionLength = Units.inchesToMeters(75.185);
         private static final double secondRegionLength = Units.inchesToMeters(65.55);
         private static final double thirdRegionLength = Units.inchesToMeters(75.345);
@@ -181,7 +181,7 @@ public final class FieldConstants {
                     double xTranslation = nodeXs[wpiX];
                     // decrease height by thirteen inches if it is a cube
                     double zTranslation = type == ScoringNode.NodeType.CUBE?
-                        height.getHeight() - Units.inchesToMeters(13.50) : height.getHeight();
+                        height.getHeight() - 0.34 : height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)

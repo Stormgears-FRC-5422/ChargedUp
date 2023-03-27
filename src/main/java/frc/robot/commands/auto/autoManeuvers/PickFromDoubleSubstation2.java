@@ -27,8 +27,6 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
     public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Compression compression, StormNet stormNet, NeoPixel neoPixel,
                                      DriveJoystick joystick, FieldConstants.Side side) {
         AlignToDoubleSubstation alignCommand = new AlignToDoubleSubstation(drivetrain, joystick, side);
-        Translation2d pickingHeight = (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
-                pickDoubleSubstationCone : pickDoubleSubstationCube;
         addCommands(
                 new InstantCommand(() -> neoPixel.setLEDBlinkingState(true)),
                         alignCommand,
@@ -36,14 +34,17 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         compression.getReleaseCommand(),
                         new WaitUntilCommand(
                                 () -> atRotationTolerance(() -> alignCommand.getTarget().getRotation())),
-                        new ArmToTranslation(arm, pickingHeight, 4, 4),
+                        new ArmToTranslation(arm, this::getPickingHeight, 4, 4),
                         new ArmToPickUp(arm, stormNet),
                         compression.getGrabCommand(),
-//                        new WaitUntilCommand(
-//                                () -> atXToleranceForStow(() -> alignCommand.getTarget().getTranslation())),
                         new StowArm(arm),
                         new InstantCommand(() -> neoPixel.setLEDBlinkingState(false)))
                 );
+    }
+
+    private Translation2d getPickingHeight() {
+        return (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
+                pickDoubleSubstationCone : pickDoubleSubstationCube;
     }
 
     private boolean atRotationTolerance(Supplier<Rotation2d> rotSetpoint) {

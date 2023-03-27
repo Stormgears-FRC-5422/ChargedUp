@@ -9,27 +9,33 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.arm.Arm;
 
+import java.util.function.Supplier;
+
 import static frc.robot.commands.drive.pathFollowing.Paths.calcHeading;
 
 public class ArmToTranslation extends ArmPathFollowingCommand {
 
     private final Arm arm;
-    private final Translation2d goal;
-
+    private final Supplier<Translation2d> goalSupplier;
     private final double maxVel, maxAcc;
 
-    public ArmToTranslation(Arm arm, Translation2d goalTranslation, double maxVel, double maxAcc) {
+    public ArmToTranslation(Arm arm, Supplier<Translation2d> goalSupplier, double maxVel, double maxAcc) {
         super(arm);
         this.arm = arm;
+        this.goalSupplier = goalSupplier;
         this.maxVel = maxVel;
         this.maxAcc = maxAcc;
-        goal = goalTranslation;
+    }
+
+    public ArmToTranslation(Arm arm, Translation2d goalTranslation, double maxVel, double maxAcc) {
+        this (arm, () -> goalTranslation, maxVel, maxAcc);
     }
 
     @Override
     public void initialize() {
         Translation2d current = arm.getGripperPose().getTranslation();
 //        final boolean isRight = current.getX() >= goal.getX();
+        Translation2d goal = goalSupplier.get();
         final boolean isLower = current.getY() <= goal.getY();
         Translation2d intermediate = isLower?
                 new Translation2d(current.getX(), goal.getY()) :

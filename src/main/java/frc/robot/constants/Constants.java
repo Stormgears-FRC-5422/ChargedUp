@@ -104,6 +104,7 @@ public final class Constants {
         CUBE(0.09, 0.19);
 
         private final double min, max, center;
+        public static final double maxLidarDetectionRange = 0.75;
 
         LidarRange(double min, double max) {
             this.min = min;

@@ -69,6 +69,7 @@ public class AlignToDoubleSubstation extends CommandBase {
             case RIGHT:
                 target = substation.rightRegion.getCenter();
         }
+
         xSetpoint = target.getX();
         ySetpoint = target.getY();
         System.out.println("current pose: " + RobotState.getInstance().getCurrentPose() +
@@ -96,10 +97,12 @@ public class AlignToDoubleSubstation extends CommandBase {
         if (xError <= 0.05)
             x = 0;
 
+        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput * 0.02;
+        ySetpoint += joystickY;
+        yController.setSetpoint(ySetpoint);
         y += ((RobotState.getInstance().getCurrentAlliance() == DriverStation.Alliance.Red)?
                 -1.0 : 1.0) * yController.calculate(currentPose.getY());
-        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput;
-        y += joystickY;
+//        y += joystickY;
 
         omega = MathUtil.clamp(omega, -maxRotationSpeed, maxRotationSpeed);
         x = MathUtil.clamp(x, -maxJoystickInput, maxJoystickInput);
