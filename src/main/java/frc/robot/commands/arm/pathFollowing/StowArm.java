@@ -34,7 +34,7 @@ public class StowArm extends ArmPathFollowingCommand {
         ).withPrevControlLength(0.75);
 
         var path = PathPlanner.generatePath(
-                new PathConstraints(3, 3),
+                new PathConstraints(4, 4),
                 startPoint, endPoint
         );
 

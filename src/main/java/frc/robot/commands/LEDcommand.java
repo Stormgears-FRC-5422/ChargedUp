@@ -41,40 +41,40 @@ public class LEDcommand extends CommandBase {
         double distance = stormNet.getLidarDistance();
         LidarRange currentRange = RobotState.getInstance().getLidarRange();
 //        System.out.println("Lidar: " + distance);
-        if (distance <= LidarRange.maxLidarDetectionRange) {
-            double error = distance - currentRange.getCenter();
-
-            blinkRate = 0;
-            if (blink) {
-                blinkRate = (int) (MathUtil.applyDeadband(error,
-                                currentRange.getMax() - currentRange.getCenter(),
-                                LidarRange.maxLidarDetectionRange - currentRange.getCenter())
-                        * lowestBlinkRate - 1) + 1;
-            }
-
-            // by default set the color to yellow or correct
-            Color8Bit color = (currentRange == LidarRange.CONE) ? NeoPixel.YELLOW_COLOR : NeoPixel.PURPLE_COLOR;
-            // blink rate will be positive or negative if too far or close
-            if (blinkRate < 0)
-                color = NeoPixel.RED_COLOR;
-            else if (blinkRate > 0)
-                color = NeoPixel.BLUE_COLOR;
-
-            // make sure we are doing modulo of positive number... does it matter?
-            blinkRate = Math.abs(blinkRate);
-            if (blinkRate == 0) {
-                neoPixel.setSpecificSegmentColor(segments, color);
-                return;
-            }
-
-            if (++count % blinkRate == 0)
-                neoPixel.setSpecificSegmentColor(segments, color);
-            else
-                neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
-
-        } else {
+        if (distance >= LidarRange.maxLidarDetectionRange) {
             neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
+            return;
         }
+
+        double error = distance - currentRange.getCenter();
+
+        blinkRate = 0;
+        if (blink) {
+            blinkRate = (int) (MathUtil.applyDeadband(error,
+                            currentRange.getMax() - currentRange.getCenter(),
+                            LidarRange.maxLidarDetectionRange - currentRange.getCenter())
+                    * (lowestBlinkRate - 1)) + 1;
+        }
+
+        // by default set the color to yellow or purple
+        Color8Bit color = (currentRange == LidarRange.CONE) ? NeoPixel.YELLOW_COLOR : NeoPixel.PURPLE_COLOR;
+        // blink rate will be positive or negative if too far or close
+        if (blinkRate < 0)
+            color = NeoPixel.RED_COLOR;
+        else if (blinkRate > 0)
+            color = NeoPixel.BLUE_COLOR;
+
+        // make sure we are doing modulo of positive number... does it matter?
+        blinkRate = Math.abs(blinkRate);
+        if (blinkRate == 0) {
+            neoPixel.setSpecificSegmentColor(segments, color);
+            return;
+        }
+
+        if (++count % blinkRate == 0)
+            neoPixel.setSpecificSegmentColor(segments, color);
+        else
+            neoPixel.setSpecificSegmentColor(segments, NeoPixel.NO_COLOR);
     }
 
     @Override

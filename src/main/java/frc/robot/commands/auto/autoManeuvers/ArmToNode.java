@@ -45,6 +45,7 @@ public class ArmToNode extends ArmPathFollowingCommand {
 
         Translation3d nodeTranslation = node.translation;
 
+        // added 4.0 inches due to testing
         double goalX = Math.abs(node.scoringPosition.getX() - nodeTranslation.getX()) + Units.inchesToMeters(4.0);
         double goalZ = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
 
@@ -63,12 +64,12 @@ public class ArmToNode extends ArmPathFollowingCommand {
         final double startControlLength = current.getDistance(intermediate) * 1.5;
 //        Rotation2d startHeading = new Rotation2d(calcHeading(current, intermediate));
         PathPoint start = new PathPoint(current, new Rotation2d(Math.PI / 2.0), new Rotation2d())
-                .withNextControlLength(startControlLength);
+                .withNextControlLength(1.0);
 
 //        Rotation2d endHeading = new Rotation2d(calcHeading(intermediate, goal));
         final double endControlLength = (isCube? CUBE_OFFSET : CONE_OFFSET) * 4.0;
         PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2.0), new Rotation2d())
-                .withPrevControlLength(endControlLength);
+                .withPrevControlLength(1.0);
 
         var path = PathPlanner.generatePath(
                 new PathConstraints(2.0, 2.0),

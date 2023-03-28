@@ -360,12 +360,25 @@ public class RobotContainer {
                                 m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.RIGHT));
+
+                new Trigger(() -> logitechController.getRawButton(3)).or(() -> logitechController.getRawButton(4))
+                        .onFalse(new StowArm(m_arm));
             }
 
             if (Toggles.useNodeSelector) {
                 new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
                         new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
                 );
+
+                // TODO: test to see if this works aligns similar to pickup and placing is based no buttonboard
+//                if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
+//                    new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
+//                            new ComplexAutoScore(m_drivetrain, m_arm, m_compression,
+//                                    nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
+//                    );
+//
+//                    new Trigger(() -> logitechController.getRawButton(1)).onFalse(new StowArm(m_arm));
+//                }
 
                 // TODO: possible control for driver which automatically places the piece
 //                if (Toggles.useArm && Toggles.usePneumatics) {

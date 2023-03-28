@@ -1,10 +1,10 @@
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.networktables.GenericEntry;
@@ -18,7 +18,6 @@ import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Vector;
 
 public class RobotState extends StormSubsystemBase {
@@ -33,6 +32,7 @@ public class RobotState extends StormSubsystemBase {
 
     private final TimeInterpolatableBuffer<Pose2d> poseRecord =
             TimeInterpolatableBuffer.createBuffer(0.5);
+    private Map.Entry<Double, Pose2d> currentEntry, lastEntry;
 
     private Pose2d startPose;
     private DriverStation.Alliance currentAlliance = DriverStation.Alliance.Blue;
@@ -57,7 +57,7 @@ public class RobotState extends StormSubsystemBase {
         layout.addNumber("Pose Angle", () -> getCurrentPose().getRotation().getDegrees());
         layout.addNumber("Robot Time", this::getTimeSeconds);
         layout.addNumber("Linear Velocity", this::getCurrentLinearVel);
-        layout.addNumber("Rotational Velocity", this::getCurrentDegPerSecVel);
+        layout.addNumber("Rotational Velocity", this::getCurrentRotVelDeg);
 
         var poseGridLayout = ShuffleboardConstants.getInstance().driverTab
                 .getLayout("Set Start Pose", BuiltInLayouts.kGrid)
@@ -99,26 +99,23 @@ public class RobotState extends StormSubsystemBase {
 
     public void addPose(double time, Pose2d pose) {
         poseRecord.addSample(time, pose);
+        lastEntry = currentEntry;
+        currentEntry = poseRecord.getInternalBuffer().lastEntry();
     }
 
     public Pose2d getCurrentPose() {
         if (!Constants.Toggles.usePoseEstimator ||
-                poseRecord.getInternalBuffer().lastEntry() == null) {
+                currentEntry == null) {
 //            System.out.println("NOT using pose estimator. Can't get current pose!");
             return getStartPose();
         }
-        return poseRecord.getInternalBuffer().lastEntry().getValue();
+        return currentEntry.getValue();
     }
 
     public Pose2d getLastPose() {
-        if (!Constants.Toggles.usePoseEstimator ||
-                poseRecord.getInternalBuffer().size() < 1) {
-//            System.out.println("NOT using pose estimator. Can't get last pose!");
+        if (!Constants.Toggles.usePoseEstimator || lastEntry == null)
             return getCurrentPose();
-        } else if (poseRecord.getInternalBuffer().lowerEntry(poseRecord.getInternalBuffer().lastKey()) == null)
-            return getCurrentPose();
-        return poseRecord.getInternalBuffer()
-                .lowerEntry(poseRecord.getInternalBuffer().lastKey()).getValue();
+        return lastEntry.getValue();
     }
 
     public Pose2d getStartPose() {
@@ -196,6 +193,12 @@ public class RobotState extends StormSubsystemBase {
         return currentVisionData;
     }
 
+    public Pair<Double, Twist2d> getDeltaPoseWithTime() {
+        if (currentEntry == null || lastEntry == null)
+            return new Pair<> (0.02, new Twist2d(0, 0, 0));
+        return new Pair<>(currentEntry.getKey() - lastEntry.getKey(), lastEntry.getValue().log(currentEntry.getValue()));
+    }
+
     public double getDeltaDistanceMeters() {
         Translation2d m_lastTranslation = getLastPose().getTranslation();
         Translation2d m_currentTranslation = getCurrentPose().getTranslation();
@@ -218,17 +221,19 @@ public class RobotState extends StormSubsystemBase {
         return getLastPose().getRotation().minus(getCurrentPose().getRotation()).getDegrees();
     }
 
-    public double getCurrentDegPerSecVel() {
-        var lastEntry = poseRecord.getInternalBuffer().lastEntry();
-        if (lastEntry == null)
-            return 0;
-        var lowerEntry = poseRecord.getInternalBuffer()
-                .lowerEntry(poseRecord.getInternalBuffer().lastKey());
-        if (lowerEntry == null)
-            return 0;
-        double deltaDegrees = lastEntry.getValue().getRotation().getDegrees() - lowerEntry.getValue().getRotation().getDegrees();
-        deltaDegrees = MathUtil.inputModulus(deltaDegrees, -180, 180);
-        return deltaDegrees / (lastEntry.getKey() - lowerEntry.getKey());
+    public double getCurrentRotVelDeg() {
+        var twist = getDeltaPoseWithTime();
+        return Math.toRadians(twist.getSecond().dtheta) / twist.getFirst();
+    }
+
+    public double getCurrentXVel() {
+        var twist = getDeltaPoseWithTime();
+        return twist.getSecond().dx / twist.getFirst();
+    }
+
+    public double getCurrentYVel() {
+        var twist = getDeltaPoseWithTime();
+        return twist.getSecond().dy / twist.getFirst();
     }
 
     public void setLidarRange(Constants.LidarRange type) {
@@ -246,7 +251,6 @@ public class RobotState extends StormSubsystemBase {
 //                poseMap.firstKey() < Timer.getFPGATimestamp() - 0.5) {
 //            poseMap.pollFirstEntry();
 //        }
-
         Pose2d currentPose = getCurrentPose();
         xEntry.setDouble(currentPose.getX());
         yEntry.setDouble(currentPose.getY());

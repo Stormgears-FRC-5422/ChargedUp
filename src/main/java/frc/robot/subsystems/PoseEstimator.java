@@ -14,14 +14,12 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
-import frc.robot.Robot;
 import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.vision.AprilTagPoseEstimationStrategy;
 import frc.utils.subsystemUtils.StormSubsystemBase;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import static frc.robot.constants.Constants.VisionConstants.CAMERA_POSITION;
@@ -122,7 +120,7 @@ public class PoseEstimator extends StormSubsystemBase {
 
                     // if we are basically stopped just reset the pose
                     if (RobotState.getInstance().getCurrentLinearVel() <= 0.08 &&
-                       Math.abs(RobotState.getInstance().getCurrentDegPerSecVel()) <= 5)
+                       Math.abs(RobotState.getInstance().getCurrentRotVelDeg()) <= 5)
                         resetEstimator(visionPose);
 
                     m_poseEstimator.addVisionMeasurement(visionPose, time);

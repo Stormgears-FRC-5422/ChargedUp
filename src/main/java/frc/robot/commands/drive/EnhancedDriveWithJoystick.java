@@ -1,12 +1,10 @@
 package frc.robot.commands.drive;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
@@ -158,7 +156,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         }
 
         rotController.setGoal(angle);
-        rotController.reset(currentAngle, RobotState.getInstance().getCurrentDegPerSecVel());
+        rotController.reset(currentAngle, RobotState.getInstance().getCurrentRotVelDeg());
         setpointRotationMode = true;
     }
 }
