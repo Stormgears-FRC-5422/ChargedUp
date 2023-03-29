@@ -8,6 +8,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.constants.Constants;
 import frc.robot.subsystems.arm.Arm;
 
+import static frc.robot.constants.Constants.ArmConstants.stowPosition;
+import static frc.robot.commands.drive.pathFollowing.Paths.calcHeading;
+
 public class StowArm extends ArmPathFollowingCommand {
 
     private final Arm arm;
@@ -20,18 +23,24 @@ public class StowArm extends ArmPathFollowingCommand {
     @Override
     public void initialize() {
         Translation2d current = arm.getGripperPose().getTranslation();
+        boolean useQuickPath = stowPosition.getDistance(current) <= 0.30 &&
+                                current.getY() >= stowPosition.getY();
 
+        Rotation2d startHeading = (useQuickPath) ?
+            new Rotation2d(calcHeading(current, stowPosition)) : new Rotation2d(Math.PI / 2.0);
         PathPoint startPoint = new PathPoint(
                 current,
-                new Rotation2d(Math.PI / 2.0),
+                startHeading,
                 new Rotation2d()
-        ).withNextControlLength(0.75);
+                ).withNextControlLength(0.5);
 
+        Rotation2d endHeading = (useQuickPath) ?
+                startHeading : new Rotation2d(-Math.PI / 2.0);
         PathPoint endPoint = new PathPoint(
-                Constants.ArmConstants.stowPosition,
-                new Rotation2d(-(Math.PI / 2.0)),
+                stowPosition,
+                endHeading,
                 new Rotation2d()
-        ).withPrevControlLength(0.75);
+        ).withPrevControlLength(0.5);
 
         var path = PathPlanner.generatePath(
                 new PathConstraints(4, 4),

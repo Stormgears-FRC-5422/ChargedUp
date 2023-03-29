@@ -34,24 +34,12 @@ public class ArmToTranslation extends ArmPathFollowingCommand {
     @Override
     public void initialize() {
         Translation2d current = arm.getGripperPose().getTranslation();
-//        final boolean isRight = current.getX() >= goal.getX();
         Translation2d goal = goalSupplier.get();
+        // if we start lower than the goal then we should do a different movement
         final boolean isLower = current.getY() <= goal.getY();
         Translation2d intermediate = isLower?
                 new Translation2d(current.getX(), goal.getY()) :
                 new Translation2d(goal.getX(), current.getY());
-
-//        Translation2d intermediate = new Translation2d();
-//
-//        if (!isRight && isLower) {
-//            intermediate = new Translation2d(current.getX(), goal.getY());
-//        } else if (isRight && isLower) {
-//            intermediate = new Translation2d(current.getX(), goal.getY());
-//        } else if (!isRight && !isLower) {
-//            intermediate = new Translation2d(goal.getX(), current.getY());
-//        } else if (isRight && !isLower) {
-//            intermediate = new Translation2d(goal.getX(), current.getY());
-//        }
 
         // control radius of arc using divisor
         final double startControlLength = current.getDistance(intermediate) * 1.2;
@@ -59,7 +47,6 @@ public class ArmToTranslation extends ArmPathFollowingCommand {
         PathPoint start = new PathPoint(current, startHeading, new Rotation2d())
                 .withNextControlLength(startControlLength);
 
-//        Rotation2d endHeading = new Rotation2d(calcHeading(intermediate, goal));
         final double endControlLength = goal.getDistance(intermediate) * 1.2;
         PathPoint end = new PathPoint(goal, new Rotation2d(calcHeading(intermediate, goal)), new Rotation2d())
                 .withPrevControlLength(endControlLength);

@@ -67,7 +67,7 @@ public class ArmToNode extends ArmPathFollowingCommand {
         Rotation2d startHeading = isHybrid?
                 new Rotation2d(Math.PI / 6) : new Rotation2d(Math.PI / 2);
         PathPoint start = new PathPoint(current, startHeading, new Rotation2d())
-                .withNextControlLength(isHybrid? 0.2 : deltaY);
+                .withNextControlLength(isHybrid? 0.2 : deltaY * 1.2);
 
         PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2.0), new Rotation2d())
                 .withPrevControlLength(deltaY);

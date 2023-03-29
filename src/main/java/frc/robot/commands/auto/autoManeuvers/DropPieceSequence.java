@@ -11,9 +11,8 @@ public class DropPieceSequence extends SequentialCommandGroup {
         addCommands(
 //            new DriveToNode(drivetrain, nodeSelector::getSelectedNode ),
                 new ArmToNode(arm, nodeSelector::getSelectedNode),
-                new WaitCommand(0.1),
                 compression.getReleaseCommand(),
-                new StowArm(arm),
-                new PrintCommand("Finished with DropPiece command"));
+                new StowArm(arm)
+        );
     }
 }

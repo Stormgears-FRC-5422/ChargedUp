@@ -92,20 +92,13 @@ public class AlignToDoubleSubstation extends CommandBase {
         double xError = (isRed? -1.0 : 1.0) * (xSetpoint - currentPose.getX());
         double xScale = Math.abs(xError / maxDistanceX);
         xScale = MathUtil.clamp(xScale, Constants.kPrecisionSpeedScale, 1);
-//        if (xError <= 0.02)
-//            xScale = 0;
         x += signedSquare(joystickXSupplier.getAsDouble()) * xScale;
         if (xError <= 0.05)
             x = 0;
 
-        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput * 0.02;
-        if (isRed)
-            joystickY *= -1.0;
-        ySetpoint += joystickY;
-        yController.setSetpoint(ySetpoint);
-        y += ((isRed)?
-                -1.0 : 1.0) * yController.calculate(currentPose.getY());
-//        y += joystickY;
+        y += ((isRed)?  -1.0 : 1.0) * yController.calculate(currentPose.getY());
+        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput;
+        y += joystickY;
 
         omega = MathUtil.clamp(omega, -maxRotationSpeed, maxRotationSpeed);
         x = MathUtil.clamp(x, -maxJoystickInput, maxJoystickInput);

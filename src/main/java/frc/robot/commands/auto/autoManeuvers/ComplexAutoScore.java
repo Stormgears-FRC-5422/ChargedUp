@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 
 import static frc.robot.constants.FieldConstants.Grids.ScoringNode;
 
-public class ComplexAutoScore extends ParallelCommandGroup {
+public class ComplexAutoScore extends SequentialCommandGroup {
 
     /** aligns to node with additional driver1 translation input
      * then driver2 presses confirm to place piece */
@@ -34,22 +34,18 @@ public class ComplexAutoScore extends ParallelCommandGroup {
         Supplier<Translation2d> prepArmTranslation = () -> getPrepArm(arm, nodeSupplier);
 
         addCommands(
-                new AlignToNode(drivetrain, joystick, nodeSupplier), // keep the drive command running
-//                new ParallelDeadlineGroup(
-//                        new WaitUntilCommand(confirm), // prep the arm, but start placing when we press confirm
-//                        new SequentialCommandGroup(
-//                                new WaitUntilCommand(readyToPrepArm), // prep arm when close
-//                                new ArmToTranslation(arm, prepArmTranslation, 4, 4)
-//                        )
-//                ),
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(confirm), // wait until hit confirm to start running
-                        new ArmToNode(arm, nodeSupplier),
-                        compression.getReleaseCommand(),
-                        new StowArm(arm)
-                )
+                new ParallelDeadlineGroup(
+                        new WaitUntilCommand(confirm),
+                        new AlignToNode(drivetrain, joystick, nodeSupplier),
+                        new SequentialCommandGroup(
+                                new WaitUntilCommand(readyToPrepArm),
+                                new ArmToTranslation(arm, prepArmTranslation, 4, 4)
+                        )
+                ),
+                new ArmToNode(arm, nodeSupplier),
+                compression.getReleaseCommand(),
+                new StowArm(arm)
         );
-
     }
 
     private Boolean inGrid(Supplier<ScoringNode> nodeSupplier) {
