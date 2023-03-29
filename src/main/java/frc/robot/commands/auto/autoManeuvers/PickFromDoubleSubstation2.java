@@ -37,6 +37,7 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         new ArmToTranslation(arm, this::getPickingHeight, 4, 4),
                         new ArmToPickUp(arm, stormNet),
                         compression.getGrabCommand(),
+                        new PrintCommand("Opened Gripper!"),
                         new StowArm(arm),
                         new InstantCommand(() -> neoPixel.setLEDBlinkingState(false)))
                 );

@@ -209,17 +209,18 @@ public class RobotContainer {
                     .withPosition(2, 3).withSize(2, 1);
         }
 
-        // Configure the controller bindings
-        configureControllerBindings();
 
         if (Toggles.useButtonBoard) {
             m_buttonBoardConfig = new ButtonBoardConfig();
-            configureButtonBoardBindings();
             System.out.println("using ButtonBoard");
         } else {
             System.out.println("NOT using ButtonBoard");
         }
 
+        // Configure the controller bindings
+        configureControllerBindings();
+        if (Toggles.useButtonBoard)
+            configureButtonBoardBindings();
         configureOtherCommands();
     }
 
@@ -362,23 +363,25 @@ public class RobotContainer {
                                 FieldConstants.Side.RIGHT));
 
                 new Trigger(() -> logitechController.getRawButton(3)).or(() -> logitechController.getRawButton(4))
-                        .onFalse(new StowArm(m_arm));
+                        .onFalse(new StowArm(m_arm)
+                                .andThen(new InstantCommand(() -> m_neoPixel.setLEDBlinkingState(false))));
             }
 
             if (Toggles.useNodeSelector) {
-                new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
-                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
-                );
+//                new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
+//                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
+//                );
 
-                // TODO: test to see if this works aligns similar to pickup and placing is based no buttonboard
-//                if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
-//                    new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
-//                            new ComplexAutoScore(m_drivetrain, m_arm, m_compression,
-//                                    nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
-//                    );
-//
-//                    new Trigger(() -> logitechController.getRawButton(1)).onFalse(new StowArm(m_arm));
-//                }
+                // TODO: test to see if this works aligns similar to pickup and placing is based on buttonboard
+                if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
+                    new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
+                            new ComplexAutoScore(m_drivetrain, m_arm, m_compression,
+                                    nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
+                    );
+
+//                    new Trigger(() -> logitechController.getRawButton(1))
+//                            .onFalse(m_compression.getReleaseCommand().andThen(new StowArm(m_arm)));
+                }
 
                 // TODO: possible control for driver which automatically places the piece
 //                if (Toggles.useArm && Toggles.usePneumatics) {
@@ -398,12 +401,6 @@ public class RobotContainer {
                     })
             );
         }
-
-//        new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(() -> {m_vision.setMode(0);
-//            System.out.println("12 ran");}));
-//        new Trigger(() -> logitechController.getRawButton(11)).onTrue(new InstantCommand(() -> {m_vision.setMode(1);
-//            System.out.println("11 Ran");}));
-
 
         if (Toggles.useLogitechController && Toggles.useNavX) {
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(zeroRotationCommand());
@@ -427,13 +424,22 @@ public class RobotContainer {
         // **********
         // Switches for state - cone/cube, node levels
         // **********
-
-        new Trigger(m_buttonBoardConfig::topGrid)
-                .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
-        new Trigger(m_buttonBoardConfig::middleGrid )
-                .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
-        new Trigger(m_buttonBoardConfig::bottomGrid)
-                .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
+        if (Toggles.useNodeSelector) {
+            new Trigger(m_buttonBoardConfig::topGrid)
+                    .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
+            new Trigger(m_buttonBoardConfig::middleGrid)
+                    .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
+            new Trigger(m_buttonBoardConfig::bottomGrid)
+                    .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
+            // Set grid 1 - 9
+            for (int i = 0; i <= 8; i++) {
+                int tmpI = i; // Need a final value for the lambda function
+                new Trigger(() -> m_buttonBoardConfig.getGridButton(tmpI))
+                        .onTrue(new InstantCommand(() -> {
+                            nodeSelector.setSelectedCol(tmpI);
+                        }));
+            }
+        }
 
         new Trigger(m_buttonBoardConfig::cubeSelected).whileTrue(new InstantCommand(() -> {
             m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
@@ -462,19 +468,11 @@ public class RobotContainer {
             new Trigger(m_buttonBoardConfig::pickFloor).onTrue(
                     new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
 
-            // Set grid 1 - 9
-            for (int i = 0; i <= 8 ; i++) {
-                int tmpI = i; // Need a final value for the lambda function
-                new Trigger(() -> m_buttonBoardConfig.getGridButton(tmpI))
-                        .onTrue(new InstantCommand(() -> {
-                            nodeSelector.setSelectedCol(tmpI);
-                        }));
-            }
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
-                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
-                        .onTrue(new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression,
-                                m_side, m_stormNet, logitechController));
+//                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
+//                        .onTrue(new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression,
+//                                m_side, m_stormNet, logitechController));
 //                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
 //                        .onTrue(new ArmToPickUp(m_arm, m_stormNet));
 

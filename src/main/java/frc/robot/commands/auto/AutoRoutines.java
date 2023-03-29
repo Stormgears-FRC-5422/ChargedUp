@@ -5,6 +5,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.FollowPathWithEvents;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -14,6 +15,7 @@ import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.autoManeuvers.ArmToNode;
 import frc.robot.commands.drive.BalancePitchCommand;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
+import frc.robot.commands.drive.pathFollowing.Paths;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.FieldConstants.Grids.ScoringNode;
 import frc.robot.subsystems.Compression;
@@ -111,7 +113,7 @@ public final class AutoRoutines {
         SequentialCommandGroup redCommand = new SequentialCommandGroup(
                 _getInitialPlaceCommand(arm, compression, redNode),
                 new WaitCommand(0.1),
-                getPathFollow(paths.getSecond(), drivetrain));
+                getPathFollow(Paths.mirrorPath(paths.getFirst(), DriverStation.Alliance.Red), drivetrain));
         new AutoRoutine(redCommand, redNode.scoringPosition, "RED: " + name);
     }
 

@@ -18,29 +18,30 @@ import static frc.robot.constants.FieldConstants.Grids.ScoringNode;
 
 public class AlignToNode extends CommandBase {
 
-    private final PIDController yController = new PIDController(0.7, 0.0, 0.01);
-    private final PIDController rotController = new PIDController(0.01, 0.0, 0.0);
+    private final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    private final PIDController rotController = new PIDController(0.02, 0.0, 0.0);
 
     private final DrivetrainBase drivetrain;
-    private final DoubleSupplier joystickX, joystickY;
+    private final DoubleSupplier joystickX, joystickY, joystickRot;
     private final Supplier<ScoringNode> nodeSupplier;
 
     private boolean isRed = false;
 
     private double xSetpoint, ySetpoint, rotSetpoint;
 
-    private static double minJoystickX = Constants.kPrecisionSpeedScale * 0.25;
-    private static double maxJoystickX = Constants.kPrecisionSpeedScale * 1.2;
+    private static double minJoystickX = 0.1;
+    private static double maxJoystickX = 0.7;
     private static double maxXDistance = 1.5;
 
     private static double maxXSpeed = 0.5;
-    private static double maxYSpeed = 0.5;
+    private static double maxYSpeed = 0.8;
     private static double maxRotSpeed = 0.5;
 
     public AlignToNode(DrivetrainBase drivetrain, DriveJoystick joystick, Supplier<ScoringNode> nodeSupplier) {
         this.drivetrain = drivetrain;
         joystickX = joystick::getWpiXSpeed;
         joystickY = joystick::getWpiYSpeed;
+        joystickRot = joystick::getOmegaSpeed;
         this.nodeSupplier = nodeSupplier;
 
         rotController.enableContinuousInput(-180, 180);
@@ -69,15 +70,15 @@ public class AlignToNode extends CommandBase {
 
         double negativeIfRed = isRed? -1.0 : 1.0;
         // should be positive when
-        double xError = (negativeIfRed) * (currentPose.getX() - xSetpoint);
-        double xScale = Math.abs(xError / maxXDistance);
-        double xInput = signedSquare(joystickX.getAsDouble()) * xScale;
-        xInput = (negativeIfRed) * MathUtil.clamp(xInput, minJoystickX, maxJoystickX);
+//        double xError = (negativeIfRed) * (currentPose.getX() - xSetpoint);
+//        double xScale = Math.abs(xError / maxXDistance);
+        double xInput = (negativeIfRed) * signedSquare(joystickX.getAsDouble());
+//        xInput = (negativeIfRed) * MathUtil.clamp(xInput, minJoystickX, maxJoystickX);
         x = xInput;
         // stop the robot if already crashing into the grid
         // and driver in trying to move more into the grid
-        if (xError <= -0.02 && xInput <= 0.0)
-            x = 0;
+//        if (xError <= -0.02 && xInput <= 0.0)
+//            x = 0;
 
         // move the setpoint with input
         double yInput = (negativeIfRed) * signedSquare(joystickY.getAsDouble()) * 0.01;
@@ -85,7 +86,8 @@ public class AlignToNode extends CommandBase {
         yController.setSetpoint(ySetpoint);
         y = yController.calculate(currentPose.getY());
 
-        rot = rotController.calculate(rotSetpoint);
+        rot = rotController.calculate(currentPose.getRotation().getDegrees());
+        rot += signedSquare(joystickRot.getAsDouble()) * maxRotSpeed;
 
         x = MathUtil.clamp(x, -maxXSpeed, maxXSpeed);
         y = MathUtil.clamp(y, -maxYSpeed, maxYSpeed);

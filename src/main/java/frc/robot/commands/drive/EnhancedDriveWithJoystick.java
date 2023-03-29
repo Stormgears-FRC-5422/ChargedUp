@@ -30,7 +30,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final BooleanSupplier robotRelativeSupplier, turboSupplier;
     private final ProfiledPIDController rotController =
             new ProfiledPIDController(0.02, 0.0, 0.0,
-                new TrapezoidProfile.Constraints(360, 120));
+                new TrapezoidProfile.Constraints(360, 180));
     private final DoubleSupplier robotAngleSupplier;
     private double currentAngle = 0;
 

@@ -26,8 +26,7 @@ public final class AprilTagPoseEstimationStrategy {
     private static HashMap<Integer, Double> heightDiffs = new HashMap<>();
 
     /** given data, angle at time, linearVelAtTime(m/s), and rotationalVelAtTime(deg/s) */
-    public static VisionMeasurement fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle,
-                                                     double linearVel, double rotationalVel) {
+    public static Pose2d fromAprilTagData(Vector<AprilTagData> data, Rotation2d camAngle) {
 //        System.out.println(data);
         // sort the tags from closest to farthest
         if (data.size() > 1)
@@ -65,8 +64,7 @@ public final class AprilTagPoseEstimationStrategy {
             }
         }
 
-        Pose2d visionPose = new Pose2d(translation, rotation);
-        return new VisionMeasurement(visionPose, closest.dist, linearVel, rotationalVel);
+        return new Pose2d(translation, rotation);
     }
 
     private static Translation2d _oneAprilTag(double yawFromTag, double offset, Pose2d tagPose, double dist2d) {

@@ -60,10 +60,10 @@ public class ArmToPickUp extends CommandBase {
         }
 
         double y = gripperPose.getY();
-        if (y < yTarget - 0.015 || dy > 0 && y < yTarget) {
-            dy = kXYArmManualSpeed;
-        } else if (y > yTarget + 0.015 || dy < 0 && y > yTarget) {
-            dy = -kXYArmManualSpeed;
+        if (y < yTarget - 0.01 || dy > 0 && y < yTarget) {
+            dy = kXYArmManualSpeed / 2.0;
+        } else if (y > yTarget + 0.01 || dy < 0 && y > yTarget) {
+            dy = -kXYArmManualSpeed / 2.0;
         } else {
             dy = 0;
         }

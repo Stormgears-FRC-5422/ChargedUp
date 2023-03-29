@@ -90,7 +90,7 @@ public class ButtonBoardConfig {
     }
 
     public double armInOut() {
-        double x = m_joystickBoard1.getX();
+        double x = -m_joystickBoard1.getX();
         double dx = 0;
         // There is a slight voltage bias that causes the joystick to report != 0 at rest
         // any actual motion sets it to -1.0 or 1.0, so we just need some reasonable number in the middle here

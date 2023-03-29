@@ -107,15 +107,14 @@ public class PoseEstimator extends StormSubsystemBase {
                     // calculate camera angle by adding to the gyro angle
                     Rotation2d robotRotation = RobotState.getInstance().getRotationAtTime(time);
                     Rotation2d cameraAngle = robotRotation.rotateBy(cam2dRotation);
-                    double linearVel = RobotState.getInstance().getLinearVelAtTime(time);
-                    double rotationalVel = RobotState.getInstance().getRotationalVelAtTime(time);
-
+                    // maybe use for calculating deviations based on velocities
+//                    double linearVel = RobotState.getInstance().getLinearVelAtTime(time);
+//                    double rotationalVel = RobotState.getInstance().getRotationalVelAtTime(time);
                     // just call the pose estimation strategy class
-                    var visionMeasurement = AprilTagPoseEstimationStrategy
-                            .fromAprilTagData(info, cameraAngle, linearVel, rotationalVel);
+                    visionPose = AprilTagPoseEstimationStrategy
+                            .fromAprilTagData(info, cameraAngle);
 
                     // have to transform to robot pose
-                    visionPose = visionMeasurement.pose;
                     visionPose = visionPose.transformBy(CAMERA_ROBOT_TRANSFORM2D);
 
                     // if we are basically stopped just reset the pose

@@ -35,13 +35,13 @@ public class ComplexAutoScore extends ParallelCommandGroup {
 
         addCommands(
                 new AlignToNode(drivetrain, joystick, nodeSupplier), // keep the drive command running
-                new ParallelDeadlineGroup(
-                        new WaitUntilCommand(confirm), // prep the arm, but start placing when we press confirm
-                        new SequentialCommandGroup(
-                                new WaitUntilCommand(readyToPrepArm), // prep arm when close
-                                new ArmToTranslation(arm, prepArmTranslation, 4, 4)
-                        )
-                ),
+//                new ParallelDeadlineGroup(
+//                        new WaitUntilCommand(confirm), // prep the arm, but start placing when we press confirm
+//                        new SequentialCommandGroup(
+//                                new WaitUntilCommand(readyToPrepArm), // prep arm when close
+//                                new ArmToTranslation(arm, prepArmTranslation, 4, 4)
+//                        )
+//                ),
                 new SequentialCommandGroup(
                         new WaitUntilCommand(confirm), // wait until hit confirm to start running
                         new ArmToNode(arm, nodeSupplier),
@@ -68,10 +68,11 @@ public class ComplexAutoScore extends ParallelCommandGroup {
         var node = nodeSupplier.get();
         Translation3d globalGripper = arm.getGlobalTranslation();
         if (node.height == ScoringNode.NodeHeight.HYBRID) {
-            double xDist = Math.abs(node.translation.getX() - node.scoringPosition.getX());
+            double xDist = Math.abs(node.translation.getX() - node.scoringPosition.getX()) * 0.75;
             return Arm.fromGlobalTranslation(new Translation3d(xDist, 0, globalGripper.getZ()));
         }
-        return Arm.fromGlobalTranslation(new Translation3d(globalGripper.getX(), 0, node.translation.getZ() * 0.75));
+        return Arm.fromGlobalTranslation(
+                new Translation3d(globalGripper.getX(), 0, node.translation.getZ() * 0.75));
     }
 
 }
