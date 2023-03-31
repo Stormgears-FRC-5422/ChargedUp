@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotState;
+import frc.robot.commands.arm.Hold;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.subsystems.Compression;
@@ -22,10 +23,12 @@ import java.util.function.Supplier;
 
 import static frc.robot.constants.FieldConstants.Grids.ScoringNode;
 
-public class ComplexAutoScore extends SequentialCommandGroup {
+public class ComplexAutoScore extends ParallelCommandGroup {
 
-    /** aligns to node with additional driver1 translation input
-     * then driver2 presses confirm to place piece */
+    /**
+     * aligns to node with additional driver1 translation input
+     * then driver2 presses confirm to place piece
+     */
     public ComplexAutoScore(DrivetrainBase drivetrain, Arm arm, Compression compression,
                             Supplier<ScoringNode> nodeSupplier, DriveJoystick joystick, BooleanSupplier confirm) {
 
@@ -33,18 +36,24 @@ public class ComplexAutoScore extends SequentialCommandGroup {
         BooleanSupplier readyToPrepArm = () -> inGrid(nodeSupplier) && atRotationTolerance(nodeSupplier);
         Supplier<Translation2d> prepArmTranslation = () -> getPrepArm(arm, nodeSupplier);
 
+        // complex commands
+        AlignToNode alignToNode = new AlignToNode(drivetrain, joystick, nodeSupplier);
+        ArmToTranslation prepArm = new ArmToTranslation(arm, prepArmTranslation, 4, 4);
+        ArmToNode armToNode = new ArmToNode(arm, nodeSupplier);
+
         addCommands(
-                new ParallelDeadlineGroup(
-                        new WaitUntilCommand(confirm),
-                        new AlignToNode(drivetrain, joystick, nodeSupplier),
-                        new SequentialCommandGroup(
-                                new WaitUntilCommand(readyToPrepArm),
-                                new ArmToTranslation(arm, prepArmTranslation, 4, 4)
-                        )
-                ),
-                new ArmToNode(arm, nodeSupplier),
-                compression.getReleaseCommand(),
-                new StowArm(arm)
+                alignToNode,
+                new SequentialCommandGroup(
+                        new ParallelDeadlineGroup(
+                                new WaitUntilCommand(confirm),
+                                new SequentialCommandGroup(
+                                        new WaitUntilCommand(readyToPrepArm),
+                                        prepArm
+                                )
+                        ),
+                        armToNode,
+                        new Hold(arm, armToNode::getGoalTarget)
+                )
         );
     }
 
@@ -63,12 +72,13 @@ public class ComplexAutoScore extends SequentialCommandGroup {
     private Translation2d getPrepArm(Arm arm, Supplier<ScoringNode> nodeSupplier) {
         var node = nodeSupplier.get();
         Translation3d globalGripper = arm.getGlobalTranslation();
+        // prep the arm horizontally if it is a hybrid placement
         if (node.height == ScoringNode.NodeHeight.HYBRID) {
-            double xDist = Math.abs(node.translation.getX() - node.scoringPosition.getX()) * 0.75;
-            return Arm.fromGlobalTranslation(new Translation3d(xDist, 0, globalGripper.getZ()));
+            double xDist = Math.abs(node.translation.getX() - node.scoringPosition.getX());
+            return Arm.fromGlobalTranslation(new Translation3d(xDist, 0, globalGripper.getZ() + 0.07));
         }
         return Arm.fromGlobalTranslation(
-                new Translation3d(globalGripper.getX(), 0, node.translation.getZ() * 0.75));
+                new Translation3d(globalGripper.getX(), 0, node.translation.getZ()));
     }
 
 }

@@ -20,7 +20,7 @@ import static frc.robot.constants.FieldConstants.Grids.ScoringNode;
 
 public class AlignToNode extends CommandBase {
 
-    private final PIDController xController = new PIDController(0.7, 0.0, 0.0);
+    private final PIDController xController = new PIDController(0.6, 0.0, 0.0);
     private final PIDController yController = new PIDController(0.7, 0.0, 0.0);
     private final PIDController rotController = new PIDController(0.01, 0.0, 0.0);
 
@@ -36,8 +36,8 @@ public class AlignToNode extends CommandBase {
 
     // for an output of 1 by joystick the setpoint will move by this amount
     private static double maxSetpointVel = 0.005;
-    private static double maxXSpeed = 0.5;
-    private static double maxYSpeed = 0.5;
+    private static double maxXSpeed = Constants.kPrecisionSpeedScale;
+    private static double maxYSpeed = Constants.kPrecisionSpeedScale;
     private static double maxRotSpeed = 0.5;
 
     public AlignToNode(DrivetrainBase drivetrain, DriveJoystick joystick, Supplier<ScoringNode> nodeSupplier) {
@@ -88,13 +88,14 @@ public class AlignToNode extends CommandBase {
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
 
         // move the setpoint with input if close (minimize driver error)
-        if (xController.atSetpoint()) {
-            double xInput = (negativeIfRed) * signedSquare(joystickX.getAsDouble()) * maxSetpointVel;
-            xSetpoint += xInput;
-            xSetpoint = MathUtil.clamp(xSetpoint, minXSetpoint, maxXSetpoint);
-            xController.setSetpoint(xSetpoint);
-        }
-        x = xController.calculate(currentPose.getX());
+//        if (xController.atSetpoint()) {
+//            double xInput = (negativeIfRed) * signedSquare(joystickX.getAsDouble()) * maxSetpointVel;
+//            xSetpoint += xInput;
+//            xSetpoint = MathUtil.clamp(xSetpoint, minXSetpoint, maxXSetpoint);
+//            xController.setSetpoint(xSetpoint);
+//        }
+//        x = xController.calculate(currentPose.getX());
+        x = (negativeIfRed) * signedSquare(joystickX.getAsDouble()) * maxXSpeed;
 
         // same idea as x movement
         if (yController.atSetpoint()) {
@@ -103,7 +104,7 @@ public class AlignToNode extends CommandBase {
             yController.setSetpoint(ySetpoint);
         }
         // move to x setpoint first before moving to y
-        if (xController.atSetpoint())
+//        if (xController.atSetpoint())
             y = yController.calculate(currentPose.getY());
 
         rot = rotController.calculate(currentPose.getRotation().getDegrees());

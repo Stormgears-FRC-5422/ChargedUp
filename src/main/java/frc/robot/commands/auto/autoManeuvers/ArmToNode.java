@@ -28,6 +28,7 @@ public class ArmToNode extends ArmPathFollowingCommand {
 
     private final Arm arm;
     private final Supplier<ScoringNode> nodeSupplier;
+    private Translation2d goal;
 
     public ArmToNode(Arm arm, Supplier<ScoringNode> nodeSupplier) {
         super(arm);
@@ -38,44 +39,55 @@ public class ArmToNode extends ArmPathFollowingCommand {
     @Override
     public void initialize() {
         ScoringNode node = nodeSupplier.get();
+        Translation3d nodeTranslation = node.translation;
         System.out.println("Moving arm to score on " + node.height + " of type " + node.type);
         final boolean isCube = node.type == ScoringNode.NodeType.CUBE;
-//        double goalY = isCube?
-//                cubeYPositions[node.row] : coneYPositions[node.row];
-//        double goalX = goalXPositions[node.row];
-
-        Translation3d nodeTranslation = node.translation;
 
         // added 4.0 inches due to testing
         double goalX = Math.abs(node.scoringPosition.getX() - nodeTranslation.getX());
-        if (node.height == ScoringNode.NodeHeight.HIGH)
+        boolean high = node.height == ScoringNode.NodeHeight.HIGH;
+        boolean mid = node.height == ScoringNode.NodeHeight.MIDDLE;
+        boolean hybrid = node.height == ScoringNode.NodeHeight.HYBRID;
+        if (high)
             goalX += Units.inchesToMeters(4.0);
-        else if (node.height == ScoringNode.NodeHeight.MIDDLE)
-            goalX += Units.inchesToMeters(2.5);
+        else if (mid)
+            goalX += Units.inchesToMeters(3.5);
+        if (hybrid)
+            goalX += Units.inchesToMeters(1.5);
+
         double goalZ = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
+
+        if (mid && node.type == ScoringNode.NodeType.CONE)
+            goalZ -= Units.inchesToMeters(3.5);
 
         Translation3d globalCoordinate = new Translation3d(
                 goalX, 0, goalZ
         );
-        Translation2d goal = Arm.fromGlobalTranslation(globalCoordinate);
+        goal = Arm.fromGlobalTranslation(globalCoordinate);
         double goalY = goal.getY();
 
         Translation2d current = arm.getGripperPose().getTranslation();
         double deltaY = MathUtil.clamp(goalY - current.getY(), 0.01, 2.0);
-        boolean isHybrid = (node.height == ScoringNode.NodeHeight.HYBRID);
 
-        Rotation2d startHeading = isHybrid?
-                new Rotation2d(Math.PI / 6) : new Rotation2d(Math.PI / 2);
+        // If it is a hybrid then decrease the arc from straight up to Math.PI / n
+        Rotation2d startHeading = hybrid?
+                new Rotation2d(Math.PI / 3) : new Rotation2d(Math.PI / 2);
         PathPoint start = new PathPoint(current, startHeading, new Rotation2d())
-                .withNextControlLength(isHybrid? 0.2 : deltaY * 1.2);
+                .withNextControlLength(hybrid? Units.inchesToMeters(14.5) : deltaY * 1.2);
 
         PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2.0), new Rotation2d())
-                .withPrevControlLength(deltaY);
+                .withPrevControlLength(deltaY + (mid? Units.inchesToMeters(5.0) : 0.0));
 
         var path = PathPlanner.generatePath(
                 new PathConstraints(4.0, 2.0),
                 start, end);
         addPath(path);
         super.initialize();
+    }
+
+    public Translation2d getGoalTarget() {
+        if (goal == null)
+            return new Translation2d();
+        return goal;
     }
 }

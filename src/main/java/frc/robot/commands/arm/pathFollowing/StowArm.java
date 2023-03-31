@@ -23,7 +23,7 @@ public class StowArm extends ArmPathFollowingCommand {
     @Override
     public void initialize() {
         Translation2d current = arm.getGripperPose().getTranslation();
-        boolean useQuickPath = stowPosition.getDistance(current) <= 0.30 &&
+        boolean useQuickPath = stowPosition.getDistance(current) <= 0.20 &&
                                 current.getY() >= stowPosition.getY();
 
         Rotation2d startHeading = (useQuickPath) ?
@@ -32,7 +32,7 @@ public class StowArm extends ArmPathFollowingCommand {
                 current,
                 startHeading,
                 new Rotation2d()
-                ).withNextControlLength(0.5);
+                ).withNextControlLength((useQuickPath)? current.getDistance(stowPosition) : 0.5);
 
         Rotation2d endHeading = (useQuickPath) ?
                 startHeading : new Rotation2d(-Math.PI / 2.0);
@@ -40,7 +40,7 @@ public class StowArm extends ArmPathFollowingCommand {
                 stowPosition,
                 endHeading,
                 new Rotation2d()
-        ).withPrevControlLength(0.5);
+        ).withPrevControlLength((useQuickPath)? current.getDistance(stowPosition) : 0.5);
 
         var path = PathPlanner.generatePath(
                 new PathConstraints(4, 4),

@@ -45,11 +45,11 @@ public class ArmToTranslation extends ArmPathFollowingCommand {
         final double startControlLength = current.getDistance(intermediate) * 1.2;
         Rotation2d startHeading = new Rotation2d(calcHeading(current, intermediate));
         PathPoint start = new PathPoint(current, startHeading, new Rotation2d())
-                .withNextControlLength(startControlLength);
+                .withNextControlLength(startControlLength + 0.01);
 
         final double endControlLength = goal.getDistance(intermediate) * 1.2;
         PathPoint end = new PathPoint(goal, new Rotation2d(calcHeading(intermediate, goal)), new Rotation2d())
-                .withPrevControlLength(endControlLength);
+                .withPrevControlLength(endControlLength + 0.01);
 
         var path = PathPlanner.generatePath(
                 new PathConstraints(maxVel, maxAcc),

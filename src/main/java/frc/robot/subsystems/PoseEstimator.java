@@ -68,10 +68,16 @@ public class PoseEstimator extends StormSubsystemBase {
         ShuffleboardLayout layout = ShuffleboardConstants.getInstance().driverTab
                 .getLayout("Vision Pose", BuiltInLayouts.kGrid)
                 .withProperties(Map.of("Number of columns", 3, "Number of rows", 1))
-                .withPosition(4, 3).withSize(2, 1);
-        layout.addDouble("Vision X", () -> getVisionPose().getX());
-        layout.addDouble("Vision Y", () -> getVisionPose().getY());
-        layout.addDouble("Vision Rotation", () -> getVisionPose().getRotation().getDegrees());
+                .withPosition(2, 3).withSize(2, 1);
+        layout
+                .addDouble("Vision X", () -> getVisionPose().getX())
+                .withPosition(0, 0);
+        layout
+                .addDouble("Vision Y", () -> getVisionPose().getY())
+                .withPosition(1, 0);
+        layout
+                .addDouble("Vision Rotation", () -> getVisionPose().getRotation().getDegrees())
+                .withPosition(2, 0);
     }
 
     @Override

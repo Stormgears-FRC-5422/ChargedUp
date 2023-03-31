@@ -50,8 +50,8 @@ public final class FieldConstants {
     }
 
     public static Regions.RectangleRegion blueChargingStation = new Regions.RectangleRegion(
-            Units.inchesToMeters(152), Units.inchesToMeters(115),
-            Units.inchesToMeters(60), Units.inchesToMeters(189));
+            Units.inchesToMeters(152), Units.inchesToMeters(189),
+            Units.inchesToMeters(60), Units.inchesToMeters(115));
     public static Regions.RectangleRegion redChargingStation = blueChargingStation.getMirrored();
 
     public static Regions.RectangleRegion getChargingStation() {
@@ -71,7 +71,7 @@ public final class FieldConstants {
 
         private final static double shelfDepth = Units.feetToMeters(1.0) + Units.inchesToMeters(1.0);
         private final static double alignDist = FIELD_LENGTH - ((ROBOT_LENGTH / 2.0 ) + BUMPER_THICKNESS)
-                - shelfDepth - Units.inchesToMeters(15.0);
+                - shelfDepth - 0.5;
         private final static double shelfLength = Units.feetToMeters(2) + Units.inchesToMeters(8.125);
         private final static double portalWidth = 2 * 0.35;
 //        private final static double portalToFarWall = wallToPortalFar + shelfLength;
@@ -123,6 +123,13 @@ public final class FieldConstants {
         public static ScoringNode[][] getGrid() {
             return (RobotState.getInstance().getCurrentAlliance() == Alliance.Red)?
                     redAllianceGrid : blueAllianceGrid;
+        }
+
+        /** returns node given col and row (cols 0 - 8, starting from bump side on both sides) */
+        public static ScoringNode getNodeAbsolute(int col, int row) {
+            int clampedCol = MathUtil.clamp(col, 0, 8);
+            int clampedRow = MathUtil.clamp(row, 0, 2);
+            return getGrid()[clampedCol][clampedRow];
         }
 
         public static ScoringNode getOpposite(ScoringNode node) {
@@ -338,8 +345,8 @@ public final class FieldConstants {
             @Override
             public RectangleRegion getMirrored() {
                 return new RectangleRegion(
-                        maxY, mirrorXPosition(maxX),
-                        minY, mirrorXPosition(minX));
+                        maxY, mirrorXPosition(minX),
+                        minY, mirrorXPosition(maxX));
             }
 
             public Translation2d getClosest(Translation2d translation) {

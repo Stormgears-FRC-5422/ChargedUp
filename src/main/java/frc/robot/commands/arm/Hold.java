@@ -41,6 +41,8 @@ public class Hold extends CommandBase{
         y = gripperPose.getY();
         x = gripperPose.getX();
 
+        System.out.println("HOLD RUNNING");
+
         if ((y < yTarget - 0.005) || (dy > 0 && y < yTarget)) {
             dy = kXYArmManualSpeed;
         } else if ((y > yTarget + 0.005) || (dy > 0 && y < yTarget)) {

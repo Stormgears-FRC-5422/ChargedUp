@@ -117,6 +117,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -125,20 +126,22 @@ public class Robot extends TimedRobot {
             m_autonomousCommand.cancel();
         }
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
-        RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
+
         m_robotContainer.m_aprilTagStatusCommand.schedule();
         NeoPixel m_neoPixel = m_robotContainer.m_neoPixel;
         ButtonBoardConfig m_buttonBoardConfig = m_robotContainer.m_buttonBoardConfig;
-        NodeSelector nodeSelector = m_robotContainer.nodeSelector;
+
         int[] allRingSegments = {1, 2, 3, 4};
         m_neoPixel.setSpecificSegmentColor(allRingSegments,
                 m_buttonBoardConfig.cubeSelected() ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
+
+        NodeSelector nodeSelector = m_robotContainer.nodeSelector;
         if (m_buttonBoardConfig.topGrid()) {
-            nodeSelector.setSelectedRow(2);
+            nodeSelector.setSelectedRow(0);
         } else if (m_buttonBoardConfig.middleGrid()) {
             nodeSelector.setSelectedRow(1);
         } else if (m_buttonBoardConfig.bottomGrid()) {
-            nodeSelector.setSelectedRow(0);
+            nodeSelector.setSelectedRow(2);
         }
     }
 

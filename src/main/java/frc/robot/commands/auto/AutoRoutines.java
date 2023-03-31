@@ -99,22 +99,22 @@ public final class AutoRoutines {
 
     private static void makeAuto(Pair<PathPlannerTrajectory, PathPlannerTrajectory> paths,
                                  int col, int row, String name) {
-        var blueNode = FieldConstants.Grids.blueAllianceGrid[col][row];
-//        System.out.println(blueNode);
-        SequentialCommandGroup blueCommand = new SequentialCommandGroup(
-                _getInitialPlaceCommand(arm, compression, blueNode),
-                new WaitCommand(0.1),
-                getPathFollow(paths.getFirst(), drivetrain));
-//        if (shouldBalance)
-//            command = command.andThen(balanceCommand);
-        new AutoRoutine(blueCommand, blueNode.scoringPosition, "BLUE: " + name);
-
-        var redNode = FieldConstants.Grids.redAllianceGrid[col][row];
-        SequentialCommandGroup redCommand = new SequentialCommandGroup(
-                _getInitialPlaceCommand(arm, compression, redNode),
-                new WaitCommand(0.1),
-                getPathFollow(Paths.mirrorPath(paths.getFirst(), DriverStation.Alliance.Red), drivetrain));
-        new AutoRoutine(redCommand, redNode.scoringPosition, "RED: " + name);
+//        var blueNode = FieldConstants.Grids.blueAllianceGrid[col][row];
+////        System.out.println(blueNode);
+//        SequentialCommandGroup blueCommand = new SequentialCommandGroup(
+//                _getInitialPlaceCommand(arm, compression, blueNode),
+//                new WaitCommand(0.1),
+//                getPathFollow(paths.getFirst(), drivetrain));
+////        if (shouldBalance)
+////            command = command.andThen(balanceCommand);
+//        new AutoRoutine(blueCommand, blueNode.scoringPosition, "BLUE: " + name);
+//
+//        var redNode = FieldConstants.Grids.redAllianceGrid[col][row];
+//        SequentialCommandGroup redCommand = new SequentialCommandGroup(
+//                _getInitialPlaceCommand(arm, compression, redNode),
+//                new WaitCommand(0.1),
+//                getPathFollow(Paths.mirrorPath(paths.getFirst(), DriverStation.Alliance.Red), drivetrain));
+//        new AutoRoutine(redCommand, redNode.scoringPosition, "RED: " + name);
     }
 
     public static FollowPathWithEvents getPathFollow(PathPlannerTrajectory path, DrivetrainBase drivetrain) {

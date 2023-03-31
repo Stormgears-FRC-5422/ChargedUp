@@ -23,8 +23,7 @@ public class PathFollowingCommand extends CommandBase {
 
     private final DrivetrainBase m_drivetrain;
     private PathPlannerTrajectory m_path;
-    private PathPlannerTrajectory transformedPath;
-    private boolean transformForAlliance = false;
+    private boolean mirrorForAlliance = false;
 
     private double currentTime, totalTime;
     private Timer timer = new Timer();
@@ -34,10 +33,10 @@ public class PathFollowingCommand extends CommandBase {
     private final FieldObject2d goalRobotPoseSim;
     private final GenericEntry dTranslationEntry, dRotationEntry;
 
-    public PathFollowingCommand(DrivetrainBase drivetrain, PathPlannerTrajectory path, boolean transformForAlliance) {
+    public PathFollowingCommand(DrivetrainBase drivetrain, PathPlannerTrajectory path, boolean mirrorForAlliance) {
         m_drivetrain = drivetrain;
         m_path = path;
-        this.transformForAlliance = transformForAlliance;
+        this.mirrorForAlliance = mirrorForAlliance;
 
         fieldSim = ShuffleboardConstants.getInstance().pathFollowingFieldSim;
         goalRobotPoseSim = fieldSim.getObject("Goal Pose");
@@ -64,8 +63,8 @@ public class PathFollowingCommand extends CommandBase {
         return this;
     }
 
-    public PathFollowingCommand setTransformForAlliance(boolean transformForAlliance) {
-        this.transformForAlliance = transformForAlliance;
+    public PathFollowingCommand setMirrorForAlliance(boolean mirrorForAlliance) {
+        this.mirrorForAlliance = mirrorForAlliance;
         return this;
     }
 
@@ -78,13 +77,12 @@ public class PathFollowingCommand extends CommandBase {
                     new Pose2d(1, 0, new Rotation2d()),
                     1.0, 1.0);
         }
-//        transformedPath = m_path;
-//        if (transformForAlliance) {
-//            transformedPath = PathPlannerTrajectory
-//                    .transformTrajectoryForAlliance(m_path, RobotState.getInstance().getCurrentAlliance());
-//            System.out.println("Transforming!");
-//            System.out.println(transformedPath);
-//        }
+
+        if (mirrorForAlliance) {
+            m_path = Paths
+                    .mirrorPath(m_path, RobotState.getInstance().getCurrentAlliance());
+            System.out.println("Transforming!");
+        }
 
         Pose2d currentPose = RobotState.getInstance().getCurrentPose();
         Pose2d endPose = new Pose2d(

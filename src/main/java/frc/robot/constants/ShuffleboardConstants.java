@@ -1,5 +1,7 @@
 package frc.robot.constants;
 
+import edu.wpi.first.cscore.VideoSink;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -8,12 +10,12 @@ import java.util.Map;
 
 public final class ShuffleboardConstants {
     public ShuffleboardTab robotStateTab, drivetrainTab, navXTab,
-            pathFollowingTab, driverTab, armTab;
+            pathFollowingTab, driverTab, armTab, preRoundTab;
     public Field2d poseEstimationFieldSim;
 
     // Shuffleboard stuff for path following
     public ShuffleboardLayout robotStateList, pathFollowingList, gridLayout,
-    armStatusLayout, armPathFollowingList;
+    armStatusLayout, armPathFollowingList, autoSelectionLayout;
     public GenericEntry dTranslationEntry, dRotationEntry, dTranslationEntryArm;
     public Field2d pathFollowingFieldSim;
 
@@ -32,6 +34,7 @@ public final class ShuffleboardConstants {
         pathFollowingTab = Shuffleboard.getTab("Path Following");
         armTab = Shuffleboard.getTab("Arm");
         driverTab = Shuffleboard.getTab("Driver");
+        preRoundTab = Shuffleboard.getTab("Pre Round");
 
         pathFollowingList = pathFollowingTab
                 .getLayout("Following Command", BuiltInLayouts.kList)
@@ -81,6 +84,10 @@ public final class ShuffleboardConstants {
         armPathFollowingList = armTab
                 .getLayout("Arm Path Following", BuiltInLayouts.kList)
                 .withPosition(4, 0).withSize(2, 5);
+
+        autoSelectionLayout = preRoundTab
+                .getLayout("Auto Selector", BuiltInLayouts.kList)
+                .withPosition(0, 0).withSize(2, 5);
 
         dTranslationEntryArm = armPathFollowingList
                 .add("dTranslation", 0.0).getEntry();

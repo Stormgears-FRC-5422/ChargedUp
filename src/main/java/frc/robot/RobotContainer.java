@@ -16,6 +16,7 @@ import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.AutoRoutine;
 import frc.robot.commands.auto.AutoRoutines;
+import frc.robot.commands.auto.AutoSelector;
 import frc.robot.commands.auto.autoManeuvers.*;
 import frc.robot.commands.drive.*;
 import frc.robot.commands.drive.BalanceCommand;
@@ -76,6 +77,7 @@ public class RobotContainer {
     // **********
     final RobotState m_robotState;
     public FieldConstants.Side m_side = FieldConstants.Side.NONE;
+    AutoSelector autoSelector;
 
 
     // **********
@@ -193,25 +195,6 @@ public class RobotContainer {
         } else
             System.out.println("NOT using second xbox controller");
 
-        if (Toggles.usePoseEstimator && Toggles.useNavX && Toggles.useArm &&
-                Toggles.usePneumatics) {
-//            System.out.println();
-            AutoRoutines.initAutoRoutines(m_drivetrain, m_navX, m_arm, m_compression);
-
-            if (AutoRoutines.autoRoutines.size() > 0) {
-                for (var autoCommand : AutoRoutines.autoRoutines) {
-                    autoCommandChooser.addOption(autoCommand.name, autoCommand);
-                }
-                var command = AutoRoutines.autoRoutines.get(0);
-                autoCommandChooser.setDefaultOption(command.name, command);
-            }
-
-            ShuffleboardConstants.getInstance().driverTab
-                    .add("Auto Selector", autoCommandChooser)
-                    .withWidget(BuiltInWidgets.kComboBoxChooser)
-                    .withPosition(2, 3).withSize(2, 1);
-        }
-
 
         if (Toggles.useButtonBoard) {
             m_buttonBoardConfig = new ButtonBoardConfig();
@@ -227,6 +210,10 @@ public class RobotContainer {
             System.out.println("using ButtonBoard");
         } else {
             System.out.println("NOT using ButtonBoard");
+        }
+
+        if (Toggles.useDrive && Toggles.useArm && Toggles.usePneumatics) {
+            autoSelector = new AutoSelector();
         }
 
         // Configure the controller bindings
@@ -380,9 +367,6 @@ public class RobotContainer {
             }
 
             if (Toggles.useNodeSelector) {
-//                new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
-//                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode)
-//                );
 
                 // TODO: test to see if this works aligns similar to pickup and placing is based on buttonboard
                 if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
@@ -390,17 +374,7 @@ public class RobotContainer {
                             new ComplexAutoScore(m_drivetrain, m_arm, m_compression,
                                     nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
                     );
-
-//                    new Trigger(() -> logitechController.getRawButton(1))
-//                            .onFalse(m_compression.getReleaseCommand().andThen(new StowArm(m_arm)));
                 }
-
-                // TODO: possible control for driver which automatically places the piece
-//                if (Toggles.useArm && Toggles.usePneumatics) {
-//                    new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
-//                            new AutoScore(m_drivetrain, m_arm, m_compression, nodeSelector::getSelectedNode)
-//                    );
-//                }
             }
 //            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
 //            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
@@ -484,18 +458,9 @@ public class RobotContainer {
 
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
-//                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
-//                        .onTrue(new PickFromSubstationSequence(m_drivetrain, m_arm, m_compression,
-//                                m_side, m_stormNet, logitechController));
-//                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side != FieldConstants.Side.NONE)
-//                        .onTrue(new ArmToPickUp(m_arm, m_stormNet));
-
                 new Trigger(() -> m_buttonBoardConfig.confirm() && m_side == FieldConstants.Side.NONE).onTrue(
-                        new DropPieceSequence(m_drivetrain, m_arm, m_compression, nodeSelector));
+                        new ArmToNode(m_arm, nodeSelector::getSelectedNode));
             }
-
-//            new Trigger(m_buttonBoardConfig::confirm).onTrue(
-//                    new ArmToNode(m_arm, nodeSelector::getSelectedNode));
         }
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
@@ -522,13 +487,9 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         if (Toggles.usePoseEstimator) {
-            AutoRoutine selected = autoCommandChooser.getSelected();
-            System.out.println("Auto: " + selected.name);
-            m_robotState.setStartPose(selected.startPose);
-//            m_navX.setAngle(selected.startPose.getRotation().getDegrees());
-//            m_robotState.setGyroData(Timer.getFPGATimestamp(), m_navX.getAbsoluteRotation());
-//            m_drivetrain.updateOdometryData();
-            return selected.autoCommand;
+            AutoRoutine routine = autoSelector.buildAuto(m_drivetrain, m_arm, m_compression);
+            m_robotState.setStartPose(routine.startPose);
+            return routine.autoCommand;
         }
         return new PrintCommand("Autonomous! -----");
     }

@@ -41,7 +41,7 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         new PrintCommand("Opened Gripper!"),
                         new StowArm(arm)
                         )
-                );
+        );
     }
 
     private Translation2d getPickingHeight() {

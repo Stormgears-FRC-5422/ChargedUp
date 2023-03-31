@@ -101,7 +101,7 @@ public final class Constants {
 
     public enum LidarRange {
         CONE(0.13, 0.22),
-        CUBE(0.09, 0.15);
+        CUBE(0.0, 0.10);
 
         private final double min, max, center;
         public static final double maxLidarDetectionRange = 0.75;
@@ -135,7 +135,7 @@ public final class Constants {
         public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
 	    public static final double armInlay = StormProp.getNumber("armInlay", 1.0);
 	    public static final double gripperWheelRadius = StormProp.getNumber("gripperWheelRadius",1.0);
-	    public static final double armForwardSafetyBuffer = StormProp.getNumber("armForwardSafetyBuffer", 1.0);
+	    public static final double armForwardSafetyBuffer = StormProp.getNumber("armForwardSafetyBuffer", 0.0);
 	    public static final double armUpwardSafetyBuffer = StormProp.getNumber("armUpwardSafetyBuffer", 1.0);
 	    public static final double armBackwardSafetyBuffer = StormProp.getNumber("armBackwardSafetyBuffer", 1.0);
 	    public static final double armDownwardSafetyBuffer = StormProp.getNumber("armDownwardSafetyBuffer", 1.0);
@@ -158,10 +158,10 @@ public final class Constants {
         public static final Translation2d stowPosition = new Translation2d(0.19, 0.13);
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstationCone = Arm.fromGlobalTranslation(
-                new Translation3d(0.9, 0.0, 1.07));
+                new Translation3d(0.9, 0.0, 1.0));
 
         public static final Translation2d pickDoubleSubstationCube = Arm.fromGlobalTranslation(
-                new Translation3d(0.9, 0.0, 1.05));
+                new Translation3d(0.9, 0.0, 1.0));
 
         public static final Translation2d tempArmPickUpLocation = Arm.fromGlobalTranslation(
                 new Translation3d(1.15, 0.0, 1.235)

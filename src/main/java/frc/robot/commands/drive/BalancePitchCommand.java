@@ -23,7 +23,6 @@ public class BalancePitchCommand extends CommandBase {
         m_drivetrain = drivetrain;
         this.pitchSupplier = pitchSupplier;
 
-        speedController.setTolerance(2.5);
         rotController.enableContinuousInput(-180, 180);
         rotController.setTolerance(1.5);
 
@@ -39,6 +38,7 @@ public class BalancePitchCommand extends CommandBase {
             holdAngle = 180;
         else
             holdAngle = 0;
+        rotController.setSetpoint(holdAngle);
     }
 
     @Override
@@ -46,8 +46,8 @@ public class BalancePitchCommand extends CommandBase {
         System.out.println(pitchSupplier.getAsDouble());
         // test to see if we should negate
         double xSpeed = speedController.calculate(pitchSupplier.getAsDouble(), 0);
-        double rotSpeed = rotController.calculate(RobotState.getInstance().getCurrentPose()
-                .getRotation().getDegrees(), holdAngle);
+        double rotSpeed = rotController.calculate(
+                RobotState.getInstance().getCurrentPose().getRotation().getDegrees());
         m_drivetrain.drive(new ChassisSpeeds(-xSpeed, 0.0, rotSpeed), false);
     }
 

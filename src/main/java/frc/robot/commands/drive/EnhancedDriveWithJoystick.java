@@ -30,7 +30,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
     private final BooleanSupplier robotRelativeSupplier, turboSupplier;
     private final ProfiledPIDController rotController =
             new ProfiledPIDController(0.02, 0.0, 0.0,
-                new TrapezoidProfile.Constraints(360, 180));
+                new TrapezoidProfile.Constraints(540, 360));
     private final DoubleSupplier robotAngleSupplier;
     private double currentAngle = 0;
 
@@ -49,7 +49,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         this.turboSupplier = turboSupplier;
 
         rotController.enableContinuousInput(-180.0, 180.0);
-        rotController.setTolerance(1.5);
+        rotController.setTolerance(0.5);
 
         robotAngleSupplier = () -> (Constants.Toggles.usePoseEstimator)?
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees() :
@@ -90,7 +90,7 @@ public class EnhancedDriveWithJoystick extends CommandBase {
         currentAngle = robotAngleSupplier.getAsDouble();
 
         if (setpointRotationMode)
-            setpointRotationMode = !(Math.abs(omegaSupplier.getAsDouble()) >= 0.2);
+            setpointRotationMode = !(Math.abs(omegaSupplier.getAsDouble()) >= 0.5);
 
         if (setpointRotationMode && !rotController.atGoal()) {
             omegaSpeed = rotController.calculate(currentAngle);
