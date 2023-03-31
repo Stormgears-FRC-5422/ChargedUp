@@ -97,4 +97,10 @@ public class Compression extends StormSubsystemBase {
         SmartDashboard.putBoolean("Solenoid isEnabled(): ", !onOffSolenoid.isDisabled());
         SmartDashboard.putBoolean("Compressor getPressureSwitchValve: ", mainCompressor.getPressureSwitchValue());
     }
+
+    // Gripper Open?
+    public boolean isSolenoidSet() {
+        return solenoidSet;
+    }
+
 }

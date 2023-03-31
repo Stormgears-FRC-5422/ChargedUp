@@ -15,12 +15,6 @@ public class BalanceCommand extends CommandBase {
   private DrivetrainBase drive;
 
   private final PIDController controller = new PIDController(0.02, 0.0, 0.00);
-
-  private ChassisSpeeds m_speed = new ChassisSpeeds(
-          0.0,
-          0.,
-          0.);
-
   private double m_currTilt;
 
 

@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.AprilTagStatusCommand;
+import frc.robot.commands.auto.autoManeuvers.NodeSelector;
+import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.subsystemUtils.StormSubsystemScheduler;
 
@@ -125,6 +127,19 @@ public class Robot extends TimedRobot {
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
         RobotState.getInstance().setCurrentAlliance(DriverStation.getAlliance());
         m_robotContainer.m_aprilTagStatusCommand.schedule();
+        NeoPixel m_neoPixel = m_robotContainer.m_neoPixel;
+        ButtonBoardConfig m_buttonBoardConfig = m_robotContainer.m_buttonBoardConfig;
+        NodeSelector nodeSelector = m_robotContainer.nodeSelector;
+        int[] allRingSegments = {1, 2, 3, 4};
+        m_neoPixel.setSpecificSegmentColor(allRingSegments,
+                m_buttonBoardConfig.cubeSelected() ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
+        if (m_buttonBoardConfig.topGrid()) {
+            nodeSelector.setSelectedRow(2);
+        } else if (m_buttonBoardConfig.middleGrid()) {
+            nodeSelector.setSelectedRow(1);
+        } else if (m_buttonBoardConfig.bottomGrid()) {
+            nodeSelector.setSelectedRow(0);
+        }
     }
 
     /**

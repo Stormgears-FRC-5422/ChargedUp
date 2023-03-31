@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.*;
 
 import frc.robot.commands.AprilTagStatusCommand;
@@ -57,6 +58,8 @@ public class RobotContainer {
     Vision m_vision;
     PoseEstimator m_poseEstimator;
     NeoPixel m_neoPixel;
+
+    int[] allRingSegments = {1, 2, 3, 4};
 
     // **********
     // COMMANDS
@@ -212,6 +215,15 @@ public class RobotContainer {
 
         if (Toggles.useButtonBoard) {
             m_buttonBoardConfig = new ButtonBoardConfig();
+                m_neoPixel.setSpecificSegmentColor(allRingSegments,
+                        m_buttonBoardConfig.cubeSelected() ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
+                if (m_buttonBoardConfig.topGrid()) {
+                    nodeSelector.setSelectedRow(2);
+                } else if (m_buttonBoardConfig.middleGrid()) {
+                    nodeSelector.setSelectedRow(1);
+                } else if (m_buttonBoardConfig.bottomGrid()) {
+                    nodeSelector.setSelectedRow(0);
+                }
             System.out.println("using ButtonBoard");
         } else {
             System.out.println("NOT using ButtonBoard");
@@ -364,7 +376,7 @@ public class RobotContainer {
 
                 new Trigger(() -> logitechController.getRawButton(3)).or(() -> logitechController.getRawButton(4))
                         .onFalse(new StowArm(m_arm)
-                                .andThen(new InstantCommand(() -> m_neoPixel.setLEDBlinkingState(false))));
+                               );
             }
 
             if (Toggles.useNodeSelector) {
@@ -409,7 +421,6 @@ public class RobotContainer {
 
     private void configureButtonBoardBindings() {
         System.out.println("configButtonBoardBindings starting");
-        int[] allRingSegments = {1, 2, 3, 4};
 
         // **********
         // Major safety triggers
@@ -426,11 +437,11 @@ public class RobotContainer {
         // **********
         if (Toggles.useNodeSelector) {
             new Trigger(m_buttonBoardConfig::topGrid)
-                    .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
+                    .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(2)));
             new Trigger(m_buttonBoardConfig::middleGrid)
-                    .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
+                    .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
             new Trigger(m_buttonBoardConfig::bottomGrid)
-                    .onTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
+                    .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
             // Set grid 1 - 9
             for (int i = 0; i <= 8; i++) {
                 int tmpI = i; // Need a final value for the lambda function
@@ -450,13 +461,16 @@ public class RobotContainer {
             RobotState.getInstance().setLidarRange(LidarRange.CONE);
         }));
 
+
+
+
         // **********
         // Gripper
         // **********
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .onTrue(m_compression.getGrabCommand());
+                .whileTrue(m_compression.getGrabCommand());
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .onFalse(m_compression.getReleaseCommand());
+                .whileFalse(m_compression.getReleaseCommand());
 
         // **********
         // Automated routines for arm placement
@@ -529,7 +543,7 @@ public class RobotContainer {
         }
 
         if (Toggles.useButtonBoard && Toggles.useStatusLights && Toggles.useStormNet) {
-            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel);
+            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, m_compression);
             m_neoPixel.setDefaultCommand(m_LEDcommand);
         }
 

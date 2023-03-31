@@ -23,13 +23,14 @@ import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCub
 
 public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
 
+    boolean commandEndIndicator = false;
+
     /** written to be triggered with while true trigger */
     public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Compression compression, StormNet stormNet, NeoPixel neoPixel,
                                      DriveJoystick joystick, FieldConstants.Side side) {
         AlignToDoubleSubstation alignCommand = new AlignToDoubleSubstation(drivetrain, joystick, side);
         addCommands(
-                new InstantCommand(() -> neoPixel.setLEDBlinkingState(true)),
-                        alignCommand,
+                alignCommand,
                 new SequentialCommandGroup(
                         compression.getReleaseCommand(),
                         new WaitUntilCommand(
@@ -38,8 +39,8 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         new ArmToPickUp(arm, stormNet),
                         compression.getGrabCommand(),
                         new PrintCommand("Opened Gripper!"),
-                        new StowArm(arm),
-                        new InstantCommand(() -> neoPixel.setLEDBlinkingState(false)))
+                        new StowArm(arm)
+                        )
                 );
     }
 
