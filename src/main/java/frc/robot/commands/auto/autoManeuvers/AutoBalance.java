@@ -9,7 +9,6 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 public class AutoBalance extends SequentialCommandGroup {
     public AutoBalance(DrivetrainBase drivetrain, NavX navX) {
         addCommands(
-                new DriveToChargingStation(drivetrain),
                 new BalancePitchCommand(drivetrain, navX::getPitch));
     }
 }

@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.*;
@@ -96,16 +97,8 @@ public class RobotContainer {
         //init constants
         FieldConstants.init();
         ShuffleboardConstants.getInstance();
-//        allianceChooser.addOption("Blue", DriverStation.Alliance.Blue);
-//        allianceChooser.addOption("Red", DriverStation.Alliance.Red);
-//        allianceChooser.setDefaultOption("Blue", DriverStation.Alliance.Blue);
-//        ShuffleboardConstants.getInstance().driverTab
-//                .add("Alliance?", allianceChooser)
-//                .withWidget(BuiltInWidgets.kComboBoxChooser)
-//                .withPosition(4, 4).withSize(2, 1);
 
         m_robotState = RobotState.getInstance();
-//        m_robotState.setCurrentAlliance(DriverStation.Alliance.Red);
 
         if (Toggles.useNavX) {
             m_navX = new NavX();
@@ -198,21 +191,25 @@ public class RobotContainer {
 
         if (Toggles.useButtonBoard) {
             m_buttonBoardConfig = new ButtonBoardConfig();
+            if (Toggles.useStatusLights) {
                 m_neoPixel.setSpecificSegmentColor(allRingSegments,
                         m_buttonBoardConfig.cubeSelected() ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
+            }
+            if (Toggles.useNodeSelector) {
                 if (m_buttonBoardConfig.topGrid()) {
-                    nodeSelector.setSelectedRow(2);
+                    nodeSelector.setSelectedRow(0);
                 } else if (m_buttonBoardConfig.middleGrid()) {
                     nodeSelector.setSelectedRow(1);
                 } else if (m_buttonBoardConfig.bottomGrid()) {
-                    nodeSelector.setSelectedRow(0);
+                    nodeSelector.setSelectedRow(2);
                 }
+            }
             System.out.println("using ButtonBoard");
         } else {
             System.out.println("NOT using ButtonBoard");
         }
 
-        if (Toggles.useDrive && Toggles.useArm && Toggles.usePneumatics) {
+        if (Toggles.useDrive && Toggles.useArm && Toggles.usePneumatics && Toggles.useNavX) {
             autoSelector = new AutoSelector();
         }
 
@@ -391,6 +388,11 @@ public class RobotContainer {
         if (Toggles.useLogitechController && Toggles.useNavX) {
             new Trigger(() -> logitechController.getRawButton(8)).onTrue(zeroRotationCommand());
         }
+
+        if (Toggles.useNavX && Toggles.useDrive) {
+            ShuffleboardConstants.getInstance().driverTab
+                    .add("Balance", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
+        }
     }
 
     private void configureButtonBoardBindings() {
@@ -487,7 +489,7 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         if (Toggles.usePoseEstimator) {
-            AutoRoutine routine = autoSelector.buildAuto(m_drivetrain, m_arm, m_compression);
+            AutoRoutine routine = autoSelector.buildAuto(m_drivetrain, m_arm, m_compression, m_navX);
             m_robotState.setStartPose(routine.startPose);
             return routine.autoCommand;
         }
@@ -495,14 +497,6 @@ public class RobotContainer {
     }
 
     private void configureOtherCommands() {
-        if (Toggles.useArm && Toggles.usePneumatics) {
-            ShuffleboardConstants.getInstance().driverTab
-                    .add("Move to high node cone",
-                            new SequentialCommandGroup(
-                                    new ArmToNode(m_arm, () -> FieldConstants.Grids.getGrid()[0][0]),
-                                    new InstantCommand(m_compression::release)));
-        }
-
         if (Toggles.useButtonBoard && Toggles.useStatusLights && Toggles.useStormNet) {
             m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, m_compression);
             m_neoPixel.setDefaultCommand(m_LEDcommand);

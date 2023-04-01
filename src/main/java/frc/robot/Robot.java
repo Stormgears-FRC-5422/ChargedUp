@@ -128,21 +128,6 @@ public class Robot extends TimedRobot {
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
 
         m_robotContainer.m_aprilTagStatusCommand.schedule();
-        NeoPixel m_neoPixel = m_robotContainer.m_neoPixel;
-        ButtonBoardConfig m_buttonBoardConfig = m_robotContainer.m_buttonBoardConfig;
-
-        int[] allRingSegments = {1, 2, 3, 4};
-        m_neoPixel.setSpecificSegmentColor(allRingSegments,
-                m_buttonBoardConfig.cubeSelected() ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
-
-        NodeSelector nodeSelector = m_robotContainer.nodeSelector;
-        if (m_buttonBoardConfig.topGrid()) {
-            nodeSelector.setSelectedRow(0);
-        } else if (m_buttonBoardConfig.middleGrid()) {
-            nodeSelector.setSelectedRow(1);
-        } else if (m_buttonBoardConfig.bottomGrid()) {
-            nodeSelector.setSelectedRow(2);
-        }
     }
 
     /**

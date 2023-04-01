@@ -89,9 +89,6 @@ public class PoseEstimator extends StormSubsystemBase {
 
     @Override
     public void enabledPeriodic() {
-        //set last pose to uncalculated current pose
-        Pose2d lastPose = currentPose;
-
         var currentOdometryData = RobotState.getInstance().getCurrentOdometryData();
         //drive data
         if (currentOdometryData != null) {

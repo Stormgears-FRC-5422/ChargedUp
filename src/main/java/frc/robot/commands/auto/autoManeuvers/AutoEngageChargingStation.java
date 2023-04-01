@@ -28,7 +28,7 @@ public class AutoEngageChargingStation extends PathFollowingCommand {
         // calculate the end y position which is somewhat away from the edges
         double goalY = calculateGoalY(currentPose.getY(), chargingStation.minY, chargingStation.maxY);
 
-        final boolean isRightOfCharginStation = currentPose.getX() >= chargingStation.getCenter().getX();
+        final boolean isRightOfChargingStation = currentPose.getX() >= chargingStation.getCenter().getX();
 
         super.initialize();
     }

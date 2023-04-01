@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.utils.joysticks.DriveJoystick;
 
@@ -80,6 +81,8 @@ public class AlignToNode extends CommandBase {
 
         yController.setSetpoint(ySetpoint);
         rotController.setSetpoint(rotSetpoint);
+
+        ShuffleboardConstants.getInstance().alignToNodeIndicator.setBoolean(true);
     }
 
     @Override
@@ -120,5 +123,11 @@ public class AlignToNode extends CommandBase {
 
     private static double signedSquare(double input) {
         return Math.signum(input) * Math.pow(input, 2);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        super.end(interrupted);
+        ShuffleboardConstants.getInstance().alignToNodeIndicator.setBoolean(false);
     }
 }

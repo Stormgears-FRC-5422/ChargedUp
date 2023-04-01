@@ -141,31 +141,24 @@ public class Arm extends StormSubsystemBase {
         setElbowSoftLimits((-5./180.)*Math.PI, (-165./180.)*Math.PI);
         enableSoftLimits();
 
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("x", () -> gripperPose.getX());
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("y", () -> gripperPose.getY());
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("vx", () -> dX);
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("vy", () -> dY);
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("alpha", m_geometry::getAlpha);
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("beta", m_geometry::getBeta);
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("valpha", () -> m_jointSpeeds.dAlpha);
-        ShuffleboardConstants.getInstance().armStatusLayout
-                .addNumber("vbeta", () -> m_jointSpeeds.dBeta);
-
-//        ShuffleboardConstants.getInstance().armTab
-//                .add("Shoulder Encoder", m_shoulder.getEncoder())
-//                .withWidget(BuiltInWidgets.kEncoder)
-//                .withPosition(2, 0).withSize(2, 2);
-//        ShuffleboardConstants.getInstance().armTab
-//                .add("Elbow Encoder", m_elbow.getEncoder())
-//                .withWidget(BuiltInWidgets.kEncoder)
-//                .withPosition(2, 2).withSize(2, 2);
+        if (Toggles.useLogs) {
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("x", () -> gripperPose.getX());
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("y", () -> gripperPose.getY());
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("vx", () -> dX);
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("vy", () -> dY);
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("alpha", m_geometry::getAlpha);
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("beta", m_geometry::getBeta);
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("valpha", () -> m_jointSpeeds.dAlpha);
+            ShuffleboardConstants.getInstance().armStatusLayout
+                    .addNumber("vbeta", () -> m_jointSpeeds.dBeta);
+        }
     }
     
     public void disableSoftLimits() {

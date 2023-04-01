@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.utils.joysticks.DriveJoystick;
 
@@ -78,6 +79,8 @@ public class AlignToDoubleSubstation extends CommandBase {
 
         rotController.setSetpoint(rotationSetpoint);
         yController.setSetpoint(ySetpoint);
+
+        ShuffleboardConstants.getInstance().alignToSubstationIndicator.setBoolean(true);
     }
 
     @Override
@@ -112,5 +115,10 @@ public class AlignToDoubleSubstation extends CommandBase {
 
     public Pose2d getTarget() {
         return new Pose2d(target, Rotation2d.fromDegrees(rotationSetpoint));
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        ShuffleboardConstants.getInstance().alignToSubstationIndicator.setBoolean(false);
     }
 }

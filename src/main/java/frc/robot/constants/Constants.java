@@ -237,7 +237,6 @@ public final class Constants {
         public static boolean useStatusLights = StormProp.getBoolean("useStatusLights", false);
         public static boolean usePoseEstimator = false;
         public static boolean useNodeSelector = StormProp.getBoolean("useNodeSelector", false);
-
         public static boolean useLogs = true;
     }
     // **********

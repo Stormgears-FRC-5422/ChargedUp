@@ -1,12 +1,12 @@
 package frc.robot.constants;
 
-import edu.wpi.first.cscore.VideoSink;
-import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 import java.util.Map;
+
+import static frc.robot.constants.Constants.Toggles.*;
 
 public final class ShuffleboardConstants {
     public ShuffleboardTab robotStateTab, drivetrainTab, navXTab,
@@ -17,6 +17,7 @@ public final class ShuffleboardConstants {
     public ShuffleboardLayout robotStateList, pathFollowingList, gridLayout,
     armStatusLayout, armPathFollowingList, autoSelectionLayout;
     public GenericEntry dTranslationEntry, dRotationEntry, dTranslationEntryArm;
+    public GenericEntry alignToNodeIndicator, alignToSubstationIndicator;
     public Field2d pathFollowingFieldSim;
 
     private static ShuffleboardConstants instance;
@@ -59,7 +60,7 @@ public final class ShuffleboardConstants {
         driverTab
                 .add("Field Sim", poseEstimationFieldSim)
                 .withWidget(BuiltInWidgets.kField)
-                .withSize(5, 3).withPosition(4, 0);
+                .withSize(4, 2).withPosition(4, 0);
 
         robotStateList = robotStateTab
                 .getLayout("State", BuiltInLayouts.kList)
@@ -89,7 +90,29 @@ public final class ShuffleboardConstants {
                 .getLayout("Auto Selector", BuiltInLayouts.kList)
                 .withPosition(0, 0).withSize(2, 5);
 
+        ShuffleboardLayout checklist = preRoundTab
+                .getLayout("Checks", BuiltInLayouts.kList)
+                .withPosition(2, 0).withSize(2, 5);
+
+        checklist.addBoolean("Drive", () -> useDrive);
+        checklist.addBoolean("Arm", () -> useArm);
+        checklist.addBoolean("Pneumatics", () -> usePneumatics);
+        checklist.addBoolean("Vision", () -> useVision);
+        checklist.addBoolean("Lidar", () -> useStormNet);
+        checklist.addBoolean("Lights", () -> useStatusLights);
+        checklist.addBoolean("Joystick", () -> useFirstXboxController || useLogitechController);
+        checklist.addBoolean("Buttonboard", () -> useButtonBoard);
+
         dTranslationEntryArm = armPathFollowingList
                 .add("dTranslation", 0.0).getEntry();
+
+        alignToNodeIndicator = driverTab
+                .add("Scoring", false)
+                .withPosition(8, 0).withSize(1, 1)
+                .getEntry();
+        alignToSubstationIndicator = driverTab
+                .add("Substation", false)
+                .withPosition(8, 1).withSize(1, 1)
+                .getEntry();
     }
 }
