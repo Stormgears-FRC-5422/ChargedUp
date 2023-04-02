@@ -60,7 +60,7 @@ public final class ShuffleboardConstants {
         driverTab
                 .add("Field Sim", poseEstimationFieldSim)
                 .withWidget(BuiltInWidgets.kField)
-                .withSize(4, 2).withPosition(4, 0);
+                .withSize(5, 3).withPosition(4, 0);
 
         robotStateList = robotStateTab
                 .getLayout("State", BuiltInLayouts.kList)
@@ -108,11 +108,11 @@ public final class ShuffleboardConstants {
 
         alignToNodeIndicator = driverTab
                 .add("Scoring", false)
-                .withPosition(8, 0).withSize(1, 1)
+                .withPosition(4, 3).withSize(1, 1)
                 .getEntry();
         alignToSubstationIndicator = driverTab
                 .add("Substation", false)
-                .withPosition(8, 1).withSize(1, 1)
+                .withPosition(5, 3).withSize(1, 1)
                 .getEntry();
     }
 }

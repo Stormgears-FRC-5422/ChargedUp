@@ -1,5 +1,7 @@
 package frc.robot.subsystems.stormnet;
 
+import frc.robot.constants.ShuffleboardConstants;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +29,10 @@ public class StormNet {
 		m_commandMap.put("L", 13); // lidar
 		m_commandMap.put(":", 17); // timer
 		m_commandSize = 29; // count of bytes from above
+
+		ShuffleboardConstants.getInstance().driverTab
+				.addDouble("Lidar", this::getLidarDistance)
+				.withPosition(6, 3).withSize(1, 1);
 	}
 
 	public static void init() {

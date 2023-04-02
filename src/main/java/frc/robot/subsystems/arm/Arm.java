@@ -141,6 +141,9 @@ public class Arm extends StormSubsystemBase {
         setElbowSoftLimits((-5./180.)*Math.PI, (-165./180.)*Math.PI);
         enableSoftLimits();
 
+        m_shoulder.burnFlash();
+        m_elbow.burnFlash();
+
         if (Toggles.useLogs) {
             ShuffleboardConstants.getInstance().armStatusLayout
                     .addNumber("x", () -> gripperPose.getX());

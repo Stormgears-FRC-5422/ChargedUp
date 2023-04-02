@@ -191,19 +191,6 @@ public class RobotContainer {
 
         if (Toggles.useButtonBoard) {
             m_buttonBoardConfig = new ButtonBoardConfig();
-            if (Toggles.useStatusLights) {
-                m_neoPixel.setSpecificSegmentColor(allRingSegments,
-                        m_buttonBoardConfig.cubeSelected() ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
-            }
-            if (Toggles.useNodeSelector) {
-                if (m_buttonBoardConfig.topGrid()) {
-                    nodeSelector.setSelectedRow(0);
-                } else if (m_buttonBoardConfig.middleGrid()) {
-                    nodeSelector.setSelectedRow(1);
-                } else if (m_buttonBoardConfig.bottomGrid()) {
-                    nodeSelector.setSelectedRow(2);
-                }
-            }
             System.out.println("using ButtonBoard");
         } else {
             System.out.println("NOT using ButtonBoard");
@@ -460,23 +447,23 @@ public class RobotContainer {
 
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
-                new Trigger(() -> m_buttonBoardConfig.confirm() && m_side == FieldConstants.Side.NONE).onTrue(
+                new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
                         new ArmToNode(m_arm, nodeSelector::getSelectedNode));
             }
         }
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
-//            new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(
-//                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
-//            new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(
-//                    new ArmToTranslation(m_arm, ArmConstants.pickDoubleSubstation, 2, 2));
                     // set pickup substation info
-                    new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(new InstantCommand(() -> {
-                        m_side = FieldConstants.Side.LEFT;
-                    }));
-                    new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(new InstantCommand(() -> {
-                        m_side = FieldConstants.Side.RIGHT;
-                    }));
+//                    new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(new InstantCommand(() -> {
+//                        m_side = FieldConstants.Side.LEFT;
+//                    }));
+//                    new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(new InstantCommand(() -> {
+//                        m_side = FieldConstants.Side.RIGHT;
+//                    }));
+            new Trigger(m_buttonBoardConfig::pickLeftSub)
+                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet));
+            new Trigger(m_buttonBoardConfig::pickRightSub)
+                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet));
         }
 
         //            if (Toggles.useNodeSelector && Toggles.usePoseEstimator &&
@@ -511,7 +498,6 @@ public class RobotContainer {
     }
 
     public void enabledInit() {
-//        m_robotState.setCurrentAlliance(allianceChooser.getSelected());
     }
 
     private Command zeroRotationCommand() {

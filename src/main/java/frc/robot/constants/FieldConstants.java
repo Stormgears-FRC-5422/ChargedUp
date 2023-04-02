@@ -79,8 +79,8 @@ public final class FieldConstants {
 
         // just get the center pole for both
         private final static Regions.RectangleRegion blueLeftRegion = new Regions.RectangleRegion(
-                Units.inchesToMeters(294.3), alignDist,
-                Units.inchesToMeters(294.3), alignDist);
+                Units.inchesToMeters(297.3), alignDist,
+                Units.inchesToMeters(297.3), alignDist);
         private final static double wallToPortalFar =
                 FIELD_WIDTH - shelfLength - portalWidth - ROBOT_WIDTH / 2.0;
         private final static Regions.RectangleRegion blueRightRegion = new Regions.RectangleRegion(

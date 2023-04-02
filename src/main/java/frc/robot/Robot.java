@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.auto.autoManeuvers.NodeSelector;
+import frc.robot.constants.Constants;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.drive.IllegalDriveTypeException;
 import frc.utils.subsystemUtils.StormSubsystemScheduler;
@@ -128,6 +129,26 @@ public class Robot extends TimedRobot {
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
 
         m_robotContainer.m_aprilTagStatusCommand.schedule();
+
+
+        if (Constants.Toggles.useButtonBoard) {
+            if (Constants.Toggles.useNodeSelector) {
+                if (m_robotContainer.m_buttonBoardConfig.topGrid()) {
+                    m_robotContainer.nodeSelector.setSelectedRow(2);
+                } else if (m_robotContainer.m_buttonBoardConfig.middleGrid()) {
+                    m_robotContainer.nodeSelector.setSelectedRow(1);
+                } else if (m_robotContainer.m_buttonBoardConfig.bottomGrid()) {
+                    m_robotContainer.nodeSelector.setSelectedRow(0);
+                }
+            }
+
+            if (Constants.Toggles.useStatusLights) {
+                final boolean isCube = m_robotContainer.m_buttonBoardConfig.cubeSelected();
+                RobotState.getInstance().setLidarRange(isCube? Constants.LidarRange.CUBE : Constants.LidarRange.CONE);
+                m_robotContainer.m_neoPixel.setSpecificSegmentColor(m_robotContainer.allRingSegments,
+                        isCube ? NeoPixel.PURPLE_COLOR : NeoPixel.YELLOW_COLOR);
+            }
+        }
     }
 
     /**

@@ -40,7 +40,7 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         compression.getGrabCommand(),
                         new PrintCommand("Opened Gripper!"),
                         new StowArm(arm)
-                        )
+                )
         );
     }
 

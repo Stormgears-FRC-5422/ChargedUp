@@ -32,7 +32,7 @@ public class StowArm extends ArmPathFollowingCommand {
                 current,
                 startHeading,
                 new Rotation2d()
-                ).withNextControlLength((useQuickPath)? current.getDistance(stowPosition) : 0.5);
+                ).withNextControlLength((useQuickPath)? current.getDistance(stowPosition) : 1.0);
 
         Rotation2d endHeading = (useQuickPath) ?
                 startHeading : new Rotation2d(-Math.PI / 2.0);

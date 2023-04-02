@@ -100,8 +100,8 @@ public final class Constants {
     public static final String navXConnection = StormProp.getString("navXConnection", "");
 
     public enum LidarRange {
-        CONE(0.13, 0.22),
-        CUBE(0.0, 0.10);
+        CONE(0.13, 0.26),
+        CUBE(0.0, 0.15);
 
         private final double min, max, center;
         public static final double maxLidarDetectionRange = 0.75;
@@ -155,7 +155,7 @@ public final class Constants {
                 Units.inchesToMeters(armOriginY));
 
         public static final Translation2d pickGround = new Translation2d(0.77, 0.03);
-        public static final Translation2d stowPosition = new Translation2d(0.19, 0.13);
+        public static final Translation2d stowPosition = new Translation2d(0.21, 0.15);
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstationCone = Arm.fromGlobalTranslation(
                 new Translation3d(0.9, 0.0, 1.0));
