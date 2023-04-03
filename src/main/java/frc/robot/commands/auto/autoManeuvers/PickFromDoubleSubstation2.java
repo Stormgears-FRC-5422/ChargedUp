@@ -9,6 +9,7 @@ import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.drive.AlignToDoubleSubstation;
 import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
@@ -35,7 +36,7 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         compression.getReleaseCommand(),
                         new WaitUntilCommand(
                                 () -> atRotationTolerance(() -> alignCommand.getTarget().getRotation())),
-                        new ArmToTranslation(arm, this::getPickingHeight, 4, 4),
+                        new ArmToTranslation(arm, Constants.ArmConstants::getPickupLocation, 4, 4),
                         new ArmToPickUp(arm, stormNet),
                         compression.getGrabCommand(),
                         new PrintCommand("Opened Gripper!"),
@@ -44,10 +45,13 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
         );
     }
 
-    private Translation2d getPickingHeight() {
-        return (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
-                pickDoubleSubstationCone : pickDoubleSubstationCube;
-    }
+//    private Translation2d getPickingHeight() {
+//        Translation2d pickingHeight = (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
+//                pickDoubleSubstationCone : pickDoubleSubstationCube;
+//
+//        return new Translation2d(pickingHeight.getX(), pickingHeight.getY() +
+//                ShuffleboardConstants.getInstance().armPickUpOffset.getDouble(0.0));
+//    }
 
     private boolean atRotationTolerance(Supplier<Rotation2d> rotSetpoint) {
         Rotation2d currentRotation = RobotState.getInstance().getCurrentPose().getRotation();

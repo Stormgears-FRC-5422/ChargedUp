@@ -43,8 +43,7 @@ public class ArmToPickUp extends CommandBase {
         gripperPose = arm.getGripperPose();
         double distance = stormNet.getLidarDistance();
         var currentRange = RobotState.getInstance().getLidarRange();
-        yTarget = (currentRange == LidarRange.CONE ?
-                pickDoubleSubstationCone : pickDoubleSubstationCube).getY();
+        yTarget = Constants.ArmConstants.getPickupLocation().getY();
 
         closeToTarget = false;
         if (distance <= currentRange.getMin()) { // Too close to target

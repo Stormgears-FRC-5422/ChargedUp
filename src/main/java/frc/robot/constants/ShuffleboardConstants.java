@@ -20,6 +20,8 @@ public final class ShuffleboardConstants {
     public GenericEntry alignToNodeIndicator, alignToSubstationIndicator;
     public Field2d pathFollowingFieldSim;
 
+    public GenericEntry armPickUpOffset;
+
     private static ShuffleboardConstants instance;
 
     public static ShuffleboardConstants getInstance() {
@@ -113,6 +115,11 @@ public final class ShuffleboardConstants {
         alignToSubstationIndicator = driverTab
                 .add("Substation", false)
                 .withPosition(5, 3).withSize(1, 1)
+                .getEntry();
+
+        armPickUpOffset = driverTab
+                .add("Substation Arm Offset", 0.0)
+                .withPosition(9, 0).withSize(1, 1)
                 .getEntry();
     }
 }

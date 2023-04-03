@@ -378,7 +378,9 @@ public class RobotContainer {
 
         if (Toggles.useNavX && Toggles.useDrive) {
             ShuffleboardConstants.getInstance().driverTab
-                    .add("Balance", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
+                    .add("Balance Pitch", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
+            ShuffleboardConstants.getInstance().driverTab
+                    .add("Balance", new BalanceCommand(m_navX::getPitch, m_navX::getRoll, m_drivetrain));
         }
     }
 
