@@ -40,7 +40,7 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
                         new ArmToPickUp(arm, stormNet),
                         compression.getGrabCommand(),
                         new PrintCommand("Opened Gripper!"),
-                        new StowArm(arm)
+                        new StowArm(arm), new InstantCommand(() -> compression.setOnOffSolenoid(compression.isGripperButtonPosition()))
                 )
         );
     }

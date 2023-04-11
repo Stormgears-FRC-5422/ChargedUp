@@ -1,6 +1,7 @@
 package frc.robot.commands.auto.autoManeuvers;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -25,7 +26,7 @@ public class PickDoubleSubstation1 extends SequentialCommandGroup {
                  new ArmToPickUp(arm, stormNet),
                  compression.getGrabCommand(),
                  new PrintCommand("Opened Gripper!"),
-                 new StowArm(arm)
-         );
+                 new StowArm(arm), new InstantCommand(() -> compression.setOnOffSolenoid(compression.isGripperButtonPosition())
+         ));
      }
 }

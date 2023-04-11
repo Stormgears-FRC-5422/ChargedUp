@@ -432,10 +432,15 @@ public class RobotContainer {
         // **********
         // Gripper
         // **********
+
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .whileTrue(m_compression.getGrabCommand());
+                .whileTrue(new InstantCommand(() -> {m_compression.getGrabCommand();
+                         m_compression.setGripperButtonPosition(true);}));
+
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .whileFalse(m_compression.getReleaseCommand());
+                .whileFalse(new InstantCommand(() -> {m_compression.getReleaseCommand();
+                    m_compression.setGripperButtonPosition(false);}));
+
 
         // **********
         // Automated routines for arm placement
@@ -449,8 +454,9 @@ public class RobotContainer {
 
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
-                new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
-                        new ArmToNode(m_arm, nodeSelector::getSelectedNode));
+                new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(new InstantCommand(() -> {
+                        m_compression.setOnOffSolenoid(m_compression.isGripperButtonPosition());
+                        new ArmToNode(m_arm, nodeSelector::getSelectedNode);}));
             }
         }
 
@@ -466,6 +472,8 @@ public class RobotContainer {
                     .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet));
             new Trigger(m_buttonBoardConfig::pickRightSub)
                     .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet));
+            new Trigger(m_buttonBoardConfig::pickFloor)
+                    .onTrue(new FloorPickUp(m_arm, m_compression));
         }
 
         //            if (Toggles.useNodeSelector && Toggles.usePoseEstimator &&

@@ -22,8 +22,12 @@ import static frc.robot.constants.Constants.*;
 
 public class Compression extends StormSubsystemBase {
     private Compressor mainCompressor;
+
+
     private Solenoid onOffSolenoid;
     private boolean running;
+
+    public boolean gripperButtonPosition;
     private boolean solenoidSet;
     public Compression() {
         mainCompressor = new Compressor(kCompressorModuleId, PneumaticsModuleType.CTREPCM);
@@ -102,5 +106,19 @@ public class Compression extends StormSubsystemBase {
     public boolean isSolenoidSet() {
         return solenoidSet;
     }
+
+    public void setOnOffSolenoid(boolean solenoidSet) {
+        onOffSolenoid.set(solenoidSet);
+    }
+
+    public void setGripperButtonPosition(boolean gripperButtonPosition) {
+        this.gripperButtonPosition = gripperButtonPosition;
+    }
+
+
+    public boolean isGripperButtonPosition() {
+        return gripperButtonPosition;
+    }
+
 
 }
