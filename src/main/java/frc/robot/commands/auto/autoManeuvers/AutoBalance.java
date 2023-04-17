@@ -9,6 +9,8 @@ import frc.robot.subsystems.drive.DrivetrainBase;
 public class AutoBalance extends SequentialCommandGroup {
     public AutoBalance(DrivetrainBase drivetrain, NavX navX) {
         addCommands(
-                new BalancePitchCommand(drivetrain, navX::getPitch));
+                new OverChargeStation(drivetrain, navX::getPitch),
+                new BalanceCommand(navX::getPitch, navX::getRoll, drivetrain)
+        );
     }
 }

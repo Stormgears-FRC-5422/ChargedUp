@@ -6,6 +6,7 @@ package frc.robot.constants;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import frc.robot.RobotState;
 import frc.robot.subsystems.arm.Arm;
 import frc.utils.configfile.StormProp;
 
@@ -161,14 +162,23 @@ public final class Constants {
         public static final Translation2d stowPosition = new Translation2d(0.21, 0.10);
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstationCone = Arm.fromGlobalTranslation(
-                new Translation3d(0.9, 0.0, 1.0));
+                new Translation3d(0.9, 0.0, 1.12));
 
         public static final Translation2d pickDoubleSubstationCube = Arm.fromGlobalTranslation(
-                new Translation3d(0.9, 0.0, 1.0));
+                new Translation3d(0.9, 0.0, 1.07));
 
-        public static final Translation2d tempArmPickUpLocation = Arm.fromGlobalTranslation(
+        public static Translation2d tempArmPickUpLocation = Arm.fromGlobalTranslation(
                 new Translation3d(1.15, 0.0, 1.235)
         );
+
+        public static Translation2d getPickupLocation() {
+            Translation2d pickingHeight = (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
+                    pickDoubleSubstationCone : pickDoubleSubstationCube;
+
+            System.out.println(pickingHeight);
+
+            return new Translation2d(pickingHeight.getX(), pickingHeight.getY() + 0.04);
+        }
     }
 
     public static class VisionConstants {
