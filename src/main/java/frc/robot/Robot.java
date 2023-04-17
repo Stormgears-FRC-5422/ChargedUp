@@ -128,7 +128,8 @@ public class Robot extends TimedRobot {
         }
         //m_robotContainer.m_lidarIndicatorCommand.schedule();
 
-        m_robotContainer.m_aprilTagStatusCommand.schedule();
+        if (Constants.Toggles.useVision && Constants.Toggles.useStatusLights)
+            m_robotContainer.m_aprilTagStatusCommand.schedule();
 
 
         if (Constants.Toggles.useButtonBoard) {

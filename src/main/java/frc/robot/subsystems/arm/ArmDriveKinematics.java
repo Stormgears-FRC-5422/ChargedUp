@@ -40,7 +40,6 @@ public class ArmDriveKinematics {
 
         double betaNum = dx * (-l * cos(se) - m * cos(se + ee)) + dy * (-l * sin(se) - m * sin(se + ee));
         double den = l * m * sin(ee);
-        // TODO - handle singularity when den --> 0
         return betaNum / den;
     }
 

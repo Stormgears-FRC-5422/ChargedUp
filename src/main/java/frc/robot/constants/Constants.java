@@ -123,6 +123,8 @@ public final class Constants {
         }
     }
 
+    public static final int pieceDetectorPort = StormProp.getInt("pieceDetectorPort", 0);
+
     public static class ArmConstants {
 
         public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
@@ -154,8 +156,9 @@ public final class Constants {
                 Units.inchesToMeters(armOriginX),
                 Units.inchesToMeters(armOriginY));
 
-        public static final Translation2d pickGround = new Translation2d(0.77, 0.03);
-        public static final Translation2d stowPosition = new Translation2d(0.21, 0.15);
+        public static final Translation2d pickGround = new Translation2d(0.53, -0.13);
+
+        public static final Translation2d stowPosition = new Translation2d(0.21, 0.10);
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstationCone = Arm.fromGlobalTranslation(
                 new Translation3d(0.9, 0.0, 1.0));
@@ -238,6 +241,7 @@ public final class Constants {
         public static boolean usePoseEstimator = false;
         public static boolean useNodeSelector = StormProp.getBoolean("useNodeSelector", false);
         public static boolean useLogs = true;
+        public static boolean usePieceDetector = StormProp.getBoolean("usePieceDetector", false);
     }
     // **********
     // Don't put other variables after the usage members

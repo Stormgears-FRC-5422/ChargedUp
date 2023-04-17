@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.commands.arm.pathFollowing.ArmPathFollowingCommand;
 import frc.robot.constants.Constants;
 import frc.robot.subsystems.arm.Arm;
@@ -24,11 +25,12 @@ public class ArmToNode extends ArmPathFollowingCommand {
 
 
     private static final double CONE_OFFSET = Units.inchesToMeters(10.0);
-    private static final double CUBE_OFFSET = Units.inchesToMeters(6.0);
+    private static final double CUBE_OFFSET = Units.inchesToMeters(8.0);
 
     private final Arm arm;
     private final Supplier<ScoringNode> nodeSupplier;
     private Translation2d goal;
+    private Timer timer = new Timer();
 
     public ArmToNode(Arm arm, Supplier<ScoringNode> nodeSupplier) {
         super(arm);
@@ -53,7 +55,7 @@ public class ArmToNode extends ArmPathFollowingCommand {
         else if (mid)
             goalX += Units.inchesToMeters(3.5);
         if (hybrid)
-            goalX += Units.inchesToMeters(1.5);
+            goalX += Units.inchesToMeters(1.2);
 
         double goalZ = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
 
@@ -76,18 +78,27 @@ public class ArmToNode extends ArmPathFollowingCommand {
                 .withNextControlLength(hybrid? Units.inchesToMeters(14.5) : deltaY * 1.2);
 
         PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2.0), new Rotation2d())
-                .withPrevControlLength(deltaY + (mid? Units.inchesToMeters(5.0) : 0.0));
+                .withPrevControlLength(hybrid? 0.3 : 1.5);
 
         var path = PathPlanner.generatePath(
-                new PathConstraints(4.0, 2.0),
+                new PathConstraints(10.0, 8.0),
                 start, end);
         addPath(path);
         super.initialize();
+        timer.reset();
+        timer.start();
     }
 
     public Translation2d getGoalTarget() {
         if (goal == null)
             return new Translation2d();
         return goal;
+    }
+
+    @Override
+    public boolean isFinished() {
+        if (nodeSupplier.get().height != ScoringNode.NodeHeight.HYBRID)
+            super.isFinished();
+        return timer.hasElapsed(1.2);
     }
 }

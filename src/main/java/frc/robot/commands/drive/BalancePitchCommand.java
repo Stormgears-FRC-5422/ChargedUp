@@ -24,7 +24,9 @@ public class BalancePitchCommand extends CommandBase {
 
         rotController.enableContinuousInput(-180, 180);
         rotController.setTolerance(1.5);
-        speedController.setTolerance(2.5);
+
+        speedController.setSetpoint(0.0);
+        speedController.setTolerance(2.0);
 
         addRequirements(this.drivetrain);
     }
@@ -46,12 +48,12 @@ public class BalancePitchCommand extends CommandBase {
         // test to see if we should negate
         double xSpeed = 0;
         if (!speedController.atSetpoint())
-            speedController.calculate(pitchSupplier.getAsDouble(), 0);
+            xSpeed = -speedController.calculate(pitchSupplier.getAsDouble());
         // hold a straight angle
         double rotSpeed = rotController.calculate(
                 RobotState.getInstance().getCurrentPose().getRotation().getDegrees());
 
-        drivetrain.percentOutDrive(new ChassisSpeeds(-xSpeed, 0.0, rotSpeed), false);
+        drivetrain.percentOutDrive(new ChassisSpeeds(xSpeed, 0.0, rotSpeed), false);
     }
 
     // do we need this

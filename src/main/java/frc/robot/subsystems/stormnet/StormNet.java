@@ -1,5 +1,7 @@
 package frc.robot.subsystems.stormnet;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 
 import java.util.HashMap;

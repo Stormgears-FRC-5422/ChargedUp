@@ -24,6 +24,7 @@ import java.util.List;
 public class AutoSelector {
     private SendableChooser<Integer> nodeColumnChooser = new SendableChooser<>();
     private SendableChooser<Integer> nodeHeightChooser = new SendableChooser<>();
+    private SendableChooser<Boolean> taxiChooser = new SendableChooser<>();
     private SendableChooser<Boolean> balanceChooser = new SendableChooser<>();
 
     public AutoSelector() {
@@ -52,29 +53,35 @@ public class AutoSelector {
         ShuffleboardConstants.getInstance().autoSelectionLayout
                 .add("Height?", nodeHeightChooser).withPosition(0, 1);
         ShuffleboardConstants.getInstance().autoSelectionLayout
-                .add("Balance?", balanceChooser).withPosition(0, 2);
+                .add("Taxi?", taxiChooser).withPosition(0, 2);
+        ShuffleboardConstants.getInstance().autoSelectionLayout
+                .add("Balance?", balanceChooser).withPosition(0, 3);
     }
 
     public AutoRoutine buildAuto(DrivetrainBase drivetrain, Arm arm, Compression compression, NavX navX) {
         return buildAuto(drivetrain, arm, compression, navX,
-                nodeColumnChooser.getSelected(), nodeHeightChooser.getSelected(), balanceChooser.getSelected());
+                nodeColumnChooser.getSelected(), nodeHeightChooser.getSelected(),
+                taxiChooser.getSelected(), balanceChooser.getSelected());
     }
 
     private AutoRoutine buildAuto(DrivetrainBase drivetrain, Arm arm, Compression compression, NavX navX,
-                              int col, int row, boolean balance) {
+                              int col, int row, boolean taxi, boolean balance) {
         // get path and first node
         List<PathPlannerTrajectory> path = PathPlanner
                 .loadPathGroup(col + "",
                         new PathConstraints(2, 1.5),
                         new PathConstraints(2, 2));
+
         FieldConstants.Grids.ScoringNode node = FieldConstants.Grids.getNodeAbsolute(col, row);
 
         List<CommandBase> commands = new ArrayList<>();
         commands.add(getFirstPlaceCommand(arm, compression, node));
-        commands.add(getPathFollowCommand(drivetrain, path.get(0)));
-        if (balance) {
-            commands.add(getPathFollowCommand(drivetrain, path.get(1)));
-            commands.add(new BalancePitchCommand(drivetrain, navX::getPitch));
+        if (taxi) {
+            commands.add(getPathFollowCommand(drivetrain, path.get(0)));
+            if (balance) {
+                commands.add(getPathFollowCommand(drivetrain, path.get(1)));
+                commands.add(new BalancePitchCommand(drivetrain, navX::getPitch));
+            }
         }
 
         return new AutoRoutine(Commands.sequence(commands.toArray(CommandBase[]::new)), node.scoringPosition);

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
+import frc.robot.constants.Constants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.arm.Arm;
 
@@ -73,6 +74,8 @@ public class ArmPathFollowingCommand extends CommandBase {
 
         System.out.println("Starting Arm Path Following Command at: " + startTime);
         System.out.println("Position: " + arm.getGripperPose());
+
+        arm.setSpeedScale(1.0);
     }
 
     @Override
@@ -115,5 +118,6 @@ public class ArmPathFollowingCommand extends CommandBase {
         System.out.println("Ending Arm Path Following Command at: " + RobotState.getInstance().getTimeSeconds());
         System.out.println();
         arm.stopArm();
+        arm.setSpeedScale(Constants.kXYArmSpeedScale);
     }
 }

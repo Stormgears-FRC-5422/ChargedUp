@@ -99,9 +99,10 @@ public class AlignToDoubleSubstation extends CommandBase {
         if (xError <= 0.05)
             x = 0;
 
-        y += ((isRed)?  -1.0 : 1.0) * yController.calculate(currentPose.getY());
-        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput;
-        y += joystickY;
+        double joystickY = signedSquare(joystickYSupplier.getAsDouble()) * maxJoystickInput * 0.01;
+        ySetpoint += (isRed? -1.0 : 1.0) * joystickY;
+//        y += joystickY;
+        y += ((isRed)?  -1.0 : 1.0) * yController.calculate(currentPose.getY(), ySetpoint);
 
         omega = MathUtil.clamp(omega, -maxRotationSpeed, maxRotationSpeed);
         x = MathUtil.clamp(x, -maxJoystickInput, maxJoystickInput);

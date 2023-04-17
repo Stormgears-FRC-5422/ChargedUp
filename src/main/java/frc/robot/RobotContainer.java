@@ -5,18 +5,15 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.*;
 
 import frc.robot.commands.AprilTagStatusCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.AutoRoutine;
-import frc.robot.commands.auto.AutoRoutines;
 import frc.robot.commands.auto.AutoSelector;
 import frc.robot.commands.auto.autoManeuvers.*;
 import frc.robot.commands.drive.*;
@@ -26,6 +23,7 @@ import frc.robot.commands.LEDcommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.drive.EnhancedDriveWithJoystick;
+import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
@@ -60,6 +58,7 @@ public class RobotContainer {
     Vision m_vision;
     PoseEstimator m_poseEstimator;
     NeoPixel m_neoPixel;
+    DigitalInput m_pieceDetector;
 
     int[] allRingSegments = {1, 2, 3, 4};
 
@@ -167,6 +166,14 @@ public class RobotContainer {
             m_stormNet.test();
         } else {
             System.out.println("NOT using StormNet");
+        }
+
+        if (Toggles.usePieceDetector) {
+            System.out.println("Using Piece Detector");
+            m_pieceDetector = new DigitalInput(pieceDetectorPort);
+            ShuffleboardConstants.getInstance().driverTab.addBoolean("Detected!", this::getPieceDetected);
+        } else {
+            System.out.println("NOT using Piece Detector");
         }
 
         if (Toggles.useLogitechController) {
@@ -351,7 +358,6 @@ public class RobotContainer {
             }
 
             if (Toggles.useNodeSelector) {
-
                 // TODO: test to see if this works aligns similar to pickup and placing is based on buttonboard
                 if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
                     new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
@@ -360,8 +366,7 @@ public class RobotContainer {
                     );
                 }
             }
-//            m_gyrocommand = new GyroCommand(m_drivetrain, 180);
-//            new Trigger(() -> m_controller.getRawButton(4)).whileTrue(new GyroCommand(m_drivetrain, 180));
+
             // zero angle command when we are red make sure robot pointing forwards is 180
             new Trigger(() -> logitechController.getRawButton(5)).onTrue(
                     new InstantCommand(() -> {
@@ -448,30 +453,21 @@ public class RobotContainer {
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
                 new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
-                        new ArmToNode(m_arm, nodeSelector::getSelectedNode));
+                        new DropPieceSequence(m_arm, m_compression, nodeSelector::getSelectedNode).andThen(
+                                new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)));
             }
         }
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
-                    // set pickup substation info
-//                    new Trigger(m_buttonBoardConfig::pickLeftSub).onTrue(new InstantCommand(() -> {
-//                        m_side = FieldConstants.Side.LEFT;
-//                    }));
-//                    new Trigger(m_buttonBoardConfig::pickRightSub).onTrue(new InstantCommand(() -> {
-//                        m_side = FieldConstants.Side.RIGHT;
-//                    }));
             new Trigger(m_buttonBoardConfig::pickLeftSub)
-                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet));
+                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet).andThen(
+                            new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)
+                    ));
             new Trigger(m_buttonBoardConfig::pickRightSub)
-                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet));
+                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet).andThen(
+                            new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)
+                    ));
         }
-
-        //            if (Toggles.useNodeSelector && Toggles.usePoseEstimator &&
-        //                    Toggles.useVision && Toggles.useXYArmMode) {
-        //                new Trigger(buttonBoardConfig::).onTrue(
-        //                        new DriveToNode(m_drivetrain, nodeSelector::getSelectedNode));
-        //
-        //            }
     }
 
     public Command getAutonomousCommand() {
@@ -512,5 +508,12 @@ public class RobotContainer {
                                 m_navX.getAbsoluteRotation()));
             }
         });
+    }
+
+    /** piece detector returns true if not detecting */
+    private boolean getPieceDetected() {
+        if (Toggles.usePieceDetector)
+            return !m_pieceDetector.get();
+        return false;
     }
 }
