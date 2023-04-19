@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotState;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
@@ -22,44 +23,20 @@ import java.util.function.Supplier;
 import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCone;
 import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCube;
 
-public class PickFromDoubleSubstation3 extends ParallelCommandGroup {
+public class PickFromDoubleSubstation3 extends SequentialCommandGroup {
 
-    public PickFromDoubleSubstation3(DrivetrainBase drivetrain, DriveJoystick joystick, FieldConstants.Side side,
-                                     Arm arm, BooleanSupplier pieceDetected, Compression compression) {
-
-        AlignToDoubleSubstation alignCommand = new AlignToDoubleSubstation(drivetrain, joystick, side);
-
-        BooleanSupplier readyForArmUp = () -> atRotationTolerance(() -> alignCommand.getTarget().getRotation());
-        BooleanSupplier readyForStow = () -> atXToleranceForStow(() -> alignCommand.getTarget().getTranslation());
-
+    public PickFromDoubleSubstation3(Arm arm, BooleanSupplier pieceDetected, Compression compression) {
         addCommands(
-                alignCommand,
-                new SequentialCommandGroup(
-                        compression.getReleaseCommand(),
-                        new WaitUntilCommand(readyForArmUp),
-                        new ArmToTranslation(arm, this::getPickingHeight, 4, 4),
-                        new WaitUntilCommand(pieceDetected),
-                        compression.getGrabCommand(),
-                        new WaitUntilCommand(readyForStow),
-                        new StowArm(arm)
-                )
+                compression.getReleaseCommand(),
+                new ArmToTranslation(arm, this::getPickingHeight, 4, 6),
+                new WaitUntilCommand(pieceDetected),
+                compression.getGrabCommand(),
+                new WaitCommand(0.2)
         );
     }
 
     private Translation2d getPickingHeight() {
-        return (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE) ?
+        return (RobotState.getInstance().getLidarRange() == Constants.LidarRange.CONE)?
                 pickDoubleSubstationCone : pickDoubleSubstationCube;
-    }
-
-    private boolean atRotationTolerance(Supplier<Rotation2d> rotSetpoint) {
-        Rotation2d currentRotation = RobotState.getInstance().getCurrentPose().getRotation();
-        // if 30 degrees within aligned
-        return Math.abs(Math.abs(currentRotation.getDegrees()) - rotSetpoint.get().getDegrees()) <= 30;
-    }
-
-    private boolean atXToleranceForStow(Supplier<Translation2d> translationSetpoint) {
-        Translation2d currentTranslation = RobotState.getInstance().getCurrentPose().getTranslation();
-        System.out.println(translationSetpoint.get());
-        return Math.abs(translationSetpoint.get().getX() - currentTranslation.getX()) >= 0.8;
     }
 }

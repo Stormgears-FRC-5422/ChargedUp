@@ -80,8 +80,10 @@ public class ArmToNode extends ArmPathFollowingCommand {
         PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2.0), new Rotation2d())
                 .withPrevControlLength(hybrid? 0.3 : 1.5);
 
+        final var constraints = (isCube || hybrid)? new PathConstraints(5.0, 8.0) :
+                new PathConstraints(3.0, 4.0);
         var path = PathPlanner.generatePath(
-                new PathConstraints(10.0, 8.0),
+                constraints,
                 start, end);
         addPath(path);
         super.initialize();
@@ -98,7 +100,7 @@ public class ArmToNode extends ArmPathFollowingCommand {
     @Override
     public boolean isFinished() {
         if (nodeSupplier.get().height != ScoringNode.NodeHeight.HYBRID)
-            super.isFinished();
+            return super.isFinished();
         return timer.hasElapsed(1.2);
     }
 }

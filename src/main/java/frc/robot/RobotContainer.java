@@ -23,17 +23,13 @@ import frc.robot.commands.LEDcommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.BasicArm;
 import frc.robot.commands.drive.EnhancedDriveWithJoystick;
-import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.commands.arm.XYArm;
 
-import frc.robot.subsystems.NavX;
-import frc.robot.subsystems.PoseEstimator;
-import frc.robot.subsystems.NeoPixel;
+import frc.robot.subsystems.*;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.stormnet.StormNet;
-import frc.robot.subsystems.Compression;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.robot.subsystems.drive.DrivetrainFactory;
 
@@ -365,6 +361,13 @@ public class RobotContainer {
                                     nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
                     );
                 }
+
+//                if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
+//                    new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
+//                            new ComplexAutoScore2(m_drivetrain, m_arm, m_compression,
+//                                    nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
+//                    );
+//                }
             }
 
             // zero angle command when we are red make sure robot pointing forwards is 180
@@ -448,7 +451,7 @@ public class RobotContainer {
             new Trigger(m_buttonBoardConfig::stow).onTrue(
                     new StowArm(m_arm));
             new Trigger(m_buttonBoardConfig::pickFloor).onTrue(
-                    new ArmToTranslation(m_arm, ArmConstants.pickGround, 2, 2));
+                    new PickFromFloor(m_arm, m_compression, this::getPieceDetected));
 
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
@@ -460,11 +463,11 @@ public class RobotContainer {
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
             new Trigger(m_buttonBoardConfig::pickLeftSub)
-                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet).andThen(
+                    .onTrue(new PickFromDoubleSubstation3(m_arm, this::getPieceDetected, m_compression).andThen(
                             new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)
                     ));
             new Trigger(m_buttonBoardConfig::pickRightSub)
-                    .onTrue(new PickDoubleSubstation1(m_arm, m_compression, m_stormNet).andThen(
+                    .onTrue(new PickFromSingleSubstation(m_arm, m_compression, this::getPieceDetected).andThen(
                             new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)
                     ));
         }

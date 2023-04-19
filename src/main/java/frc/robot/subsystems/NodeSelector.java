@@ -1,23 +1,26 @@
-package frc.robot.commands.auto.autoManeuvers;
+package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.RobotState;
 import frc.robot.constants.ShuffleboardConstants;
+import frc.utils.subsystemUtils.StormSubsystemBase;
 
 import java.util.Map;
 
 import static frc.robot.constants.FieldConstants.Grids.*;
 
-public class NodeSelector {
+public class NodeSelector extends StormSubsystemBase {
 
     private int logCounter = 0;
     private int selectedRow = 0;
-
-
-
     private int selectedCol = 0;
+
+    private int lastSelectedCol = selectedCol, lastSelectedRow = selectedRow;
+    private boolean colChanged = false;
+    private boolean rowChanged = false;
+    private boolean selectedChanged = false;
 
     public NodeSelector() {
         ScoringNode[][] currentGrid = getGrid();
@@ -74,5 +77,34 @@ public class NodeSelector {
 
     public int getSelectedCol() {
         return selectedCol;
+    }
+
+    @Override
+    public void stormPeriodic() {
+        if (lastSelectedRow != selectedRow) {
+            lastSelectedRow = selectedRow;
+            rowChanged = true;
+        } else
+            rowChanged = false;
+
+        if (lastSelectedCol != selectedCol) {
+            lastSelectedCol = selectedCol;
+            colChanged = true;
+        } else
+            colChanged = false;
+
+        selectedChanged = rowChanged || colChanged;
+    }
+
+    public boolean isColChanged() {
+        return colChanged;
+    }
+
+    public boolean isRowChanged() {
+        return rowChanged;
+    }
+
+    public boolean isSelectedChanged() {
+        return selectedChanged;
     }
 }
