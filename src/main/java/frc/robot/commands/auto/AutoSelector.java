@@ -48,6 +48,9 @@ public class AutoSelector {
         balanceChooser.setDefaultOption("No", false);
         balanceChooser.setDefaultOption("Yes", true);
 
+        taxiChooser.setDefaultOption("No", false);
+        taxiChooser.setDefaultOption("Yes", true);
+
         ShuffleboardConstants.getInstance().autoSelectionLayout
                 .add("Column?", nodeColumnChooser).withPosition(0, 0);
         ShuffleboardConstants.getInstance().autoSelectionLayout
