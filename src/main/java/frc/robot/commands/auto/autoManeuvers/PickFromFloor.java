@@ -17,7 +17,7 @@ public class PickFromFloor extends SequentialCommandGroup {
                 compression.getReleaseCommand(),
                 new ParallelDeadlineGroup(
                         new WaitUntilCommand(pieceDetectedSupplier),
-                        new ArmToTranslation(arm, Constants.ArmConstants.pickGround, 3, 3)
+                        new ArmToTranslation(arm, Constants.ArmConstants.pickGround, 5, 6)
                 ),
                 compression.getGrabCommand(),
                 new StowArm(arm)
