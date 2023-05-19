@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.autoManeuvers.ArmToNode;
+import frc.robot.commands.auto.autoManeuvers.AutoBalance;
 import frc.robot.commands.drive.BalancePitchCommand;
 import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
 import frc.robot.constants.FieldConstants;
@@ -72,8 +73,8 @@ public class AutoSelector {
         // get path and first node
         List<PathPlannerTrajectory> path = PathPlanner
                 .loadPathGroup(col + "",
-                        new PathConstraints(2, 1.5),
-                        new PathConstraints(2, 2));
+                        new PathConstraints(2, 2),
+                        new PathConstraints(3, 4));
 
         FieldConstants.Grids.ScoringNode node = FieldConstants.Grids.getNodeAbsolute(col, row);
 
@@ -83,7 +84,7 @@ public class AutoSelector {
             commands.add(getPathFollowCommand(drivetrain, path.get(0)));
             if (balance) {
                 commands.add(getPathFollowCommand(drivetrain, path.get(1)));
-                commands.add(new BalancePitchCommand(drivetrain, navX::getPitch));
+                commands.add(new AutoBalance(drivetrain, navX));
             }
         }
 

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
@@ -19,7 +20,6 @@ import java.util.Vector;
 public final class AprilTagPoseEstimationStrategy {
 
     private static int logCounter = 0;
-
 
     private static HashMap<Integer, Pose3d> tagPoses = new HashMap<>();
     private static HashMap<Integer, Pose2d> tag2dPoses = new HashMap<>();

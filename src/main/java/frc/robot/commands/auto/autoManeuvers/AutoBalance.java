@@ -17,8 +17,12 @@ public class AutoBalance extends CommandBase {
     private final DrivetrainBase drivetrain;
     private final NavX navX;
 
-    private static GenericEntry balanceSpeed;
-    private static GenericEntry balanceThresh;
+    private static final GenericEntry balanceSpeed = ShuffleboardConstants.getInstance().preRoundTab
+            .add("Balance Speed", 1.0)
+            .getEntry();;
+    private static final GenericEntry balanceThresh = ShuffleboardConstants.getInstance().preRoundTab
+            .add("Balance Threshold Degrees", 2.5)
+            .getEntry();
 
     private PIDController rotController = new PIDController(0.02, 0.0, 0.0, 0.02);
     private double rotSetpoint = 0.0;
@@ -26,13 +30,6 @@ public class AutoBalance extends CommandBase {
     public AutoBalance(DrivetrainBase drivetrain, NavX navX) {
         this.drivetrain = drivetrain;
         this.navX = navX;
-
-        balanceSpeed = ShuffleboardConstants.getInstance().preRoundTab
-                .add("Balance Speed", 1.0)
-                .getEntry();
-        balanceThresh = ShuffleboardConstants.getInstance().preRoundTab
-                .add("Balance Threshold Degrees", 2.5)
-                .getEntry();
     }
 
     @Override
@@ -63,6 +60,7 @@ public class AutoBalance extends CommandBase {
         double currYaw = RobotState.getInstance().getCurrentPose().getRotation().getDegrees();
         theta = rotController.calculate(currYaw);
 
+        System.out.println(navX.getInternalIMU().getRawGyroX());
         // drive in robot relative
         drivetrain.drive(new ChassisSpeeds(x, 0, theta), false);
     }

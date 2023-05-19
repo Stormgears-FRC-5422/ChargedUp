@@ -203,6 +203,11 @@ public class RobotContainer {
             autoSelector = new AutoSelector();
         }
 
+//        ShuffleboardConstants.getInstance().preRoundTab
+//                .add("Auto Balance", new AutoBalance(m_drivetrain, m_navX));
+//        ShuffleboardConstants.getInstance().preRoundTab
+//                .add("Auto Balance PID", new BalancePitchCommand(m_drivetrain, m_navX::getPitch));
+
         // Configure the controller bindings
         configureControllerBindings();
         if (Toggles.useButtonBoard)

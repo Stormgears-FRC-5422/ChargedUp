@@ -42,6 +42,9 @@ public class NavX extends StormSubsystemBase {
                 .withPosition(3, 2).withSize(1, 1);
     }
 
+    public AHRS getInternalIMU() {
+        return m_gyro;
+    }
 
     public double getYaw() {
         return m_gyro.getYaw();

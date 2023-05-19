@@ -14,8 +14,12 @@ public class DropPieceSequence extends SequentialCommandGroup {
                              Supplier<FieldConstants.Grids.ScoringNode> nodeSupplier) {
         addCommands(
                 new ArmToNode(arm, nodeSupplier),
-                compression.getReleaseCommand(),
-                new StowArm(arm)
+                new ConditionalCommand(
+                        compression.getReleaseCommand().andThen(new StowArm(arm)),
+                        new InstantCommand(() -> {}),
+                        () -> nodeSupplier.get().type == FieldConstants.Grids.ScoringNode.NodeType.CUBE ||
+                                nodeSupplier.get().height == FieldConstants.Grids.ScoringNode.NodeHeight.HYBRID
+                )
         );
     }
 }

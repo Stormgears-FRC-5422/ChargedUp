@@ -80,8 +80,9 @@ public class ArmToNode extends ArmPathFollowingCommand {
         PathPoint end = new PathPoint(goal, new Rotation2d(-Math.PI / 2.0), new Rotation2d())
                 .withPrevControlLength(hybrid? 0.3 : 1.5);
 
-        final var constraints = (isCube || hybrid)? new PathConstraints(8.0, 10.0) :
-                new PathConstraints(6.0, 10.0);
+        // not changing speeds for cube or cone put condition back in if placing cones
+        // we are only placing cubes
+        final var constraints = new PathConstraints(8.0, 10.0);
         var path = PathPlanner.generatePath(
                 constraints,
                 start, end);
