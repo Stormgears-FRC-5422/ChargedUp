@@ -7,10 +7,11 @@ import frc.utils.joysticks.StormXboxController;
 
 public class JoyDrive extends CommandBase {
 
-    StormXboxController xboxController = Robot.m_robotContainer.getXboxController();
+    StormXboxController xboxController;
     DriveSubsystem drive;
 
-    public JoyDrive(DriveSubsystem drive) {
+    public JoyDrive(DriveSubsystem drive, StormXboxController xboxController) {
+        this.xboxController = xboxController;
         this.drive = drive;
         addRequirements(drive);
     }
@@ -22,7 +23,7 @@ public class JoyDrive extends CommandBase {
 
     @Override
     public void execute() {
-        drive.driveArcade(xboxController::getTriggerSpeed, xboxController::getRightJoystickX);
+        drive.driveArcade(xboxController::getRightJoystickX, xboxController::getTriggerSpeed);
     }
 
     @Override

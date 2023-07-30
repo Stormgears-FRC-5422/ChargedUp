@@ -22,6 +22,8 @@ public class RobotContainer {
 
     private StormXboxController xboxController;
 
+    private JoyDrive joyDrive;
+
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
@@ -32,10 +34,14 @@ public class RobotContainer {
         if (Constants.kUseJoystick0) {
             xboxController = new StormXboxController(0);
         }
+
+        if (Constants.kUseDrive && Constants.kUseJoystick0){
+            joyDrive = new JoyDrive(driveSubsystem, xboxController);
+            driveSubsystem.setDefaultCommand(joyDrive);
+        }
         // Configure the trigger bindings
         configureBindings();
 
-        driveSubsystem.setDefaultCommand(new JoyDrive(driveSubsystem));
     }
 
     public DriveSubsystem getDriveSubsystem() {

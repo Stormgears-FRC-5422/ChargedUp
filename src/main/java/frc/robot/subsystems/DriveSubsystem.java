@@ -24,8 +24,9 @@ public class DriveSubsystem extends SubsystemBase {
         backRight.follow(frontRight);
     }
 
+
     public void driveArcade(DoubleSupplier xSpeed, DoubleSupplier zSpeed) {
-        differentialDrive.arcadeDrive(xSpeed.getAsDouble(), zSpeed.getAsDouble(), false);
+        differentialDrive.arcadeDrive(xSpeed.getAsDouble()*0.25, zSpeed.getAsDouble(), false);
     }
 
     @Override
