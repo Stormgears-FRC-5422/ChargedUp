@@ -23,7 +23,7 @@ public class JoyDrive extends CommandBase {
 
     @Override
     public void execute() {
-        drive.driveArcade(xboxController::getRightJoystickX, xboxController::getTriggerSpeed);
+        drive.driveArcade(xboxController::getRightJoystickX, xboxController::getLeftJoystickY);
     }
 
     @Override
