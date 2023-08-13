@@ -7,7 +7,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.JoyDrive;
+import frc.robot.commands.SetNeoPixels;
+import frc.robot.commands.TestWheelSpeed;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.NeoPixels;
 import frc.robot.subsystems.TestWheel;
 import frc.utils.joysticks.StormXboxController;
 
@@ -24,12 +27,15 @@ public class RobotContainer {
 
     private DriveSubsystem driveSubsystem;
     private TestWheel testWheel;
+    private NeoPixels neoPixels;
 
     //commands
 
     private JoyDrive joyDrive;
 
-    
+    private TestWheelSpeed testWheelSpeed;
+
+    private SetNeoPixels setNeoPixels;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -37,39 +43,39 @@ public class RobotContainer {
     public RobotContainer() {
         if (Constants.kUseDrive) {
             driveSubsystem = new DriveSubsystem();
-            testWheel = new TestWheel();
+
         }
 
         if (Constants.kUseJoystick0) {
             xboxController = new StormXboxController(0);
+
         }
 
-        if (Constants.kUseDrive && Constants.kUseJoystick0){
+        if (Constants.kUseDrive && Constants.kUseJoystick0) {
             joyDrive = new JoyDrive(driveSubsystem, xboxController);
             driveSubsystem.setDefaultCommand(joyDrive);
+
         }
+
+        if (Constants.kUseLights) {
+            neoPixels = new NeoPixels();
+            setNeoPixels = new SetNeoPixels(xboxController, neoPixels);
+            neoPixels.setDefaultCommand(setNeoPixels);
+
+        }
+
+        if (Constants.kUseShooter && Constants.kUseJoystick0) {
+            testWheel = new TestWheel();
+            testWheelSpeed = new TestWheelSpeed(xboxController, testWheel);
+            testWheel.setDefaultCommand(testWheelSpeed);
+        }
+
         // Configure the trigger bindings
         configureBindings();
 
     }
 
-    public DriveSubsystem getDriveSubsystem() {
-        return driveSubsystem;
-    }
 
-    public StormXboxController getXboxController() {
-        return xboxController;
-    }
-
-    /**
-     * Use this method to define your trigger->command mappings. Triggers can be created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-     * predicate, or via the named factories in {@link
-     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-     * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-     * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-     * joysticks}.
-     */
     private void configureBindings() {
 
     }

@@ -1,19 +1,18 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Robot;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.NeoPixels;
 import frc.utils.joysticks.StormXboxController;
 
-public class JoyDrive extends CommandBase {
-
+public class SetNeoPixels extends CommandBase {
     StormXboxController xboxController;
-    DriveSubsystem drive;
+    NeoPixels neoPixels;
 
-    public JoyDrive(DriveSubsystem drive, StormXboxController xboxController) {
+    public SetNeoPixels(StormXboxController xboxController, NeoPixels neoPixels) {
         this.xboxController = xboxController;
-        this.drive = drive;
-        addRequirements(drive);
+        this.neoPixels = neoPixels;
+        addRequirements(neoPixels);
+
     }
 
     @Override
@@ -23,7 +22,13 @@ public class JoyDrive extends CommandBase {
 
     @Override
     public void execute() {
-        drive.driveArcade(xboxController::getRightJoystickX, xboxController::getLeftJoystickY);
+        if ( xboxController.getAButtonIsHeld() ) {
+            neoPixels.setColor();
+        }
+        else {
+            neoPixels.setNullColor();
+        }
+
     }
 
     @Override
