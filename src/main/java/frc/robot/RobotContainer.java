@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.JoyDrive;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.TestWheel;
 import frc.utils.joysticks.StormXboxController;
 
 /**
@@ -17,12 +18,18 @@ import frc.utils.joysticks.StormXboxController;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    // The robot's subsystems and commands are defined here...
-    private DriveSubsystem driveSubsystem;
-
     private StormXboxController xboxController;
 
+    // The robot's subsystems and commands are defined here...
+
+    private DriveSubsystem driveSubsystem;
+    private TestWheel testWheel;
+
+    //commands
+
     private JoyDrive joyDrive;
+
+    
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -30,7 +37,9 @@ public class RobotContainer {
     public RobotContainer() {
         if (Constants.kUseDrive) {
             driveSubsystem = new DriveSubsystem();
+            testWheel = new TestWheel();
         }
+
         if (Constants.kUseJoystick0) {
             xboxController = new StormXboxController(0);
         }
