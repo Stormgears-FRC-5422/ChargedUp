@@ -4,15 +4,19 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.JoyDrive;
 import frc.robot.commands.SetNeoPixels;
-import frc.robot.commands.TestWheelSpeed;
+import frc.robot.commands.ShooterCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.NeoPixels;
-import frc.robot.subsystems.TestWheel;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.utils.joysticks.StormXboxController;
+
+import java.awt.*;
+
+import static frc.utils.joysticks.StormXboxController.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -21,19 +25,23 @@ import frc.utils.joysticks.StormXboxController;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    private StormXboxController xboxController;
 
+    private StormXboxController xboxController;
+    private JoystickButton intakeButton;
+    private JoystickButton shooterButton;
     // The robot's subsystems and commands are defined here...
 
     private DriveSubsystem driveSubsystem;
-    private TestWheel testWheel;
+    private ShooterSubsystem shooterSubsystem;
     private NeoPixels neoPixels;
 
     //commands
 
     private JoyDrive joyDrive;
 
-    private TestWheelSpeed testWheelSpeed;
+    private ShooterCommand shooterCommand;
+
+    private IntakeCommand intakeCommand;
 
     private SetNeoPixels setNeoPixels;
 
@@ -41,6 +49,7 @@ public class RobotContainer {
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
+
         if (Constants.kUseDrive) {
             driveSubsystem = new DriveSubsystem();
 
@@ -49,6 +58,8 @@ public class RobotContainer {
         if (Constants.kUseJoystick0) {
             xboxController = new StormXboxController(0);
 
+            intakeButton = new JoystickButton(xboxController, rightBumper);
+            shooterButton = new JoystickButton(xboxController, leftBumper);
         }
 
         if (Constants.kUseDrive && Constants.kUseJoystick0) {
@@ -65,9 +76,13 @@ public class RobotContainer {
         }
 
         if (Constants.kUseShooter && Constants.kUseJoystick0) {
-            testWheel = new TestWheel();
-            testWheelSpeed = new TestWheelSpeed(xboxController, testWheel);
-            testWheel.setDefaultCommand(testWheelSpeed);
+            shooterSubsystem = new ShooterSubsystem();
+            intakeCommand = new IntakeCommand(shooterSubsystem);
+            shooterCommand = new ShooterCommand( shooterSubsystem);
+            intakeButton.whileHeld(intakeCommand);
+            shooterButton.whileHeld(shooterCommand);
+
+
         }
 
         // Configure the trigger bindings

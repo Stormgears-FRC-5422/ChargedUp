@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.utils.configfile.StormProp;
 
 /**
@@ -234,6 +235,7 @@ public final class Constants {
       StormProp.getNumber("visionShootingOffset", 0d);
   public static final double kVisionAlignMinimumPercentOutput =
       StormProp.getNumber("visionAlignMinimumPercentOutput", 0d);
+
 
   private Constants() {
     throw new IllegalStateException("Do not make a Constants class");

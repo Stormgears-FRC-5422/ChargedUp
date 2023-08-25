@@ -100,6 +100,7 @@ public class LEDLightStrip {
   public void setLEDColor(int segmentNumber, Color8Bit color) {
     SegmentDetails segment = this.getSegment(segmentNumber);
     for (int index = 0; index < segment.numLEDs; index++) {
+//      System.out.println(segmentNumber +  " " + index);
       setLEDColor(segmentNumber, index, color);
     }
   }
