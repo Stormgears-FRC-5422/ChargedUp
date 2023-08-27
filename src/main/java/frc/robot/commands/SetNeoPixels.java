@@ -5,10 +5,10 @@ import frc.robot.Constants;
 import frc.robot.subsystems.NeoPixels;
 import frc.utils.joysticks.StormXboxController;
 import frc.utils.lights.LightColors;
-
 import java.util.Timer;
 
 public class SetNeoPixels extends CommandBase {
+    String color = "";
     StormXboxController xboxController;
     NeoPixels neoPixels;
 
@@ -21,25 +21,41 @@ public class SetNeoPixels extends CommandBase {
 
     @Override
     public void initialize() {
-        super.initialize();
+        color = "red";
     }
 
     @Override
     public void execute() {
-        if ( xboxController.getAButtonIsHeld() ) {
-            neoPixels.setColor(LightColors.PURPLE_COLOR, LightColors.BLUE_COLOR);
-
-
-        }
-        else {
-            neoPixels.setNullColor();
+        neoPixels.setColor(color);
+        switch (color) {
+            case "red":
+                color = "orange";
+                break;
+            case "orange":
+                color = "yellow";
+                break;
+            case "yellow":
+                color = "green";
+                break;
+            case "green":
+                color = "blue";
+                break;
+            case "blue":
+                color = "indigo";
+                break;
+            case "indigo":
+                color = "violet";
+                break;
+            case "violet":
+                color = "red";
+                break;
         }
 
     }
 
     @Override
     public void end(boolean interrupted) {
-        super.end(interrupted);
+        neoPixels.setNullColor();
     }
 
     @Override

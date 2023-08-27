@@ -27,6 +27,7 @@ import static frc.utils.joysticks.StormXboxController.*;
 public class RobotContainer {
 
     private StormXboxController xboxController;
+    private JoystickButton lightsButton;
     private JoystickButton intakeButton;
     private JoystickButton shooterButton;
     // The robot's subsystems and commands are defined here...
@@ -57,7 +58,7 @@ public class RobotContainer {
 
         if (Constants.kUseJoystick0) {
             xboxController = new StormXboxController(0);
-
+            lightsButton = new JoystickButton(xboxController, AButton);
             intakeButton = new JoystickButton(xboxController, rightBumper);
             shooterButton = new JoystickButton(xboxController, leftBumper);
         }
@@ -79,8 +80,8 @@ public class RobotContainer {
             shooterSubsystem = new ShooterSubsystem();
             intakeCommand = new IntakeCommand(shooterSubsystem);
             shooterCommand = new ShooterCommand( shooterSubsystem);
-            intakeButton.whileHeld(intakeCommand);
-            shooterButton.whileHeld(shooterCommand);
+            intakeButton.whileTrue(intakeCommand);
+            shooterButton.whileTrue(shooterCommand);
 
 
         }

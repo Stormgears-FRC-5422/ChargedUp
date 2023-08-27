@@ -12,4 +12,6 @@ public class LightColors {
     public static final Color8Bit GREEN_COLOR = new Color8Bit(0, 200, 0);//green
 
     public static final Color8Bit BLUE_COLOR = new Color8Bit(0, 0, 200);//blue
+    public static final Color8Bit ORANGE_COLOR = new Color8Bit(255, 165, 0); //orange
+    public static final Color8Bit INDIGO_COLOR = new Color8Bit(75, 0, 130); //indigo
 }
