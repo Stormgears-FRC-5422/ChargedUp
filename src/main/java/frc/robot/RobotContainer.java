@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 
 import frc.robot.commands.AprilTagStatusCommand;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.AutoRoutine;
@@ -48,6 +49,8 @@ public class RobotContainer {
     // **********
     DrivetrainBase m_drivetrain;
     Compression m_compression;
+
+    Intake m_intake;
     Arm m_arm;
     StormNet m_stormNet;
     NavX m_navX;
@@ -66,6 +69,8 @@ public class RobotContainer {
     LEDcommand m_LEDcommand;
     AprilTagStatusCommand m_aprilTagStatusCommand;
     ArmCommand m_armCommand;
+
+    IntakeCommand m_intakeCommand;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
@@ -142,6 +147,15 @@ public class RobotContainer {
             System.out.println("Using Compressor");
         } else
             System.out.println("NOT using pneumatics");
+
+        if (Toggles.useIntake) {
+            m_intake = new Intake();
+            m_intakeCommand = new IntakeCommand(m_intake);
+            System.out.println("Using Intake");
+        } else
+            System.out.println("NOT using Intake");
+
+
 
         if (Toggles.useDrive && DriveConstants.driveType.equals("SwerveDrive")) {
             m_poseEstimator = new PoseEstimator(m_drivetrain.getSwerveDriveKinematics());
@@ -320,6 +334,8 @@ public class RobotContainer {
                 System.out.println("Pneumatics or controller not operational");
             }
 
+
+
         }
 
         if (Toggles.useDrive && Toggles.useLogitechController) {
@@ -340,6 +356,10 @@ public class RobotContainer {
             new Trigger(() -> logitechController.getRawButton(12)).onTrue(new InstantCommand(
                     () -> driveWithJoystick.setSetPoint(180)
             ));
+            if (Toggles.useIntake){
+            new Trigger(() -> logitechController.getRawButton(8)).onTrue(m_intakeCommand);
+            new Trigger(() -> logitechController.getRawButton(9)).onTrue(m_intake.outCommand());
+            }
 
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(

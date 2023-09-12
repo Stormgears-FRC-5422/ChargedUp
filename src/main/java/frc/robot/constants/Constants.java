@@ -239,6 +239,9 @@ public final class Constants {
         public static boolean useSecondXboxController = StormProp.getBoolean("useSecondXboxController", false);
         public static boolean useButtonBoard = StormProp.getBoolean("useButtonBoard", false);
         public static boolean usePneumatics = StormProp.getBoolean("usePneumatics", false);
+
+        public static boolean useIntake = StormProp.getBoolean("useIntake", false);
+
         public static boolean useStormNet = StormProp.getBoolean("useStormNet", false);
         public static boolean useArm = StormProp.getBoolean("useArm", false);
         public static boolean useXYArmMode = StormProp.getBoolean("useXYArmMode", false) && useArm;
