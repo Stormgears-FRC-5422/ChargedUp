@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.JoyDrive;
 import frc.robot.commands.SetNeoPixels;
@@ -60,7 +61,8 @@ public class RobotContainer {
             xboxController = new StormXboxController(0);
             lightsButton = new JoystickButton(xboxController, AButton);
             intakeButton = new JoystickButton(xboxController, rightBumper);
-            shooterButton = new JoystickButton(xboxController, leftBumper);
+            shooterButton = new JoystickButton(xboxController, XButton);
+
         }
 
         if (Constants.kUseDrive && Constants.kUseJoystick0) {
@@ -79,20 +81,21 @@ public class RobotContainer {
         if (Constants.kUseShooter && Constants.kUseJoystick0) {
             shooterSubsystem = new ShooterSubsystem();
             intakeCommand = new IntakeCommand(shooterSubsystem);
-            shooterCommand = new ShooterCommand( shooterSubsystem);
-            intakeButton.whileTrue(intakeCommand);
-            shooterButton.whileTrue(shooterCommand);
+            shooterCommand = new ShooterCommand(shooterSubsystem, xboxController);
+            configureBindings();
 
 
         }
 
         // Configure the trigger bindings
-        configureBindings();
 
     }
 
 
     private void configureBindings() {
-
+        if (Constants.kUseShooter) {
+            intakeButton.whileTrue(intakeCommand);
+            shooterButton.whileTrue(shooterCommand);
+        }
     }
 }

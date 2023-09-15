@@ -5,7 +5,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMaxLowLevel;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.utils.motorcontrol.StormSpark;
 
@@ -23,7 +23,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final StormSpark intakemc1 = new StormSpark(16, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
     private final StormSpark intakemc2 = new StormSpark(18, CANSparkMaxLowLevel.MotorType.kBrushless, StormSpark.MotorKind.kNeo);
 
-  public void setMotorSpeed(double speed){
+  public void setShooterSpeed(double speed){
     motorSpeed = speed;
   }
   public void setIntakeSpeed (double speed) {
@@ -35,8 +35,8 @@ public class ShooterSubsystem extends SubsystemBase {
     return sensor.get();
   }
 
-  public double getMotorSpeed () {
-    return testWheel.get();
+  public double getShooterSpeed() {
+    return testWheel.getEncoder().getVelocity();
   }
 
   public void setintakemc2 (double speed) {
@@ -45,6 +45,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Shooter Speed", getShooterSpeed()/5320);
     intakemc1.set(intakemc1Speed);
     intakemc2.set(intakemc2speed);
     testWheel.set(motorSpeed);

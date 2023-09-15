@@ -39,6 +39,7 @@ public class SetNeoPixels extends CommandBase {
                 break;
             case "green":
                 color = "blue";
+
                 break;
             case "blue":
                 color = "indigo";
