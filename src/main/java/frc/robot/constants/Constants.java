@@ -149,6 +149,9 @@ public final class Constants {
 	    public static final double downwardConstraint = StormProp.getNumber("downwardConstraint", 1.0);
         public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
         public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
+        public static final double intakeOutputPower = StormProp.getNumber("intakeOutputPower", 0.0);
+        public static final double intakeHoldPower = StormProp.getNumber("intakeHoldPower", 0.0);
+        public static final int intakeMotorID = StormProp.getInt("intakeMotorID", 0);
 
         private static final double armOriginX = StormProp.getNumber("armOriginX", 0.1);
         private static final double armOriginY = StormProp.getNumber("armOriginY", 0.1);
@@ -251,6 +254,7 @@ public final class Constants {
         public static boolean useNodeSelector = StormProp.getBoolean("useNodeSelector", false);
         public static boolean useLogs = true;
         public static boolean usePieceDetector = StormProp.getBoolean("usePieceDetector", false);
+
     }
     // **********
     // Don't put other variables after the usage members

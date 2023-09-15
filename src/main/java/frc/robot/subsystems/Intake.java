@@ -5,31 +5,36 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.Constants;
+import frc.robot.subsystems.arm.Arm;
 import frc.utils.motorcontrol.StormSpark;
 
-import static frc.robot.constants.Constants.ArmConstants.armShoulderID;
+import frc.robot.constants.Constants.ArmConstants;
 
 public class Intake extends SubsystemBase {
 
-    final double INTAKE_OUTPUT_POWER = 1.0; //change power based on tests
+     //change power based on tests
 
-    final double INTAKE_HOLD_POWER = 0.07;
+    private double outputPower = ArmConstants.intakeOutputPower;
+    private double holdPower = ArmConstants.intakeHoldPower;
 
 
-    StormSpark intakeMotor = new StormSpark(1,
+
+
+    StormSpark intakeMotor = new StormSpark(ArmConstants.intakeMotorID,
             CANSparkMaxLowLevel.MotorType.kBrushless,
-            StormSpark.MotorKind.kNeo); //NEED RIGHT DEVICE ID
+            StormSpark.MotorKind.kNeo);
 
     public void setIntakeMotorSpeed(double speed){
         intakeMotor.set(speed);
     }
 
     public void intake(){
-        setIntakeMotorSpeed(INTAKE_OUTPUT_POWER);
+        setIntakeMotorSpeed(outputPower);
     }
 
     public void hold(){
-        setIntakeMotorSpeed(INTAKE_HOLD_POWER);
+        setIntakeMotorSpeed(holdPower);
 
     }
 
