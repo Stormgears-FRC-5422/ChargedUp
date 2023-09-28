@@ -57,9 +57,15 @@ public class AddressableLEDBufferMulti extends AddressableLEDBuffer {
     Color8Bit c0;
     Color8Bit c1;
 
+//    System.out.println("Start:" + start);
+//    System.out.println("Index:" + index);
+
     // allow for substrings using an arbitrary start position
     int aG = start + index * 4;
     int j = aG / 3;
+//    System.out.println("J: " + j);
+
+
 
     // Stash the current color, if any. We need to merge our new colors into these slots
     c0 = super.getLED8Bit(j);

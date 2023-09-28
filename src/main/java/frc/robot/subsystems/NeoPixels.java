@@ -15,12 +15,15 @@ public class NeoPixels extends SubsystemBase {
         ledLightStrip = new LEDLightStrip();
         ledLightStrip.addSegment(37, LightType.RGBW);
         ledLightStrip.addSegment(40, LightType.RGBW);
-        ledLightStrip.addSegment(40, LightType.RGBW);
         ledLightStrip.setUp(7);
     }
 
     @Override
     public void periodic() {
+
+        ledLightStrip.setLEDColor(0, LightColors.BLUE_COLOR);
+        ledLightStrip.setLEDColor(1,LightColors.ORANGE_COLOR);
+
         ledLightStrip.setLEDData();
     }
 

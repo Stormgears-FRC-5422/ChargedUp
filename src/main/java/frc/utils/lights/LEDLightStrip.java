@@ -49,7 +49,8 @@ public class LEDLightStrip {
     if (segments.size() == 0) {
       segment.startPosition = 0;
     } else {
-      segment.startPosition = segments.get(segments.size() - 1).endPosition + 1;
+//      segment.startPosition = segments.get(segments.size() - 1).endPosition + 1;
+      segment.startPosition = segment.endPosition+1;
     }
     segment.endPosition = segment.startPosition + (segment.numLEDs * segment.getLEDSize()) - 1;
 
