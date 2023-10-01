@@ -69,7 +69,7 @@ public class AddressableLEDBufferMulti extends AddressableLEDBuffer {
 
     // Stash the current color, if any. We need to merge our new colors into these slots
     c0 = super.getLED8Bit(j);
-    c1 = super.getLED8Bit(j + 1);
+    c1 = super.getLED8Bit(j + 2);
 
     // which byte are we aligned with in the RGB world? Set the new colors, but keep the other bytes
     // as-is

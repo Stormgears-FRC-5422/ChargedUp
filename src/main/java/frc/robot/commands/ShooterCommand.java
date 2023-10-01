@@ -66,10 +66,6 @@ public class ShooterCommand extends CommandBase {
         //System.out.println("Trigger Speed: " + motorSpeed);
 
 
-
-
-
-
     }
 
     @Override

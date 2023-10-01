@@ -56,7 +56,7 @@ public class SetNeoPixels extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        neoPixels.setNullColor();
+//        neoPixels.setNullColor();
     }
 
     @Override

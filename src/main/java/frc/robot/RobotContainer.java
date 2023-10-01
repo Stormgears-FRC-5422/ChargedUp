@@ -5,17 +5,15 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.JoyDrive;
 import frc.robot.commands.SetNeoPixels;
 import frc.robot.commands.ShooterCommand;
+import frc.robot.commands.ShooterTestCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.NeoPixels;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.utils.joysticks.StormXboxController;
-
-import java.awt.*;
 
 import static frc.utils.joysticks.StormXboxController.*;
 
@@ -31,6 +29,7 @@ public class RobotContainer {
     private JoystickButton lightsButton;
     private JoystickButton intakeButton;
     private JoystickButton shooterButton;
+    private JoystickButton shootertestButton;
     // The robot's subsystems and commands are defined here...
 
     private DriveSubsystem driveSubsystem;
@@ -47,6 +46,8 @@ public class RobotContainer {
 
     private SetNeoPixels setNeoPixels;
 
+//    private ShooterTestCommand shooterTestCommand;
+
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
@@ -62,6 +63,7 @@ public class RobotContainer {
             lightsButton = new JoystickButton(xboxController, AButton);
             intakeButton = new JoystickButton(xboxController, rightBumper);
             shooterButton = new JoystickButton(xboxController, XButton);
+            shootertestButton = new JoystickButton(xboxController, YButton);
 
         }
 
@@ -82,10 +84,12 @@ public class RobotContainer {
             shooterSubsystem = new ShooterSubsystem();
             intakeCommand = new IntakeCommand(shooterSubsystem);
             shooterCommand = new ShooterCommand(shooterSubsystem, xboxController);
+//            shooterTestCommand = new ShooterTestCommand(shooterSubsystem, xboxController);
             configureBindings();
 
 
         }
+
 
         // Configure the trigger bindings
 
@@ -96,6 +100,8 @@ public class RobotContainer {
         if (Constants.kUseShooter) {
             intakeButton.whileTrue(intakeCommand);
             shooterButton.whileTrue(shooterCommand);
+//            shootertestButton.whileTrue(shooterTestCommand);
+
         }
     }
 }
