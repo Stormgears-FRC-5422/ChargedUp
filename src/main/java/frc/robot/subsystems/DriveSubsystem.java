@@ -26,7 +26,8 @@ public class DriveSubsystem extends SubsystemBase {
 
 
     public void driveArcade(DoubleSupplier xSpeed, DoubleSupplier zSpeed) {
-        differentialDrive.arcadeDrive(xSpeed.getAsDouble()*0.25, zSpeed.getAsDouble(), false);
+        differentialDrive.arcadeDrive(xSpeed.getAsDouble()*0.15, zSpeed.getAsDouble()*0.2, false);
+
     }
 
     @Override

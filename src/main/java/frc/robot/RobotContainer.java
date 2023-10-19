@@ -46,7 +46,7 @@ public class RobotContainer {
 
     private SetNeoPixels setNeoPixels;
 
-//    private ShooterTestCommand shooterTestCommand;
+    private ShooterTestCommand shooterTestCommand;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -84,7 +84,7 @@ public class RobotContainer {
             shooterSubsystem = new ShooterSubsystem();
             intakeCommand = new IntakeCommand(shooterSubsystem);
             shooterCommand = new ShooterCommand(shooterSubsystem, xboxController);
-//            shooterTestCommand = new ShooterTestCommand(shooterSubsystem, xboxController);
+            shooterTestCommand = new ShooterTestCommand(shooterSubsystem, xboxController);
             configureBindings();
 
 
@@ -97,10 +97,12 @@ public class RobotContainer {
 
 
     private void configureBindings() {
+        System.out.println("configure bindings running");
         if (Constants.kUseShooter) {
             intakeButton.whileTrue(intakeCommand);
             shooterButton.whileTrue(shooterCommand);
-//            shootertestButton.whileTrue(shooterTestCommand);
+            shootertestButton.whileTrue(shooterTestCommand);
+            System.out.println("use shooter check running");
 
         }
     }

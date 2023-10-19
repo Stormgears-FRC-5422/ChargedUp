@@ -37,7 +37,7 @@ public class ShooterCommand extends CommandBase {
     @Override
     public void execute() {
         double error;
-        targetSpeed =0.5;
+        targetSpeed =0.35;
         currentSpeed = shooterSubsystem.getShooterSpeed() / 5320.00;
 
         error = targetSpeed - currentSpeed;
