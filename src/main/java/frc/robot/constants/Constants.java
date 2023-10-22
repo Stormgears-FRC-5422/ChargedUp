@@ -160,8 +160,13 @@ public final class Constants {
                 Units.inchesToMeters(armOriginX),
                 Units.inchesToMeters(armOriginY));
 
-        public static final Translation2d pickGround = new Translation2d(0.55, -0.3);
-        public static final Translation2d stowPosition = new Translation2d(0.21, 0.10);
+//        public static final Translation2d pickGround = new Translation2d(0.55, -0.3);
+//        public static final Translation2d stowPosition = new Translation2d(0.21, 0.10);
+// POSITION W NEW GRIPPER
+        public static final Translation2d stowPosition = new Translation2d(-0.28, 0.3);
+        public static final Translation2d pickGround = new Translation2d(0.578, -0.16);
+
+
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstationCone = new Translation2d(0.86, 0.85);
         public static final Translation2d pickDoubleSubstationCube = new Translation2d(0.86, 0.85);
