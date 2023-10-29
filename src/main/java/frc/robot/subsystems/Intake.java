@@ -13,33 +13,33 @@ import frc.robot.constants.Constants.ArmConstants;
 
 public class Intake extends SubsystemBase {
 
-     //change power based on tests
+    //change power based on tests
 
-    private double outputPower = ArmConstants.intakeOutputPower;
-    private double holdPower = ArmConstants.intakeHoldPower;
+    private final double inPower = ArmConstants.intakeInPower;
+    private final double holdPower = ArmConstants.intakeHoldPower;
 
-
+    private final double outPower = ArmConstants.intakeOutPower;
 
 
     StormSpark intakeMotor = new StormSpark(ArmConstants.intakeMotorID,
             CANSparkMaxLowLevel.MotorType.kBrushless,
             StormSpark.MotorKind.kNeo);
 
-    public void setIntakeMotorSpeed(double speed){
+    public void setIntakeMotorSpeed(double speed) {
         intakeMotor.set(speed);
     }
 
-    public void intake(){
-        setIntakeMotorSpeed(outputPower);
+    public void intake() {
+        setIntakeMotorSpeed(inPower);
     }
 
-    public void hold(){
+    public void hold() {
         setIntakeMotorSpeed(holdPower);
 
     }
 
-    public void out(){
-        setIntakeMotorSpeed(0);
+    public void out() {
+        setIntakeMotorSpeed(outPower);
 
     }
 
@@ -48,12 +48,9 @@ public class Intake extends SubsystemBase {
 //    } not needed for now, may need
 
 
-    public Command outCommand(){
+    public Command outCommand() {
         return new InstantCommand(this::out);
     }
-
-
-
 
 
 }

@@ -149,8 +149,11 @@ public final class Constants {
 	    public static final double downwardConstraint = StormProp.getNumber("downwardConstraint", 1.0);
         public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
         public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
-        public static final double intakeOutputPower = StormProp.getNumber("intakeOutputPower", 0.0);
+        public static final double intakeInPower = StormProp.getNumber("intakeInPower", 0.0);
         public static final double intakeHoldPower = StormProp.getNumber("intakeHoldPower", 0.0);
+        public static final double intakeOutPower = StormProp.getNumber("intakeOutPower", 0.0);
+
+        public static final double intakecount = 5;
         public static final int intakeMotorID = StormProp.getInt("intakeMotorID", 0);
 
         private static final double armOriginX = StormProp.getNumber("armOriginX", 0.1);
@@ -160,16 +163,23 @@ public final class Constants {
                 Units.inchesToMeters(armOriginX),
                 Units.inchesToMeters(armOriginY));
 
-//        public static final Translation2d pickGround = new Translation2d(0.55, -0.3);
-//        public static final Translation2d stowPosition = new Translation2d(0.21, 0.10);
+        public static final Translation2d pickGround = new Translation2d(0.55, -0.3);
+        public static final Translation2d pickCubeGroundMod = new Translation2d(0.27285, 0.26794);
+        public static final Translation2d pickConeGroundMod = new Translation2d(0.32973, 0.32061);
+        public static final Translation2d stowPosition = new Translation2d(0.21, 0.10);
 // POSITION W NEW GRIPPER
-        public static final Translation2d stowPosition = new Translation2d(-0.28, 0.3);
-        public static final Translation2d pickGround = new Translation2d(0.578, -0.16);
+//        public static final Translation2d stowPosition = new Translation2d(-0.28, 0.3);
+//        public static final Translation2d pickGround = new Translation2d(0.578, -0.16);
 
 
         private static final double outToDoubleSubstation = Units.feetToMeters(2.0);
         public static final Translation2d pickDoubleSubstationCone = new Translation2d(0.86, 0.85);
+        public static final Translation2d coneMiddleMod = new Translation2d(0.09074, 0.50777);
+        public static final Translation2d coneTopMod = new Translation2d(0.08451, 0.21837);
         public static final Translation2d pickDoubleSubstationCube = new Translation2d(0.86, 0.85);
+        public static final Translation2d cubeBottomMod = new Translation2d(0.25598, 0.36836);
+        public static final Translation2d cubeMiddleMod = new Translation2d(0.04888, 0.36122);
+        public static final Translation2d cubeTopMod = new Translation2d(0.0, 0.11648);
 
         public static Translation2d tempArmPickUpLocation = Arm.fromGlobalTranslation(
                 new Translation3d(1.15, 0.0, 1.235)

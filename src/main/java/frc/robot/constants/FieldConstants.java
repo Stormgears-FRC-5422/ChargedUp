@@ -284,6 +284,7 @@ public final class FieldConstants {
                 CUBE, CONE, HYBRID
             }
 
+
             public enum NodeHeight {
                 HIGH(Units.inchesToMeters(46.0)),
                 MIDDLE(Units.inchesToMeters(34.0)),

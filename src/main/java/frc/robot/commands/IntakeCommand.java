@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.constants.Constants;
 import frc.robot.subsystems.Intake;
 
 public class IntakeCommand extends CommandBase {
@@ -12,6 +13,8 @@ public class IntakeCommand extends CommandBase {
     int count = 0;
 
     boolean end = false;
+
+    private final double intakeCount = Constants.ArmConstants.intakecount;
 
     public IntakeCommand(Intake intake){
         this.intake = intake;
@@ -24,7 +27,7 @@ public class IntakeCommand extends CommandBase {
         intake.intake();
         count++;
 
-        if (count==5){ //change how many repetition of periodic based on testing
+        if (count==intakeCount){ //change how many repetition of periodic based on testing
             end = true;
             count=0;
             intake.hold();
