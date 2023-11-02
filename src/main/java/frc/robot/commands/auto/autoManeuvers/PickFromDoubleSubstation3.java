@@ -7,12 +7,14 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotState;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.drive.AlignToDoubleSubstation;
 import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.subsystems.Compression;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
 import frc.utils.joysticks.DriveJoystick;
@@ -25,12 +27,12 @@ import static frc.robot.constants.Constants.ArmConstants.pickDoubleSubstationCub
 
 public class PickFromDoubleSubstation3 extends SequentialCommandGroup {
 
-    public PickFromDoubleSubstation3(Arm arm, BooleanSupplier pieceDetected, Compression compression) {
+    public PickFromDoubleSubstation3(Arm arm, BooleanSupplier pieceDetected, Intake intake) {
         addCommands(
-                compression.getReleaseCommand(),
+                new IntakeCommand(intake, false),
                 new ArmToTranslation(arm, this::getPickingHeight, 4, 6),
                 new WaitUntilCommand(pieceDetected),
-                compression.getGrabCommand(),
+                new IntakeCommand(intake, true),
                 new WaitCommand(0.2)
         );
     }

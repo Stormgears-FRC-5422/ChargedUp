@@ -267,7 +267,7 @@ public class RobotContainer {
 //                                AlignToDoubleSubstation.Side.RIGHT));
 
                 new Trigger(firstXboxController::getLeftBumperIsHeld).whileTrue(
-                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
+                        new PickFromDoubleSubstation2(m_drivetrain, m_arm, m_intake, m_stormNet, m_neoPixel,
                                 firstXboxController, FieldConstants.Side.LEFT));
 
                 new Trigger(firstXboxController::getLeftLittleButtonIsHeld).onTrue(new InstantCommand(() -> {
@@ -364,12 +364,12 @@ public class RobotContainer {
             if (Toggles.usePoseEstimator) {
                 new Trigger(() -> logitechController.getRawButton(3)).whileTrue(
                         new PickFromDoubleSubstation2(
-                                m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
+                                m_drivetrain, m_arm, m_intake, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.LEFT));
                 new Trigger(() -> logitechController.getRawButton(4)).whileTrue(
                         new PickFromDoubleSubstation2(
-                                m_drivetrain, m_arm, m_compression, m_stormNet, m_neoPixel,
+                                m_drivetrain, m_arm, m_intake, m_stormNet, m_neoPixel,
                                 logitechController,
                                 FieldConstants.Side.RIGHT));
 
@@ -476,31 +476,37 @@ public class RobotContainer {
             new Trigger(m_buttonBoardConfig::stow).onTrue(
                     new StowArm(m_arm));
             new Trigger(m_buttonBoardConfig::pickFloor).onTrue(
-                    new PickFromFloor(m_arm, m_compression, this::getPieceDetected));
+                    new PickFromFloor(m_arm, m_intake, this::getPieceDetected));
 
 
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
                 new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
-                        new DropPieceSequence(m_arm, m_compression, nodeSelector::getSelectedNode).andThen(
-                                new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)));
+                        new DropPieceSequence(m_arm, nodeSelector::getSelectedNode).andThen(
+                                new ConditionalCommand(new IntakeCommand(m_intake, true) ,
+                                        new IntakeCommand(m_intake, false),
+                                        m_buttonBoardConfig::gripperClosed)));
             }
         }
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
             new Trigger(m_buttonBoardConfig::pickLeftSub)
-                    .onTrue(new PickFromDoubleSubstation3(m_arm, this::getPieceDetected, m_compression).andThen(
-                            new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)
+                    .onTrue(new PickFromDoubleSubstation3(m_arm, this::getPieceDetected, m_intake).andThen(
+                            new ConditionalCommand(new IntakeCommand(m_intake, true)
+                                    , new IntakeCommand(m_intake, false),
+                                    m_buttonBoardConfig::gripperClosed)
                     ));
             new Trigger(m_buttonBoardConfig::pickRightSub)
-                    .onTrue(new PickFromSingleSubstation(m_arm, m_compression, this::getPieceDetected).andThen(
-                            new ConditionalCommand(m_compression.getGrabCommand(), m_compression.getReleaseCommand(), m_buttonBoardConfig::gripperClosed)
+                    .onTrue(new PickFromSingleSubstation(m_arm, m_intake, this::getPieceDetected).andThen(
+                            new ConditionalCommand(new IntakeCommand(m_intake, true)
+                                    , new IntakeCommand(m_intake, false),
+                                    m_buttonBoardConfig::gripperClosed)
                     ));
         }
     }
 
     public Command getAutonomousCommand() {
         if (Toggles.usePoseEstimator) {
-            AutoRoutine routine = autoSelector.buildAuto(m_drivetrain, m_arm, m_compression, m_navX);
+            AutoRoutine routine = autoSelector.buildAuto(m_drivetrain, m_arm, m_intake, m_navX);
             m_robotState.setStartPose(routine.startPose);
             return routine.autoCommand;
         }

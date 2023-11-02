@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.auto.autoManeuvers.ArmToNode;
 import frc.robot.commands.auto.autoManeuvers.AutoBalance;
@@ -15,6 +16,7 @@ import frc.robot.commands.drive.pathFollowing.PathFollowingCommand;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.Compression;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.NavX;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -27,6 +29,8 @@ public class AutoSelector {
     private SendableChooser<Integer> nodeHeightChooser = new SendableChooser<>();
     private SendableChooser<Boolean> taxiChooser = new SendableChooser<>();
     private SendableChooser<Boolean> balanceChooser = new SendableChooser<>();
+
+    private Intake intake = new Intake();
 
     public AutoSelector() {
         for (int i = 0; i < 9; i++) {
@@ -62,13 +66,13 @@ public class AutoSelector {
                 .add("Balance?", balanceChooser).withPosition(0, 3);
     }
 
-    public AutoRoutine buildAuto(DrivetrainBase drivetrain, Arm arm, Compression compression, NavX navX) {
-        return buildAuto(drivetrain, arm, compression, navX,
+    public AutoRoutine buildAuto(DrivetrainBase drivetrain, Arm arm, Intake intake, NavX navX) {
+        return buildAuto(drivetrain, arm, intake, navX,
                 nodeColumnChooser.getSelected(), nodeHeightChooser.getSelected(),
                 taxiChooser.getSelected(), balanceChooser.getSelected());
     }
 
-    private AutoRoutine buildAuto(DrivetrainBase drivetrain, Arm arm, Compression compression, NavX navX,
+    private AutoRoutine buildAuto(DrivetrainBase drivetrain, Arm arm, Intake intake, NavX navX,
                               int col, int row, boolean taxi, boolean balance) {
         // get path and first node
         List<PathPlannerTrajectory> path = PathPlanner
@@ -79,7 +83,7 @@ public class AutoSelector {
         FieldConstants.Grids.ScoringNode node = FieldConstants.Grids.getNodeAbsolute(col, row);
 
         List<CommandBase> commands = new ArrayList<>();
-        commands.add(getFirstPlaceCommand(arm, compression, node));
+        commands.add(getFirstPlaceCommand(arm, intake, node));
         if (taxi) {
             commands.add(getPathFollowCommand(drivetrain, path.get(0)));
             if (balance) {
@@ -91,10 +95,10 @@ public class AutoSelector {
         return new AutoRoutine(Commands.sequence(commands.toArray(CommandBase[]::new)), node.scoringPosition);
     }
 
-    private CommandBase getFirstPlaceCommand(Arm arm, Compression compression, FieldConstants.Grids.ScoringNode node) {
+    private CommandBase getFirstPlaceCommand(Arm arm, Intake intake, FieldConstants.Grids.ScoringNode node) {
         return new SequentialCommandGroup(
                 new ArmToNode(arm, () -> node),
-                compression.getReleaseCommand(),
+                new IntakeCommand(intake, false),
                 new StowArm(arm)
         );
     }

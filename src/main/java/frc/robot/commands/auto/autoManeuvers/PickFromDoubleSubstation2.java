@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotState;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
 import frc.robot.commands.drive.AlignToDoubleSubstation;
@@ -11,6 +12,7 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShuffleboardConstants;
 import frc.robot.subsystems.Compression;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.NeoPixel;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.DrivetrainBase;
@@ -27,20 +29,20 @@ public class PickFromDoubleSubstation2 extends ParallelCommandGroup {
     boolean commandEndIndicator = false;
 
     /** written to be triggered with while true trigger */
-    public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Compression compression, StormNet stormNet, NeoPixel neoPixel,
+    public PickFromDoubleSubstation2(DrivetrainBase drivetrain, Arm arm, Intake intake, StormNet stormNet, NeoPixel neoPixel,
                                      DriveJoystick joystick, FieldConstants.Side side) {
         AlignToDoubleSubstation alignCommand = new AlignToDoubleSubstation(drivetrain, joystick, side);
         addCommands(
                 alignCommand,
                 new SequentialCommandGroup(
-                        compression.getReleaseCommand(),
+                        new IntakeCommand(intake, false),
                         new WaitUntilCommand(
                                 () -> atRotationTolerance(() -> alignCommand.getTarget().getRotation())),
                         new ArmToTranslation(arm, Constants.ArmConstants::getPickupLocation, 4, 4),
                         new ArmToPickUp(arm, stormNet),
-                        compression.getGrabCommand(),
+                        new IntakeCommand(intake, true),
                         new PrintCommand("Opened Gripper!"),
-                        new StowArm(arm), new InstantCommand(() -> compression.setOnOffSolenoid(compression.isGripperButtonPosition()))
+                        new StowArm(arm)
                 )
         );
     }
