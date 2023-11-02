@@ -26,6 +26,8 @@ public class ArmToNode extends ArmPathFollowingCommand {
 
     private static final double CONE_OFFSET = Units.inchesToMeters(10.0);
     private static final double CUBE_OFFSET = Units.inchesToMeters(8.0);
+    private static final double CONE_HIGH_OFFSET = 0.10189;
+    private static final double CONE_MID_OFFSET = 0.14655;
 
     private final Arm arm;
     private final Supplier<ScoringNode> nodeSupplier;
@@ -44,23 +46,28 @@ public class ArmToNode extends ArmPathFollowingCommand {
         Translation3d nodeTranslation = node.translation;
         System.out.println("Moving arm to score on " + node.height + " of type " + node.type);
         final boolean isCube = node.type == ScoringNode.NodeType.CUBE;
+        final boolean isCone = node.type == ScoringNode.NodeType.CONE;
 
         // added 4.0 inches due to testing
         double goalX = Math.abs(node.scoringPosition.getX() - nodeTranslation.getX());
         boolean high = node.height == ScoringNode.NodeHeight.HIGH;
         boolean mid = node.height == ScoringNode.NodeHeight.MIDDLE;
         boolean hybrid = node.height == ScoringNode.NodeHeight.HYBRID;
-        if (high)
-            goalX += Units.inchesToMeters(4.0);
-        else if (mid)
-            goalX += Units.inchesToMeters(3.5);
-        if (hybrid)
-            goalX += Units.inchesToMeters(1.2);
 
-        double goalZ = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
 
-        if (mid && node.type == ScoringNode.NodeType.CONE)
-            goalZ -= Units.inchesToMeters(3.5);
+        double goalZ = nodeTranslation.getZ();
+
+        if (high) {
+            goalZ += ((isCone) ? CONE_HIGH_OFFSET : 0);
+            goalX -= ((isCube) ? 0 : 0.08451);
+        } else if (mid) {
+            goalZ += ((isCone) ? CONE_MID_OFFSET : 0);
+            goalX -= ((isCube) ? 0.04888 : 0.50777);
+        } else if (hybrid) {
+            goalX -= 0.25598;        }
+
+//        if (mid && node.type == ScoringNode.NodeType.CONE)
+//            goalZ -= Units.inchesToMeters(3.5);
 
         Translation3d globalCoordinate = new Translation3d(
                 goalX, 0, goalZ

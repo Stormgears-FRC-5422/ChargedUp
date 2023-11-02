@@ -150,7 +150,7 @@ public class RobotContainer {
 
         if (Toggles.useIntake) {
             m_intake = new Intake();
-            m_intakeCommand = new IntakeCommand(m_intake);
+            m_intakeCommand = new IntakeCommand(m_intake, true);
             System.out.println("Using Intake");
         } else
             System.out.println("NOT using Intake");
@@ -357,8 +357,8 @@ public class RobotContainer {
                     () -> driveWithJoystick.setSetPoint(180)
             ));
             if (Toggles.useIntake){
-            new Trigger(() -> logitechController.getRawButton(8)).onTrue(m_intakeCommand);
-            new Trigger(() -> logitechController.getRawButton(9)).onTrue(m_intake.outCommand());
+//            new Trigger(() -> logitechController.getRawButton(8)).onTrue(m_intakeCommand);
+//            new Trigger(() -> logitechController.getRawButton(9)).onTrue(m_intake.outCommand());
             }
 
             if (Toggles.usePoseEstimator) {
@@ -464,9 +464,9 @@ public class RobotContainer {
         // Gripper
         // **********
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .whileTrue(m_compression.getGrabCommand());
+                .whileTrue(new IntakeCommand(m_intake,true));
         new Trigger(m_buttonBoardConfig::gripperClosed)
-                .whileFalse(m_compression.getReleaseCommand());
+                .whileFalse(new IntakeCommand(m_intake,false));
 
         // **********
         // Automated routines for arm placement

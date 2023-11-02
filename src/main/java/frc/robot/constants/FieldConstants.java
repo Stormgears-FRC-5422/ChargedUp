@@ -187,8 +187,9 @@ public final class FieldConstants {
                     var height = nodeHeights[wpiX];
                     double xTranslation = nodeXs[wpiX];
                     // decrease height by thirteen inches if it is a cube
-                    double zTranslation = type == ScoringNode.NodeType.CUBE?
-                        height.getHeight() - 0.34 : height.getHeight();
+                    double zTranslation = height.getHeight();
+//                    double zTranslation = type == ScoringNode.NodeType.CUBE?
+//                        height.getHeight() - 0.34 : height.getHeight();
                     var translation = new Translation3d(xTranslation, yTranslation, zTranslation);
                     //TODO: scoring positions may change based on height of node
                     // e.x. if its hybrid we may not want to drive all the way up (unless we do?)
@@ -286,9 +287,9 @@ public final class FieldConstants {
 
 
             public enum NodeHeight {
-                HIGH(Units.inchesToMeters(46.0)),
-                MIDDLE(Units.inchesToMeters(34.0)),
-                HYBRID(Units.inchesToMeters(0.0));
+                HIGH(0.11648),
+                MIDDLE(0.36122),
+                HYBRID(0.36836);
 
                 private final double height;
                 NodeHeight(double height) {

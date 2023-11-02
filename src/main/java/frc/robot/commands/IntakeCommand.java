@@ -16,20 +16,27 @@ public class IntakeCommand extends CommandBase {
 
     private final double intakeCount = Constants.ArmConstants.intakecount;
 
-    public IntakeCommand(Intake intake){
-        this.intake = intake;
+    boolean direction;
 
+    public IntakeCommand(Intake intake, boolean direction) {
+        this.intake = intake;
+        this.direction = direction;
         addRequirements(intake);
     }
 
     @Override
     public void execute() {
-        intake.intake();
+        if (direction) {
+            intake.intake();
+        } else {
+            intake.out();
+        }
+
         count++;
 
-        if (count==intakeCount){ //change how many repetition of periodic based on testing
+        if (count == intakeCount) { //change how many repetition of periodic based on testing
             end = true;
-            count=0;
+            count = 0;
             intake.hold();
         }
     }
