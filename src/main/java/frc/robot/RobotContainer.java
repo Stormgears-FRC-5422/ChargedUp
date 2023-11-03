@@ -71,6 +71,8 @@ public class RobotContainer {
     ArmCommand m_armCommand;
 
     IntakeCommand m_intakeCommand;
+
+    boolean direction;
     //    TrapezoidMoveForward trapezoidMoveForwardCommand = new TrapezoidMoveForward(m_drivetrain, 20, 1, 0.2);
 
     // **********
@@ -213,7 +215,7 @@ public class RobotContainer {
             System.out.println("NOT using ButtonBoard");
         }
 
-        if (Toggles.useDrive && Toggles.useArm && Toggles.usePneumatics && Toggles.useNavX) {
+        if (Toggles.useDrive && Toggles.useArm && Toggles.useIntake && Toggles.useNavX) {
             autoSelector = new AutoSelector();
         }
 
@@ -380,7 +382,7 @@ public class RobotContainer {
 
             if (Toggles.useNodeSelector) {
                 // TODO: test to see if this works aligns similar to pickup and placing is based on buttonboard
-                if (Toggles.useArm && Toggles.usePneumatics && Toggles.useButtonBoard) {
+                if (Toggles.useArm && Toggles.useIntake && Toggles.useButtonBoard) {
                     new Trigger(() -> logitechController.getRawButton(1)).whileTrue(
                             new ComplexAutoScore(m_drivetrain, m_arm, m_compression,
                                     nodeSelector::getSelectedNode, logitechController, m_buttonBoardConfig::confirm)
@@ -438,23 +440,25 @@ public class RobotContainer {
                     .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(1)));
             new Trigger(m_buttonBoardConfig::bottomGrid)
                     .whileTrue(new InstantCommand(() -> nodeSelector.setSelectedRow(0)));
-            // Set grid 1 - 9
-            for (int i = 0; i <= 8; i++) {
-                int tmpI = i; // Need a final value for the lambda function
-                new Trigger(() -> m_buttonBoardConfig.getGridButton(tmpI))
-                        .onTrue(new InstantCommand(() -> {
-                            nodeSelector.setSelectedCol(tmpI);
-                        }));
-            }
+//            // Set grid 1 - 9
+//            for (int i = 0; i <= 8; i++) {
+//                int tmpI = i; // Need a final value for the lambda function
+//                new Trigger(() -> m_buttonBoardConfig.getGridButton(tmpI))
+//                        .onTrue(new InstantCommand(() -> {
+//                            nodeSelector.setSelectedCol(tmpI);
+//                        }));
+//            }
         }
 
         new Trigger(m_buttonBoardConfig::cubeSelected).whileTrue(new InstantCommand(() -> {
             m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.PURPLE_COLOR);
             RobotState.getInstance().setLidarRange(LidarRange.CUBE);
+
         }));
         new Trigger(m_buttonBoardConfig::cubeSelected).whileFalse(new InstantCommand(() -> {
             m_neoPixel.setSpecificSegmentColor(allRingSegments, NeoPixel.YELLOW_COLOR);
             RobotState.getInstance().setLidarRange(LidarRange.CONE);
+
         }));
 
 
@@ -463,10 +467,10 @@ public class RobotContainer {
         // **********
         // Gripper
         // **********
-        new Trigger(m_buttonBoardConfig::gripperClosed)
-                .whileTrue(new IntakeCommand(m_intake,true));
-        new Trigger(m_buttonBoardConfig::gripperClosed)
-                .whileFalse(new IntakeCommand(m_intake,false));
+//        new Trigger(m_buttonBoardConfig::gripperClosed)
+//                .whileTrue(new IntakeCommand(m_intake,true));
+//        new Trigger(m_buttonBoardConfig::gripperClosed)
+//                .whileFalse(new IntakeCommand(m_intake,false));
 
         // **********
         // Automated routines for arm placement
@@ -479,16 +483,24 @@ public class RobotContainer {
                     new PickFromFloor(m_arm, m_intake, this::getPieceDetected));
 
 
-            if (Toggles.useStormNet && Toggles.useDrive && Toggles.usePneumatics && Toggles.useNodeSelector) {
+            if (Toggles.useStormNet && Toggles.useDrive && Toggles.useIntake && Toggles.useNodeSelector) {
                 new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
-                        new DropPieceSequence(m_arm, nodeSelector::getSelectedNode).andThen(
+                        new DropPieceSequence(m_arm, nodeSelector::getSelectedNode, m_intake).andThen(
                                 new ConditionalCommand(new IntakeCommand(m_intake, true) ,
                                         new IntakeCommand(m_intake, false),
                                         m_buttonBoardConfig::gripperClosed)));
             }
         }
 
-        if (Toggles.useDrive && Toggles.useArm & Toggles.usePneumatics) {
+        if (Toggles.useDrive && Toggles.useArm & Toggles.useIntake) {
+                new Trigger(m_buttonBoardConfig::getGridButton).whileTrue(new IntakeCommand(m_intake, false));
+//                        .whileTrue(new ConditionalCommand(new IntakeCommand(m_intake, true),
+//                                new IntakeCommand(m_intake, false),
+//                                m_buttonBoardConfig::cubeSelected));
+
+//        new Trigger(m_buttonBoardConfig::getGridButton)
+//                .whileFalse();
+
             new Trigger(m_buttonBoardConfig::pickLeftSub)
                     .onTrue(new PickFromDoubleSubstation3(m_arm, this::getPieceDetected, m_intake).andThen(
                             new ConditionalCommand(new IntakeCommand(m_intake, true)
@@ -515,7 +527,7 @@ public class RobotContainer {
 
     private void configureOtherCommands() {
         if (Toggles.useButtonBoard && Toggles.useStatusLights && Toggles.useStormNet) {
-            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, m_compression);
+//            m_LEDcommand = new LEDcommand(m_stormNet, m_neoPixel, m_compression);
             m_neoPixel.setDefaultCommand(m_LEDcommand);
         }
 

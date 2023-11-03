@@ -132,6 +132,9 @@ public final class Constants {
         public static final int armElbowID = StormProp.getInt("armElbowID", -1);
         public static final int armShoulderEncoderID = StormProp.getInt("armShoulderEncoderID", -1);
         public static final int armElbowEncoderID = StormProp.getInt("armElbowEncoderID", -1);
+
+        public static final int intakeMotorID = StormProp.getInt("intakeMotorID", 0);
+
         public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
         public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
         public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
@@ -153,8 +156,7 @@ public final class Constants {
         public static final double intakeHoldPower = StormProp.getNumber("intakeHoldPower", 0.0);
         public static final double intakeOutPower = StormProp.getNumber("intakeOutPower", 0.0);
 
-        public static final double intakecount = 5;
-        public static final int intakeMotorID = StormProp.getInt("intakeMotorID", 0);
+        public static final double intakecount = 20;
 
         private static final double armOriginX = StormProp.getNumber("armOriginX", 0.1);
         private static final double armOriginY = StormProp.getNumber("armOriginY", 0.1);

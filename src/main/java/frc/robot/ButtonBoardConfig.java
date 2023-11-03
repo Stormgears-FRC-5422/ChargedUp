@@ -25,8 +25,8 @@ public class ButtonBoardConfig {
         return m_joystickBoard1.getRawButton(8);
     }
 
-    public boolean getGridButton(int gridNum){
-        return m_joystickBoard2.getRawButton(4 + gridNum);
+    public boolean getGridButton(){
+        return m_joystickBoard2.getRawButton(12);
     }
 
     public boolean gripperClosed() {

@@ -25,6 +25,13 @@ public class IntakeCommand extends CommandBase {
     }
 
     @Override
+    public void initialize() {
+        System.out.println("Intake Command Starting");
+        count = 0;
+        end = false;
+    }
+
+    @Override
     public void execute() {
         if (direction) {
             intake.intake();
@@ -32,17 +39,18 @@ public class IntakeCommand extends CommandBase {
             intake.out();
         }
 
-        count++;
-
-        if (count == intakeCount) { //change how many repetition of periodic based on testing
-            end = true;
-            count = 0;
-            intake.hold();
-        }
     }
 
     @Override
     public boolean isFinished() {
         return end;
     }
+
+    @Override
+    public void end(boolean interrupted) {
+        intake.hold();
+        count=0;
+    }
+
+
 }

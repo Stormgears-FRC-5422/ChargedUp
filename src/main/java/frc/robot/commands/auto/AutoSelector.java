@@ -30,7 +30,6 @@ public class AutoSelector {
     private SendableChooser<Boolean> taxiChooser = new SendableChooser<>();
     private SendableChooser<Boolean> balanceChooser = new SendableChooser<>();
 
-    private Intake intake = new Intake();
 
     public AutoSelector() {
         for (int i = 0; i < 9; i++) {

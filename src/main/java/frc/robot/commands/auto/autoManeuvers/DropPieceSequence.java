@@ -13,11 +13,11 @@ import java.util.function.Supplier;
 
 public class DropPieceSequence extends SequentialCommandGroup {
     public DropPieceSequence(Arm arm,
-                             Supplier<FieldConstants.Grids.ScoringNode> nodeSupplier) {
+                             Supplier<FieldConstants.Grids.ScoringNode> nodeSupplier, Intake intake) {
         addCommands(
                 new ArmToNode(arm, nodeSupplier),
                 new ConditionalCommand(
-                        new IntakeCommand(new Intake(), false).andThen(new StowArm(arm)),
+                        new IntakeCommand(intake, false).andThen(new StowArm(arm)),
                         new InstantCommand(() -> {}),
                         () -> nodeSupplier.get().type == FieldConstants.Grids.ScoringNode.NodeType.CUBE ||
                                 nodeSupplier.get().height == FieldConstants.Grids.ScoringNode.NodeHeight.HYBRID
