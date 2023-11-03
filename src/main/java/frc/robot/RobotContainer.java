@@ -484,12 +484,9 @@ public class RobotContainer {
                     new PickFromFloor(m_arm, m_intake, this::getPieceDetected));
 
 
-            if (Toggles.useStormNet && Toggles.useDrive && Toggles.useIntake && Toggles.useNodeSelector) {
+            if (Toggles.useDrive && Toggles.useIntake && Toggles.useNodeSelector) {
                 new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
-                        new DropPieceSequence(m_arm, nodeSelector::getSelectedNode, m_intake).andThen(
-                                new ConditionalCommand(new AutoIntakeCommand(m_intake, true) ,
-                                        new IntakeCommand(m_intake, false),
-                                        m_buttonBoardConfig::cubeSelected)));
+                        new DropPieceSequence(m_arm, nodeSelector::getSelectedNode, m_intake, m_buttonBoardConfig));
             }
         }
 

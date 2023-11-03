@@ -17,7 +17,6 @@ import java.util.function.BooleanSupplier;
 public class PickFromFloor extends SequentialCommandGroup {
     public PickFromFloor(Arm arm, Intake intake, BooleanSupplier pieceDetectedSupplier) {
         addCommands(
-                new AutoIntakeCommand(intake, false),
                 new ParallelDeadlineGroup(
                         new WaitUntilCommand(pieceDetectedSupplier),
                         new ArmToTranslation(arm, Constants.ArmConstants.pickGround, 5, 6)

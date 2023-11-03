@@ -55,14 +55,20 @@ public class ArmToNode extends ArmPathFollowingCommand {
         boolean hybrid = node.height == ScoringNode.NodeHeight.HYBRID;
 
 
-        double goalZ = nodeTranslation.getZ();
+        if (high)
+            goalX += Units.inchesToMeters(4.0);
+        else if (mid)
+            goalX += Units.inchesToMeters(3.5);
+        if (hybrid)
+            goalX += Units.inchesToMeters(1.2);
 
+        double goalZ = nodeTranslation.getZ() + ((isCube)? CUBE_OFFSET : CONE_OFFSET);
         if (high) {
-            goalZ += ((isCone) ? CONE_HIGH_OFFSET : 0);
+            goalZ -= ((isCone) ? CONE_HIGH_OFFSET : 0);
             goalX -= ((isCube) ? 0 : 0.08451);
         } else if (mid) {
-            goalZ += ((isCone) ? CONE_MID_OFFSET : 0);
-            goalX -= ((isCube) ? 0.04888 : 0.50777);
+            goalZ -= ((isCone) ? CONE_MID_OFFSET : 0);
+//            goalX -= ((isCube) ? 0.04888 : 0.04888+0.09074);
         } else if (hybrid) {
             goalX -= 0.25598;        }
 

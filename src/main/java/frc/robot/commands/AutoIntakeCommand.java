@@ -31,18 +31,20 @@ public class AutoIntakeCommand extends CommandBase {
         System.out.println("Intake Direction: " + direction);
         count = 0;
         end = false;
-    }
-
-    @Override
-    public void execute() {
-
 
         if (direction) {
             intake.intake();
         } else {
             intake.out();
         }
-        if (count==5) {
+    }
+
+    @Override
+    public void execute() {
+
+
+
+        if (count==intakeCount) {
             end=true;
         }
         count++;
