@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotState;
+import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
@@ -29,10 +30,10 @@ public class PickFromDoubleSubstation3 extends SequentialCommandGroup {
 
     public PickFromDoubleSubstation3(Arm arm, BooleanSupplier pieceDetected, Intake intake) {
         addCommands(
-                new IntakeCommand(intake, false),
+                new AutoIntakeCommand(intake, false),
                 new ArmToTranslation(arm, this::getPickingHeight, 4, 6),
                 new WaitUntilCommand(pieceDetected),
-                new IntakeCommand(intake, true),
+                new AutoIntakeCommand(intake, true),
                 new WaitCommand(0.2)
         );
     }

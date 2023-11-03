@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 
 import frc.robot.commands.AprilTagStatusCommand;
+import frc.robot.commands.AutoIntakeCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.arm.pathFollowing.ArmToTranslation;
 import frc.robot.commands.arm.pathFollowing.StowArm;
@@ -486,17 +487,17 @@ public class RobotContainer {
             if (Toggles.useStormNet && Toggles.useDrive && Toggles.useIntake && Toggles.useNodeSelector) {
                 new Trigger(() -> m_buttonBoardConfig.confirm()).onTrue(
                         new DropPieceSequence(m_arm, nodeSelector::getSelectedNode, m_intake).andThen(
-                                new ConditionalCommand(new IntakeCommand(m_intake, true) ,
+                                new ConditionalCommand(new AutoIntakeCommand(m_intake, true) ,
                                         new IntakeCommand(m_intake, false),
-                                        m_buttonBoardConfig::gripperClosed)));
+                                        m_buttonBoardConfig::cubeSelected)));
             }
         }
 
         if (Toggles.useDrive && Toggles.useArm & Toggles.useIntake) {
-                new Trigger(m_buttonBoardConfig::getGridButton).whileTrue(new IntakeCommand(m_intake, false));
-//                        .whileTrue(new ConditionalCommand(new IntakeCommand(m_intake, true),
-//                                new IntakeCommand(m_intake, false),
-//                                m_buttonBoardConfig::cubeSelected));
+                new Trigger(m_buttonBoardConfig::getGridButton).whileTrue(
+                        new ConditionalCommand(new IntakeCommand(m_intake, true),
+                                new IntakeCommand(m_intake, false),
+                                m_buttonBoardConfig::cubeSelected));
 
 //        new Trigger(m_buttonBoardConfig::getGridButton)
 //                .whileFalse();
@@ -505,13 +506,13 @@ public class RobotContainer {
                     .onTrue(new PickFromDoubleSubstation3(m_arm, this::getPieceDetected, m_intake).andThen(
                             new ConditionalCommand(new IntakeCommand(m_intake, true)
                                     , new IntakeCommand(m_intake, false),
-                                    m_buttonBoardConfig::gripperClosed)
+                                    m_buttonBoardConfig::cubeSelected)
                     ));
             new Trigger(m_buttonBoardConfig::pickRightSub)
                     .onTrue(new PickFromSingleSubstation(m_arm, m_intake, this::getPieceDetected).andThen(
                             new ConditionalCommand(new IntakeCommand(m_intake, true)
                                     , new IntakeCommand(m_intake, false),
-                                    m_buttonBoardConfig::gripperClosed)
+                                    m_buttonBoardConfig::cubeSelected)
                     ));
         }
     }

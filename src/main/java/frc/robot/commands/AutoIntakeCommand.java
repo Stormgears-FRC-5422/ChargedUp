@@ -5,9 +5,8 @@ import frc.robot.RobotContainer;
 import frc.robot.constants.Constants;
 import frc.robot.subsystems.Intake;
 
-import java.sql.SQLOutput;
 
-public class IntakeCommand extends CommandBase {
+public class AutoIntakeCommand extends CommandBase {
 
     Intake intake;
 
@@ -20,7 +19,7 @@ public class IntakeCommand extends CommandBase {
 
     boolean direction;
 
-    public IntakeCommand(Intake intake, boolean direction) {
+    public AutoIntakeCommand(Intake intake, boolean direction) {
         this.intake = intake;
         this.direction = direction;
         addRequirements(intake);
@@ -36,12 +35,17 @@ public class IntakeCommand extends CommandBase {
 
     @Override
     public void execute() {
+
+
         if (direction) {
             intake.intake();
         } else {
             intake.out();
         }
-
+        if (count==5) {
+            end=true;
+        }
+        count++;
     }
 
     @Override
