@@ -141,6 +141,13 @@ public class StormProp {
         return result;
     }
 
+    public static String getString(String prefix, String key, String defaultVal) {
+        String result = getStringInternal(prefix + "." + key,defaultVal);
+        if(debug) System.out.println("debug property " + prefix + "." + key + " = " + result);
+
+        return result;
+    }
+
     private static String getStringInternal(String key, String defaultVal) {
         try {
             if (m_string_map.containsKey(key)) return (m_string_map.get(key));
@@ -164,6 +171,12 @@ public class StormProp {
         return result;
     }
 
+    public static double getNumber(String prefix, String key, Double defaultVal) {
+        double result = getNumberInternal(prefix + "." + key, defaultVal);
+        if(debug) System.out.println("debug property " + prefix + "." + key + " = " + result);
+
+        return result;
+    }
     private static double getNumberInternal(String key, Double defaultVal) {
         try {
             if (m_number_map.containsKey(key)) return (m_number_map.get(key));
@@ -186,6 +199,13 @@ public class StormProp {
 
         return result;
     }
+    public static int getInt(String prefix, String key, int defaultVal) {
+        int result = getIntInternal(prefix + "." + key, defaultVal);
+        if(debug) System.out.println("debug property " + prefix + "." + key + " = " + result);
+
+        return result;
+    }
+
 
     private static int getIntInternal(String key, int defaultVal) {
         try {

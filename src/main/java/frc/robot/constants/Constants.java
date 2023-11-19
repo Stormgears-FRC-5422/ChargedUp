@@ -12,6 +12,8 @@ import frc.utils.configfile.StormProp;
 
 public final class Constants {
 
+
+
     public static final String robotName = StormProp.getString("robotName", "");
 
     public static final double kStickNullSize = StormProp.getNumber("StickNullSize", 0.1);
@@ -61,9 +63,11 @@ public final class Constants {
 
     // Map to SDS implementation constants
     public static final class DriveConstants {
-        public static final String kMK4iModuleKind = StormProp.getString("mk4iModuleKind", "");
-        public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber("drivetrainTrackwidthMeters", 0.);
-        public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber("drivetrainWheelbaseMeters", 0.);
+        private final static String drivePrefix = "drive";
+
+        public static final String kMK4iModuleKind = StormProp.getString(drivePrefix, "mk4iModuleKind", "");
+        public static final double DRIVETRAIN_TRACKWIDTH_METERS = StormProp.getNumber(drivePrefix,"drivetrainTrackwidthMeters", 0.0);
+        public static final double DRIVETRAIN_WHEELBASE_METERS = StormProp.getNumber(drivePrefix,"drivetrainWheelbaseMeters", 0.);
         public static final int FRONT_LEFT_MODULE_DRIVE_MOTOR = frontLeftDriveID;
         public static final int FRONT_LEFT_MODULE_STEER_MOTOR = frontLeftSwivelID;
         public static final int FRONT_LEFT_MODULE_STEER_ENCODER = frontLeftEncoderID;
@@ -81,27 +85,27 @@ public final class Constants {
         public static final int BACK_RIGHT_MODULE_STEER_ENCODER = backRightEncoderID;
         public static final double BACK_RIGHT_MODULE_STEER_OFFSET = -Math.toRadians(360.0 * backRightOffsetTicks / kSwivelEncoderTicksPerRotation);
 
-        public static final String driveType = StormProp.getString("driveType", "");
+        public static final String driveType = StormProp.getString(drivePrefix,"driveType", "");
 
-        public static final double driveXkp = StormProp.getNumber("driveXkp", 1.0);
-        public static final double driveXki = StormProp.getNumber("driveXki", 0.0);
-        public static final double driveXkd = StormProp.getNumber("driveXkd", 0.0);
-        public static final double driveYkp = StormProp.getNumber("driveYkp", 1.0);
-        public static final double driveYki = StormProp.getNumber("driveYki", 0.0);
-        public static final double driveYkd = StormProp.getNumber("driveYkd", 0.0);
-        public static final double turnkp = StormProp.getNumber("turnkp", 1.0);
-        public static final double turnki = StormProp.getNumber("turnki", 0.0);
-        public static final double turnkd = StormProp.getNumber("turnkd", 0.0);
+        public static final double driveXkp = StormProp.getNumber(drivePrefix, "driveXkp", 1.0);
+        public static final double driveXki = StormProp.getNumber(drivePrefix,"driveXki", 0.0);
+        public static final double driveXkd = StormProp.getNumber(drivePrefix,"driveXkd", 0.0);
+        public static final double driveYkp = StormProp.getNumber(drivePrefix,"driveYkp", 1.0);
+        public static final double driveYki = StormProp.getNumber(drivePrefix,"driveYki", 0.0);
+        public static final double driveYkd = StormProp.getNumber(drivePrefix,"driveYkd", 0.0);
+        public static final double turnkp = StormProp.getNumber(drivePrefix,"turnkp", 1.0);
+        public static final double turnki = StormProp.getNumber(drivePrefix, "turnki", 0.0);
+        public static final double turnkd = StormProp.getNumber(drivePrefix, "turnkd", 0.0);
     }
 
-    public static final int kCompressorModuleId = StormProp.getInt("CompressorModuleId", -1);
-    public static final int onOffSolenoidChannel = StormProp.getInt("onOffSolenoidChannel", -1);
-    public static final int cubeConeSolenoidChannel = StormProp.getInt("cubeConeSolenoidChannel", -1);
-    public static final int kMagEncoderTicksPerRotation = StormProp.getInt("magEncoderTicksPerRotation", 0);
-    public static final String navXConnection = StormProp.getString("navXConnection", "");
+    public static final int kCompressorModuleId = StormProp.getInt( "CompressorModuleId", -1);
+    public static final int onOffSolenoidChannel = StormProp.getInt( "onOffSolenoidChannel", -1);
+    public static final int cubeConeSolenoidChannel = StormProp.getInt( "cubeConeSolenoidChannel", -1);
+    public static final int kMagEncoderTicksPerRotation = StormProp.getInt( "magEncoderTicksPerRotation", 0);
+    public static final String navXConnection = StormProp.getString( "navXConnection", "");
 
     public enum LidarRange {
-        CONE(0.13, 0.26),
+        CONE( 0.13, 0.26),
         CUBE(0.0, 0.15);
 
         private final double min, max, center;
@@ -127,39 +131,40 @@ public final class Constants {
     public static final int pieceDetectorPort = StormProp.getInt("pieceDetectorPort", 0);
 
     public static class ArmConstants {
+        private final static String armPrefix = "arm.";
 
-        public static final int armShoulderID = StormProp.getInt("armShoulderID", -1);
-        public static final int armElbowID = StormProp.getInt("armElbowID", -1);
-        public static final int armShoulderEncoderID = StormProp.getInt("armShoulderEncoderID", -1);
-        public static final int armElbowEncoderID = StormProp.getInt("armElbowEncoderID", -1);
+        public static final int armShoulderID = StormProp.getInt(armPrefix,"armShoulderID", -1);
+        public static final int armElbowID = StormProp.getInt(armPrefix,"armElbowID", -1);
+        public static final int armShoulderEncoderID = StormProp.getInt(armPrefix,"armShoulderEncoderID", -1);
+        public static final int armElbowEncoderID = StormProp.getInt(armPrefix,"armElbowEncoderID", -1);
 
-        public static final int intakeMotorID = StormProp.getInt("intakeMotorID", 0);
+        public static final int intakeMotorID = StormProp.getInt(armPrefix,"intakeMotorID", 0);
 
-        public static final int armShoulderEncoderOffsetTicks = StormProp.getInt("armShoulderEncoderOffsetTicks", -1);
-        public static final int armElbowEncoderOffsetTicks = StormProp.getInt("armElbowEncoderOffsetTicks", -1);
-        public static final double armElbowGearRatio = StormProp.getNumber("armElbowGearRatio", 1.0);
-        public static final double armShoulderGearRatio = StormProp.getNumber("armShoulderGearRatio", 1.0);
-	    public static final double armInlay = StormProp.getNumber("armInlay", 1.0);
-	    public static final double gripperWheelRadius = StormProp.getNumber("gripperWheelRadius",1.0);
-	    public static final double armForwardSafetyBuffer = StormProp.getNumber("armForwardSafetyBuffer", 0.0);
-	    public static final double armUpwardSafetyBuffer = StormProp.getNumber("armUpwardSafetyBuffer", 1.0);
-	    public static final double armBackwardSafetyBuffer = StormProp.getNumber("armBackwardSafetyBuffer", 1.0);
-	    public static final double armDownwardSafetyBuffer = StormProp.getNumber("armDownwardSafetyBuffer", 1.0);
-	    public static final double chassisHeight = StormProp.getNumber("chassisHeight", 1.0);
-	    public static final double forwardConstraint = StormProp.getNumber("forwardConstraint", 1.0);
-	    public static final double upwardConstraint = StormProp.getNumber("upwardConstraint", 1.0);
-	    public static final double backwardConstraint = StormProp.getNumber("backwardConstraint", 1.0);
-	    public static final double downwardConstraint = StormProp.getNumber("downwardConstraint", 1.0);
-        public static final double kA1Length = StormProp.getNumber("A1Length", 1.0);
-        public static final double kA2Length = StormProp.getNumber("A2Length", 1.0);
-        public static final double intakeInPower = StormProp.getNumber("intakeInPower", 0.0);
-        public static final double intakeHoldPower = StormProp.getNumber("intakeHoldPower", 0.0);
-        public static final double intakeOutPower = StormProp.getNumber("intakeOutPower", 0.0);
+        public static final int armShoulderEncoderOffsetTicks = StormProp.getInt(armPrefix,"armShoulderEncoderOffsetTicks", -1);
+        public static final int armElbowEncoderOffsetTicks = StormProp.getInt(armPrefix,"armElbowEncoderOffsetTicks", -1);
+        public static final double armElbowGearRatio = StormProp.getInt(armPrefix,"armElbowGearRatio", 1);
+        public static final double armShoulderGearRatio = StormProp.getInt(armPrefix,"armShoulderGearRatio", 1);
+	    public static final double armInlay = StormProp.getInt(armPrefix,"armInlay", 1);
+	    public static final double gripperWheelRadius = StormProp.getInt(armPrefix,"gripperWheelRadius",1);
+	    public static final double armForwardSafetyBuffer = StormProp.getNumber(armPrefix,"armForwardSafetyBuffer", 0.0);
+	    public static final double armUpwardSafetyBuffer = StormProp.getNumber(armPrefix,"armUpwardSafetyBuffer", 1.0);
+	    public static final double armBackwardSafetyBuffer = StormProp.getNumber(armPrefix,"armBackwardSafetyBuffer", 1.0);
+	    public static final double armDownwardSafetyBuffer = StormProp.getNumber(armPrefix,"armDownwardSafetyBuffer", 1.0);
+	    public static final double chassisHeight = StormProp.getNumber(armPrefix,"chassisHeight", 1.0);
+	    public static final double forwardConstraint = StormProp.getNumber(armPrefix,"forwardConstraint", 1.0);
+	    public static final double upwardConstraint = StormProp.getNumber(armPrefix,"upwardConstraint", 1.0);
+	    public static final double backwardConstraint = StormProp.getNumber(armPrefix,"backwardConstraint", 1.0);
+	    public static final double downwardConstraint = StormProp.getNumber(armPrefix,"downwardConstraint", 1.0);
+        public static final double kA1Length = StormProp.getNumber(armPrefix,"A1Length", 1.0);
+        public static final double kA2Length = StormProp.getNumber(armPrefix,"A2Length", 1.0);
+        public static final double intakeInPower = StormProp.getNumber(armPrefix,"intakeInPower", 0.0);
+        public static final double intakeHoldPower = StormProp.getNumber(armPrefix,"intakeHoldPower", 0.0);
+        public static final double intakeOutPower = StormProp.getNumber(armPrefix,"intakeOutPower", 0.0);
 
         public static final double intakecount = 20;
 
-        private static final double armOriginX = StormProp.getNumber("armOriginX", 0.1);
-        private static final double armOriginY = StormProp.getNumber("armOriginY", 0.1);
+        private static final double armOriginX = StormProp.getNumber(armPrefix,"armOriginX", 0.1);
+        private static final double armOriginY = StormProp.getNumber(armPrefix,"armOriginY", 0.1);
 
         public static final Translation2d armTranslation = new Translation2d(
                 Units.inchesToMeters(armOriginX),
@@ -198,28 +203,29 @@ public final class Constants {
     }
 
     public static class VisionConstants {
-          private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiX", 0.0));
-          private static final double kCameraYTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiY", 0.0));
-          private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber("CameraWpiZ", 0.0));
-          private static final double kCameraYaw = StormProp.getNumber("CameraYaw", 0.0);
-          private static final double kCameraPitch = StormProp.getNumber("CameraPitch", 0.0);
+        private static final String visionPrefix = "vision.";
+        private static final double kCameraXTranslation = Units.inchesToMeters(StormProp.getNumber(visionPrefix,"CameraWpiX", 0.0));
+          private static final double kCameraYTranslation = Units.inchesToMeters(StormProp.getNumber(visionPrefix,"CameraWpiY", 0.0));
+          private static final double kCameraZTranslation = Units.inchesToMeters(StormProp.getNumber(visionPrefix,"CameraWpiZ", 0.0));
+          private static final double kCameraYaw = StormProp.getNumber(visionPrefix,"CameraYaw", 0.0);
+          private static final double kCameraPitch = StormProp.getNumber(visionPrefix,"CameraPitch", 0.0);
           public static final double kMaxAprilTagYawTrustMeters =
-                  StormProp.getNumber("MaxAprilTagYawTrustMeters", 5.0);
+                  StormProp.getNumber(visionPrefix,"MaxAprilTagYawTrustMeters", 5.0);
           public static final double kMaxAprilTagLinearVelTrustMetersPerSec =
-                  StormProp.getNumber("MaxAprilTagLinearVelTrustMetersPerSec", 2.0);
+                  StormProp.getNumber(visionPrefix,"MaxAprilTagLinearVelTrustMetersPerSec", 2.0);
           public static final double kMaxAprilTagRotationVelTrustDegPerSec =
-                  StormProp.getNumber("MaxAprilTagRotationalVelTrustDegPerSec", 50.0);
+                  StormProp.getNumber(visionPrefix,"MaxAprilTagRotationalVelTrustDegPerSec", 50.0);
           public static final double kMaxTranslationDeviation =
-                  StormProp.getNumber("MaxTranslationDeviation", 1.0);
+                  StormProp.getNumber(visionPrefix,"MaxTranslationDeviation", 1.0);
           public static final double kMaxRotationDeviation =
-                  StormProp.getNumber("MaxRotationDeviation", 1.0);
+                  StormProp.getNumber(visionPrefix,"MaxRotationDeviation", 1.0);
 
           public static double kDistanceTrustWeight =
-                  StormProp.getNumber("DistanceTrustWeight", 0.2);
+                  StormProp.getNumber(visionPrefix,"DistanceTrustWeight", 0.2);
           public static double kLinearVelTrustWeight =
-                  StormProp.getNumber("LinearVelTrustWeight", 0.2);
+                  StormProp.getNumber(visionPrefix,"LinearVelTrustWeight", 0.2);
           public static double kRotationalVelTrustWeight =
-                  StormProp.getNumber("RotationalVelTrustWeight", 0.2);
+                  StormProp.getNumber(visionPrefix,"RotationalVelTrustWeight", 0.2);
 
           private static double sumWeights = kDistanceTrustWeight + kLinearVelTrustWeight + kRotationalVelTrustWeight;
 
