@@ -51,7 +51,6 @@ dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 
-
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
 
@@ -97,4 +96,43 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+
+
+// Task to compile Java code
+// Task to compile Java code
+task compileGeneratorCode(type: JavaCompile) {
+    source = 'src/main/java/frc/utils/configfile' // Adjust the source directory
+    classpath = sourceSets.main.runtimeClasspath
+    destinationDir = file("$buildDir/myGeneratorCode")
+}
+
+// Task to run the generator
+task generateCode(dependsOn: compileGeneratorCode) {
+    def propertyFileName = 'src/main/deploy/config.properties'
+    def propertyFilePath = 'src/main/deploy'
+    def outputFilePath = 'src/main/java/frc/robot/NewConstants.java'
+
+
+    // Dependency on the generated output being up-to-date
+    inputs.dir file("$buildDir/myGeneratorCode") as Object
+    // Dependency on the config file being up-to-date
+    inputs.file propertyFileName
+
+    // Has the output file been modified? Regenerate it!
+    outputs.file outputFilePath
+
+    doLast {
+
+        javaexec {
+            classpath = files(compileGeneratorCode.destinationDirectory)
+            main = 'frc.utils.configfile.ConstantGenerator'
+            args propertyFilePath, outputFilePath
+        }
+    }
+}
+
+// Make build dependent on the generated code
+tasks.named('build').configure {
+    dependsOn generateCode
 }

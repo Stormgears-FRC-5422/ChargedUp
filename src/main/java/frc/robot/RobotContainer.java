@@ -139,7 +139,7 @@ public class RobotContainer {
 
         if (Toggles.useArm) {
             m_arm = new Arm();
-            System.out.println("Using arm");
+            System.out.println("Using arm"); 
         } else {
             System.out.println("NOT using arm");
         }
