@@ -1,11 +1,8 @@
 package frc.utils.configfile;
 
 public class propItem {
-
     String type;
-
     String key;
-
     String defaultVal;
 
     public propItem(String type, String key, String defaultVal) {

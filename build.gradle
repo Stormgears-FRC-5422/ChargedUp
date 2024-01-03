@@ -98,8 +98,6 @@ tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
 
-
-// Task to compile Java code
 // Task to compile Java code
 task compileGeneratorCode(type: JavaCompile) {
     source = 'src/main/java/frc/utils/configfile' // Adjust the source directory
@@ -109,25 +107,23 @@ task compileGeneratorCode(type: JavaCompile) {
 
 // Task to run the generator
 task generateCode(dependsOn: compileGeneratorCode) {
-    def propertyFileName = 'src/main/deploy/config.properties'
-    def propertyFilePath = 'src/main/deploy'
-    def outputFilePath = 'src/main/java/frc/robot/NewConstants.java'
+    def propertyFileDir = 'src/main/deploy'
+    def outputFileName = 'src/main/java/frc/robot/NewConstants.java'
 
-
-    // Dependency on the generated output being up-to-date
+    // Dependency on the generated java code being up-to-date
     inputs.dir file("$buildDir/myGeneratorCode") as Object
-    // Dependency on the config file being up-to-date
-    inputs.file propertyFileName
+
+    // Dependency on the *.properties files we care about
+    inputs.files fileTree(dir: propertyFileDir, include: '**/*.properties')
 
     // Has the output file been modified? Regenerate it!
-    outputs.file outputFilePath
+    outputs.file outputFileName
 
     doLast {
-
         javaexec {
             classpath = files(compileGeneratorCode.destinationDirectory)
             main = 'frc.utils.configfile.ConstantGenerator'
-            args propertyFilePath, outputFilePath
+            args propertyFileDir, outputFileName
         }
     }
 }
