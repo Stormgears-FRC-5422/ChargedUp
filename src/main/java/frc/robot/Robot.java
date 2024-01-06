@@ -22,11 +22,11 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  private WPI_TalonSRX m_Left0 = new WPI_TalonSRX(1);
-  private WPI_TalonSRX m_Left1 = new WPI_TalonSRX(3);
-  private WPI_TalonSRX m_Right0 = new WPI_TalonSRX(6);
-  private WPI_TalonSRX m_Right1 = new WPI_TalonSRX(4);
-  private MecanumDrive m_Drive = new MecanumDrive(m_Left0, m_Left1, m_Right0, m_Right1);
+  private WPI_TalonSRX m_Left0;
+  private WPI_TalonSRX m_Left1;
+  private WPI_TalonSRX m_Right0;
+  private WPI_TalonSRX m_Right1;
+  private MecanumDrive m_Drive;
 
   private XboxController m_Controller = new XboxController(0);
 
@@ -40,6 +40,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    m_Left0 = new WPI_TalonSRX(1);
+    m_Left1 = new WPI_TalonSRX(3);
+    m_Right0 = new WPI_TalonSRX(6);
+    m_Right1 = new WPI_TalonSRX(4);
+    m_Right0.setInverted(true);
+    m_Right1.setInverted(true);
+    m_Drive = new MecanumDrive(m_Left0, m_Left1, m_Right0, m_Right1);
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
