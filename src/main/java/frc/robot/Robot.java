@@ -1,14 +1,13 @@
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.networktables.*;
-
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -23,12 +22,11 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  private Talon motor1 = new Talon(00);
-  private Talon motor2 = new Talon(01);
-  private Talon motor3 = new Talon(02);
-  private Talon motor4 = new Talon(03);
-  Talon[] arrr_left = {motor1, motor3};
-  Talon[] arrr_right = {motor2, motor4};
+  private WPI_TalonSRX m_Left0 = new WPI_TalonSRX(1);
+  private WPI_TalonSRX m_Left1 = new WPI_TalonSRX(3);
+  private WPI_TalonSRX m_Right0 = new WPI_TalonSRX(6);
+  private WPI_TalonSRX m_Right1 = new WPI_TalonSRX(4);
+  private MecanumDrive m_Drive = new MecanumDrive(m_Left0, m_Left1, m_Right0, m_Right1);
 
   private XboxController m_Controller = new XboxController(0);
 
@@ -87,36 +85,38 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-/*
-    Update_Limelight_Tracking();
 
+
+    Update_Limelight_Tracking();
 
     double steer = m_Controller.getRightX();
     double drive = -m_Controller.getLeftY();
     boolean auto = m_Controller.getAButton();
-
- */
-/*
     steer *= 0.70;
-    drive *= 0.70;}
-*/
-  /*
-  if (auto)
-  {
-    if (m_LimelightHasValidTarget)
+    drive *= 0.70;
+
+
+    if (auto)
     {
-      m_Drive.MecanumDrive(m_LimelightDriveCommand,m_LimelightSteerCommand);
+      System.out.println("auto on");
+      if (m_LimelightHasValidTarget)
+      {
+        System.out.println("has valid target " + m_LimelightDriveCommand + " " + m_LimelightSteerCommand);
+        m_Drive.driveCartesian(0.0, m_LimelightDriveCommand, m_LimelightSteerCommand);
+
+      }
+      else
+      {
+        System.out.println("no valid target " + m_LimelightDriveCommand + " " + m_LimelightSteerCommand);
+        m_Drive.driveCartesian(0.0, 0.0, 0.0);
+      }
     }
     else
     {
-      m_Drive.MecanumDrive(0.0,0.0);
+      System.out.println("not auto");
+      m_Drive.driveCartesian(drive, 0.0, steer);
     }
   }
-  else
-  {
-    m_Drive.MecanumDrive(drive,steer);
-  }*/
-}
 
   @Override
   public void testPeriodic() {
@@ -128,22 +128,16 @@ public class Robot extends TimedRobot {
    */
   public void Update_Limelight_Tracking()
   {
-    /* These numbers must be tuned for your Robot!  Be careful!
+    // These numbers must be tuned for your Robot!  Be careful!
     final double STEER_K = 0.03;                    // how hard to turn toward the target
-    final double DRIVE_K = 0.26;                    // how hard to drive fwd toward the target
+    final double DRIVE_K = 0.05;                    // how hard to drive fwd toward the target
     final double DESIRED_TARGET_AREA = 13.0;        // Area of the target when the robot reaches the wall
-    final double MAX_DRIVE = 0.7;                   // Simple speed limit so we don't drive too fast
-*/
+    final double MAX_DRIVE = 0.1;                   // Simple speed limit so we don't drive too fast
+
     double tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
     double tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     double ta = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
-
-    System.out.println(tv);
-    System.out.println(tx);
-    System.out.println(ty);
-    System.out.println(ta);
-    
 
     if (tv < 1.0)
     {
@@ -155,9 +149,12 @@ public class Robot extends TimedRobot {
 
     m_LimelightHasValidTarget = true;
 
-    /*
+    // Start with proportional steering
     double steer_cmd = tx * STEER_K;
     m_LimelightSteerCommand = steer_cmd;
+    if (steer_cmd<0) {
+      steer_cmd=0;
+    }
 
     // try to drive forward until the target area reaches our desired area
     double drive_cmd = (DESIRED_TARGET_AREA - ta) * DRIVE_K;
@@ -167,7 +164,10 @@ public class Robot extends TimedRobot {
     {
       drive_cmd = MAX_DRIVE;
     }
+    if (drive_cmd<0) {
+      drive_cmd = 0;
+    }
+
     m_LimelightDriveCommand = drive_cmd;
-     */
   }
 }
