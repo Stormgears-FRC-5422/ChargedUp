@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -33,13 +34,41 @@ public class Robot extends TimedRobot {
   private boolean m_LimelightHasValidTarget = false;
   private double m_LimelightDriveCommand = 0.0;
   private double m_LimelightSteerCommand = 0.0;
-
+  private int SpeakerMidAprilTag;
+  private int SpeakerSideAprilTag;
+  private int SourceLeftAprilTag;
+  private int SourceRightAprilTag;
+  private int AMPAprilTag;
+  private int Podium1AprilTag;
+  private int Podium2AprilTag;
+  private int Podium3AprilTag;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
    */
   @Override
   public void robotInit() {
+    if (DriverStation.getAlliance() == DriverStation.Alliance.Red){
+      SpeakerMidAprilTag = 4;
+      SpeakerSideAprilTag = 3;
+      SourceLeftAprilTag = 10;
+      SourceRightAprilTag = 9;
+      AMPAprilTag = 5;
+      Podium1AprilTag = 13;
+      Podium2AprilTag = 12;
+      Podium3AprilTag = 11;
+    } else if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
+      SpeakerMidAprilTag = 7;
+      SpeakerSideAprilTag = 8;
+      SourceLeftAprilTag = 2;
+      SourceRightAprilTag = 1;
+      AMPAprilTag = 6;
+      Podium1AprilTag = 14;
+      Podium2AprilTag = 15;
+      Podium3AprilTag = 16;
+    }
+
+
     m_Left0 = new WPI_TalonSRX(1);
     m_Left1 = new WPI_TalonSRX(3);
     m_Right0 = new WPI_TalonSRX(6);
@@ -128,6 +157,8 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+
+
 
   /**
    * This function implements a simple method of generating driving and steering commands
