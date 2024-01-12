@@ -42,6 +42,12 @@ public class Robot extends TimedRobot {
   private int Podium1AprilTag;
   private int Podium2AprilTag;
   private int Podium3AprilTag;
+  private double limelightMountAngleDegrees;
+  private double limelightLensHeightInches;
+  private double goalHeightInches;
+  private double angleToGoalDegrees;
+  private double angleToGoalRadians;
+  double finaldistance;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -67,6 +73,10 @@ public class Robot extends TimedRobot {
       Podium2AprilTag = 15;
       Podium3AprilTag = 16;
     }
+    limelightMountAngleDegrees = 90.0;
+    limelightLensHeightInches = 6.0;
+    goalHeightInches = 20.0;
+
 
 
     m_Left0 = new WPI_TalonSRX(1);
@@ -124,6 +134,7 @@ public class Robot extends TimedRobot {
 
 
     Update_Limelight_Tracking();
+    SmartDashboard.putNumber("Distance Between April Tag and Limelight", finaldistance);
 
     double steer = m_Controller.getRightX();
     double drive = -m_Controller.getLeftY();
@@ -172,10 +183,17 @@ public class Robot extends TimedRobot {
     final double DESIRED_TARGET_AREA = 13.0;        // Area of the target when the robot reaches the wall
     final double MAX_DRIVE = 0.1;                   // Simple speed limit so we don't drive too fast
 
-    double tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
-    double tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-    double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
-    double ta = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+
+    double tv = table.getEntry("tv").getDouble(0.0);
+    double tx = table.getEntry("tx").getDouble(0.0);
+    double ty = table.getEntry("ty").getDouble(0.0);
+    double ta = table.getEntry("ta").getDouble(0.0);
+    double ts = table.getEntry("ts").getDouble(0.0);
+    angleToGoalDegrees = limelightMountAngleDegrees + ty;
+    angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+    finaldistance = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+
 
     if (tv < 1.0)
     {
