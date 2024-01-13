@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
       Podium2AprilTag = 15;
       Podium3AprilTag = 16;
     }
-    limelightMountAngleDegrees = 90.0;
+    limelightMountAngleDegrees = 10.0;
     limelightLensHeightInches = 6.0;
     goalHeightInches = 20.0;
 
