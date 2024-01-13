@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.subsystems.drive.TempCheck;
 
 import static frc.robot.Constants.*;
 import static java.lang.Math.max;
@@ -18,9 +19,13 @@ public class StormSpark extends CANSparkMax {
   private double scale = 1.0;
   private long count = 0;
   private double groupTemperature;
-
+  private TempCheck tempCheck;
+  double temp;
+  int deviceID;
   public StormSpark(int deviceID, MotorType type, MotorKind kind) {
     super(deviceID, type);
+    tempCheck = new TempCheck();
+    deviceID = this.deviceID;
 
     this.motorKind = kind;
 
@@ -63,10 +68,14 @@ public class StormSpark extends CANSparkMax {
     // reduce speed to 0 at temperatureRampLimit
     // start ramping down at temperatureRampThreshold
 
-    double temp = max(getMotorTemperature(), groupTemperature);
+    temp = max(getMotorTemperature(), groupTemperature);
+    tempCheck.setTemperature(deviceID, temp);
+    speed = tempCheck.checkTemp(speed);
+
+
 
     if (temp > temperatureRampThreshold) {
-      speed *= max((temperatureRampLimit - temp) / delta, 0.0);
+      //speed *= max((temperatureRampLimit - temp) / delta, 0.0);
       if (count++ % 100 == 0)
         System.out.println(
             "Id "
@@ -77,7 +86,7 @@ public class StormSpark extends CANSparkMax {
                 + temp);
     }
 
-    super.set(scale * speed);
+    super.set(speed);
   }
 
   // Should be between 0.0 and 1.0 - to account for oddities in the drive train
